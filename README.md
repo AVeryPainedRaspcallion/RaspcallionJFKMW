@@ -1,4 +1,5 @@
 # JFKMW Public Release Repository
+![build](https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/actions/workflows/build-all.yml/badge.svg)
 This is the new JFKMW Repository with the latest major version (>= 4.0.0), a mario fan-game/engine dedicated to trying to replicate the original Super Mario World as much as possible while introducing new features for limitless modding potential, and a multiplayer client/server system for playing existing Super Mario World mods in multiplayer.
 
 The code hosted here contains no copyrighted assets or any stolen code. Most things have been reverse engineered and recoded completely from the original game, while also trying to keep compatibility with custom resources made for the original game.
