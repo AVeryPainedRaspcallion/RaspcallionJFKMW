@@ -1,0 +1,18 @@
+[submodule "libs/SDL"]
+	path = libs/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "libs/SDL_image"]
+	path = libs/SDL_image
+	url = https://github.com/libsdl-org/SDL_image.git
+[submodule "libs/SDL_mixer"]
+	path = libs/SDL_mixer
+	url = https://github.com/soulik/SDL_mixer.git
+[submodule "libs/SFML"]
+	path = libs/SFML
+	url = https://github.com/SFML/SFML.git
+[submodule "libs/moonjit"]
+	path = libs/moonjit
+	url = https://github.com/moonjit/moonjit.git
+[submodule "libs/lz4"]
+	path = libs/lz4
+	url = https://github.com/lz4/lz4.git

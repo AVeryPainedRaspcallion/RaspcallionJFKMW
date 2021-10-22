@@ -1,0 +1,90 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+ build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    
+    - name: Setup Premake
+      uses: checkraisefold/setup-premake@v2.0
+      with:
+        version: 5.0.0-alpha16
+        
+    - name: Run Premake
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        premake5 gmake2
+    
+    - name: Setup packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgl-dev libglu-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsfml-dev
+      
+    - name: Build binaries
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        make config=release_linux64
+        make config=debug_linux64
+        
+    - name: Upload release
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: linux_JFKMarioWorld
+        path: bin/Release/
+        
+    - name: Upload debug
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: linux_debug_JFKMarioWorld
+        path: bin/Debug/
+ build-windows:
+    runs-on: windows-latest
+        
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      
+    - name: Setup Premake
+      uses: checkraisefold/setup-premake@v2.0
+      with:
+        version: 5.0.0-alpha16
+        
+    - name: Run Premake
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        premake5 vs2019
+    - name: Build binaries
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: |
+        msbuild /m /p:Configuration=Release .
+        msbuild /m /p:Configuration=Debug .
+      
+    - name: Upload release
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: win_JFKMarioWorld
+        path: bin/Release/
+        
+    - name: Upload debug
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: win_debug_JFKMarioWorld
+        path: bin/Debug/
