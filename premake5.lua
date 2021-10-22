@@ -37,12 +37,6 @@ workspace "JFKMarioWorld"
 		linkgroups "On" -- if you don't use this then the linker breaks (blame gcc for being shit)
 		defines { "__linux__" }
 		
-	filter "platforms:Mac*" 
-		system "macosx"
-		links { "OpenGL.framework", "luajit", "SDL2.framework", "SDL2_mixer.framework", "SDL2_image.framework", "sfml-system.framework", "sfml-network.framework" }
-		linkgroups "On" -- if you don't use this then the linker breaks (blame clang? for being shit)
-		defines { "__linux__", "__mac__" }
-		
 project "JFKMarioWorld"
 	kind "ConsoleApp"
 	language "C++"
