@@ -65,14 +65,10 @@ namespace fs = std::filesystem;
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
-//OPENGL - FUCK YOU APPLE!
-#ifndef __mac__
+//OPENGL
 #include <GL/gl.h>
 #include <GL/glu.h>
-#elif
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#endif
+
 //LZ4
 #include "lz4.h"
 
