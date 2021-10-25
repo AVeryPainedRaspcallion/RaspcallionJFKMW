@@ -513,10 +513,7 @@ void PreloadSPR() {
 		px = ((tile_t & 0xF) << 3) + 7 + ((tile_t >> 4) << 10);
 		for (index = 0; index < 16; index += 2) {
 			for (i = 0; i < 8; i++) {
-				temporaryPixelBuffer[px] = ((graphics_array[index] >> i) & 1) +
-					(((graphics_array[1 + index] >> i) & 1) << 1) +
-					(((graphics_array[16 + index] >> i) & 1) << 2) +
-					(((graphics_array[17 + index] >> i) & 1) << 3);
+				temporaryPixelBuffer[px] = ((graphics_array[index] >> i) & 1) + (((graphics_array[1 + index] >> i) & 1) << 1) + (((graphics_array[16 + index] >> i) & 1) << 2) + (((graphics_array[17 + index] >> i) & 1) << 3);
 				px--;
 			}
 			px += 136;
