@@ -94,12 +94,14 @@ void game_loop_code()
 			}
 
 			if (!isClient) {
-				if (global_frame_counter == 5) { //Fade into the level
+				if (global_frame_counter <= 5) {
+					RAM[0x9D] = 0;
 					RAM[0x3F10] = 0xFF;
 					RAM[0x3F11] = 2;
-					RAM[0x9D] = 0;
 				}
-				handleTransitions();
+				else {
+					handleTransitions();
+				}
 				if (gamemode == GAMEMODE_OVERWORLD) {
 					return;
 				}

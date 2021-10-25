@@ -410,20 +410,16 @@ public:
 Level LevelManager;
 
 
-void load_level3f08()
-{
-	if (getRamValue(0x3f08, 2) != 0)
-	{
+void load_level3f08() {
+	if (getRamValue(0x3f08, 2) != 0) {
 		gamemode = GAMEMODE_MAIN;
-		if (getRamValue(0x3F08, 2) != getRamValue(0x010b, 2))
-		{
+		if (getRamValue(0x3F08, 2) != getRamValue(0x010b, 2)) {
 			midway_activated = false;
 		}
 		LevelManager.LoadLevel(uint_fast16_t(getRamValue(0x3f08, 2)));
 		writeToRam(0x3f08, 0, 2);
 	}
-	else
-	{
+	else {
 		writeToRam(0x1DFB, 0, 1);
 	}
 }

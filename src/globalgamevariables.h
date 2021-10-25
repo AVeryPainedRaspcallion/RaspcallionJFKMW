@@ -51,7 +51,11 @@ string midi_patchset = "NONE";
 #define LEVEL_SIZE 0x8000
 
 //useful macros for when doing_write or doing_read are modified, or just for data safety when transferring things between net thread and main game thread.
+#ifdef DISABLE_NETWORK
 #define DATA_SAFETY_WAIT Sleep(1);
+#else
+#define DATA_SAFETY_WAIT sf::sleep(sf::milliseconds(1));
+#endif
 #define WAIT_READ_COMPLETE chrono::high_resolution_clock::time_point START_CHECK = chrono::high_resolution_clock::now(); chrono::high_resolution_clock::time_point CURRENT_CHECK; bool hung_check = false; \
 while (doing_write || doing_read) { \
 	DATA_SAFETY_WAIT \
