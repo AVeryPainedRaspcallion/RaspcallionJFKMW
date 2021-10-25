@@ -505,68 +505,68 @@ void PreloadSPR() {
 	if (!isClient && networking) { return; }
 	//This makes palette
 	ConvertPalette();
+
+	uint_fast8_t i, index, temporaryPixelBuffer[32768];
+	uint_fast32_t px;
+	for (uint_fast16_t tile_t = 0; tile_t < 0x200; tile_t++) {
+		memcpy(graphics_array, &VRAM[0xC000 + (tile_t << 5)], 32);
+		px = ((tile_t & 0xF) << 3) + 7 + ((tile_t >> 4) << 10);
+		for (index = 0; index < 16; index += 2) {
+			for (i = 0; i < 8; i++) {
+				temporaryPixelBuffer[px] = ((graphics_array[index] >> i) & 1) +
+					(((graphics_array[1 + index] >> i) & 1) << 1) +
+					(((graphics_array[16 + index] >> i) & 1) << 2) +
+					(((graphics_array[17 + index] >> i) & 1) << 3);
+				px--;
+			}
+			px += 136;
+		}
+	}
+
 	//Create a surface, only needed once
 	SDL_Surface* cached_spr_surf = SDL_CreateRGBSurface(0, 128, 256, 32,
 		rmask, gmask, bmask, amask);
-	for (uint_fast16_t e = 0; e < 16; e++) {
+	for (uint_fast16_t e = 0; e < 256; e += 16) {
 		SDL_memset(cached_spr_surf->pixels, 0, cached_spr_surf->h * cached_spr_surf->pitch);
-		uint_fast8_t palette = e << 4;
-		uint_fast8_t color1, i, index;
-		uint_fast32_t px;
-		for (uint_fast16_t tile_t = 0; tile_t < 0x200; tile_t++) {
-			memcpy(graphics_array, &VRAM[0xC000 + (tile_t << 5)], 32);
-			px = ((tile_t & 0xF) << 3) + 7 + ((tile_t >> 4) << 10);
-			for (index = 0; index < 16; index+=2)
-			{
-				for (i = 0; i < 8; i++) {
-					color1 =
-						((graphics_array[index] >> i) & 1) +
-						(((graphics_array[1 + index] >> i) & 1) << 1) +
-						(((graphics_array[16 + index] >> i) & 1) << 2) +
-						(((graphics_array[17 + index] >> i) & 1) << 3)
-						;
-					if (color1 != 0) {
-						*((Uint32*)(cached_spr_surf)->pixels + px) = palette_array[color1 + palette];
-					}
-					px--;
-				}
-				px += 136;
+		for (px = 0; px < 32768; px++) {
+			if (temporaryPixelBuffer[px]) {
+				*((Uint32*)(cached_spr_surf)->pixels + px) = palette_array[temporaryPixelBuffer[px] + e];
 			}
 		}
-		//Unlock surface then create texture and destroy the surface to free memory.
-		ConvertSDLSurfaceToOpenGL(cached_spr_tilesGL[e], cached_spr_surf);
+		ConvertSDLSurfaceToOpenGL(cached_spr_tilesGL[e >> 4], cached_spr_surf);
 	}
 	SDL_FreeSurface(cached_spr_surf);
 }
 
 //Layer 3 Caching
-void PreloadL3()
-{
+void PreloadL3() {
 	if (!isClient && networking) { return; }
 	//This makes palette
 	ConvertPalette();
+	uint_fast8_t temporaryPixelBuffer[8192];
+	//Draw all L3 tiles
+	uint_fast8_t i, index; uint_fast32_t px = 0;
+	for (uint_fast8_t t = 0; t < 0x80; t++) {
+		px = ((t & 0xF) << 3) + 7 + ((t >> 4) << 10);
+		memcpy(graphics_array, &RAM[VRAM_Convert(0xB000) + (t << 4)], 16 * sizeof(uint_fast8_t));
+		for (index = 0; index < 16; index += 2) {
+			for (i = 0; i < 8; i++) {
+				temporaryPixelBuffer[px] = ((graphics_array[index] >> i) & 1) + (((graphics_array[index + 1] >> i) & 1) << 1);
+				px--;
+			}
+			px += 136;
+		}
+	}
 	SDL_Surface* cached_l3_surf = SDL_CreateRGBSurface(0, 128, 64, 32,
 		rmask, gmask, bmask, amask);
-	for (uint_fast16_t e = 0; e < 8; e++) {
+	for (uint_fast16_t e = 0; e < 32; e+=4) {
 		SDL_memset(cached_l3_surf->pixels, 0, cached_l3_surf->h * cached_l3_surf->pitch);
-		//Draw all L3 tiles
-		uint_fast8_t color1, i, index; uint_fast8_t palette_offs = e << 2; uint_fast32_t px = 0;
-		for (uint_fast8_t t = 0; t < 0x80; t++) {
-			px = ((t & 0xF) << 3) + 7 + ((t >> 4) << 10);
-			memcpy(graphics_array, &RAM[VRAM_Convert(0xB000) + (t << 4)], 16 * sizeof(uint_fast8_t));
-			for (index = 0; index < 16; index += 2) {
-				for (i = 0; i < 8; i++) {
-					color1 = ((graphics_array[index] >> i) & 1) + (((graphics_array[index+1] >> i) & 1) << 1);
-					if (color1 != 0) {
-						*((Uint32*)(cached_l3_surf)->pixels + px) = palette_array[color1 + palette_offs];
-					}
-					px--;
-				}
-				px += 136;
+		for (px = 0; px < 8192; px++) {
+			if (temporaryPixelBuffer[px]) {
+				*((Uint32*)(cached_l3_surf)->pixels + px) = palette_array[temporaryPixelBuffer[px] + e];
 			}
 		}
-
-		ConvertSDLSurfaceToOpenGL(cached_l3_tilesGL[e], cached_l3_surf);
+		ConvertSDLSurfaceToOpenGL(cached_l3_tilesGL[e >> 2], cached_l3_surf);
 	}
 	SDL_FreeSurface(cached_l3_surf);
 }
