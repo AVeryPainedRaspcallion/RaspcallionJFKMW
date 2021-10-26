@@ -151,7 +151,6 @@ int main(int argc, char* argv[]) {
 #ifdef _WIN32
 	std::set_terminate([]() { cout << red << "[JFKMW] Crashed. Unhandled exception." << endl; system("pause"); std::abort(); });
 #endif
-	
 	load_configuration();
 
 #ifndef DISABLE_NETWORK

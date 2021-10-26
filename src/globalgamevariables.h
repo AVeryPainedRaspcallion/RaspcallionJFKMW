@@ -626,6 +626,18 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 	input.close();
 }
 
+//OAM Definition
+struct OAMTile {
+	uint_fast8_t tile = 0;
+	uint_fast8_t size = 0;
+	int_fast16_t posx = 0;
+	int_fast16_t posy = 0;
+	uint_fast16_t props = 0;
+	uint_fast8_t rot = 0;
+};
+
+vector<OAMTile> OAM_Tiles;
+
 //Gamemode init
 void GameInitialize() {
 	loadAssetRAM("Graphics/exanimations.bin", 8);
@@ -634,6 +646,8 @@ void GameInitialize() {
 
 	global_frame_counter = 0;
 	ingame_frame_counter = 0;
+
+	OAM_Tiles.clear();
 
 	memset(&RAM[0x6000], 0, 0x4000); //Clear OW/Free part of RAM
 	TriggerRAMSync();

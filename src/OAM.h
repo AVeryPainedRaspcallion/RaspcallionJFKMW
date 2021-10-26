@@ -1,16 +1,6 @@
 #pragma once
 
 //OAM Structure
-struct OAMTile {
-	uint_fast8_t tile = 0;
-	uint_fast8_t size = 0;
-	int_fast16_t posx = 0;
-	int_fast16_t posy = 0;
-	uint_fast16_t props = 0;
-	uint_fast8_t rot = 0;
-};
-
-vector<OAMTile> OAM_Tiles;
 int CurrentSlot = 0;
 void Clear_OAM() {
 	CurrentSlot = 0;
