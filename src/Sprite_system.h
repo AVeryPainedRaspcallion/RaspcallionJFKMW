@@ -69,14 +69,11 @@ public:
 						)
 					{
 						//Fireball Kill Case
-						if (RAM[0x2080 + entry] == 0x33)
-						{
-							if (RAM[0x2000 + spr] == 1 && RAM[0x2080 + spr] != 0x33)
-							{
+						if (RAM[0x2080 + entry] == 0x33) {
+							if (RAM[0x2000 + spr] == 1 && RAM[0x2080 + spr] != 0x33 && !(RAM[0x2800 + spr] & 2)) {
 								RAM[0x2B00 + entry] = 0x1;
 								//Sprite fireball hit
-								if (!(RAM[0x2880 + spr] & 0x80))
-								{
+								if (!(RAM[0x2880 + spr] & 0x80)) {
 									RAM[0x2B00 + spr] = 0x2;
 									RAM[0x2700 + spr] = 0xFF;
 									RAM[0x1DF9] = 3;

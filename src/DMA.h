@@ -11,14 +11,12 @@ public:
 };
 vector<VRAM_DMA> DMAsProcessed;
 
-void ResetDMA()
-{
+void ResetDMA() {
 	//Disable all DMA channels.
 	RAM[0x420B] = 0;
 }
 
-void DMAStartFrame()
-{
+void DMAStartFrame() {
 	if (DMAsProcessed.size() > 0) {
 		for (int i = 0; i < DMAsProcessed.size(); i++) {
 			delete DMAsProcessed[i].data;
@@ -42,8 +40,7 @@ void sendDMANet() {
 	}
 }
 
-void decompressDMAnet()
-{
+void decompressDMAnet() {
 	uint_fast16_t all_dmas;
 	CurrentPacket >> all_dmas;
 	for (uint_fast16_t i = 0; i < all_dmas; i++)
@@ -60,14 +57,10 @@ void decompressDMAnet()
 }
 #endif
 
-void ProcessDMA()
-{
-	for (uint_fast8_t c = 0; c < 8; c++)
-	{
+void ProcessDMA() {
+	for (uint_fast8_t c = 0; c < 8; c++) {
 		uint_fast8_t channel = c << 4;
-		if ((RAM[0x420B] >> c) & 1) //This DMA channel is enabled
-		{
-
+		if ((RAM[0x420B] >> c) & 1) { //This DMA channel is enabled
 			uint_fast8_t mode = RAM[0x4300 + channel];
 			uint_fast8_t reg = RAM[0x4301 + channel];
 			uint_fast32_t bank = RAM[0x4302 + channel] + (RAM[0x4303 + channel] << 8) + (RAM[0x4304 + channel] << 16);
@@ -77,8 +70,7 @@ void ProcessDMA()
 			uint_fast32_t part = RAM[0x4308 + channel] + (RAM[0x4309 + channel] << 8);
 
 			//DMA Vram $2118 and $2119
-			if (mode == 1 && reg == 0x18)
-			{
+			if (mode == 1 && reg == 0x18) {
 				memcpy(&RAM[0x20000 + (part << 1)], &RAM[bank], size);
 
 				//create dma processed object
@@ -88,8 +80,7 @@ void ProcessDMA()
 			}
 
 			//RAM DMA
-			if (mode == 0 && reg == 0x80)
-			{
+			if (mode == 0 && reg == 0x80) {
 				uint_fast32_t destination = ((RAM[0x4281] + (RAM[0x4282] << 8) + (RAM[0x4283] << 16)) - 0x7E0000) & 0x1FFFF;
 				memcpy(&RAM[destination], &RAM[bank], size);
 
@@ -103,3 +94,50 @@ void ProcessDMA()
 	RAM[0x420B] = 0;
 }
 
+//CC-DMA implementation. TO-DO: Cleanup and recode
+void CCDMA_Bitmap4BPP(int src, int dest, int width, int height, bool packed) {
+	if (dest >= 0x20000) {
+		TriggerRAMSync();
+	}
+	memset(&RAM[dest], 0, width * height * 32);
+	if (!packed) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				for (int bp = 0; bp < 4; bp++) {
+					for (int r = 0; r < 8; r++) {
+						uint_fast8_t row = ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 7;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 6;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 5;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 3] >> bp) & 1) << 4;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 4] >> bp) & 1) << 3;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 5] >> bp) & 1) << 2;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 6] >> bp) & 1) << 1;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 7] >> bp) & 1);
+						RAM[dest + ((bp >> 1) * 16) + (bp & 1) + (r * 2)] = row;
+					}
+				}
+				dest += 32;
+			}
+		}
+	}
+	else {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				for (int bp = 0; bp < 4; bp++) {
+					for (int r = 0; r < 8; r++) {
+						uint_fast8_t row = ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width)] >> (bp + 4)) & 1) << 7;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 6;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 1] >> (bp + 4)) & 1) << 5;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 4;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 2] >> (bp + 4)) & 1) << 3;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 2;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 3] >> (bp + 4)) & 1) << 1;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 3] >> bp) & 1);
+						RAM[dest + ((bp >> 1) * 16) + (bp & 1) + (r * 2)] = row;
+					}
+				}
+				dest += 32;
+			}
+		}
+	}
+}

@@ -1,18 +1,5 @@
 #pragma once
 
-
-void game_init() { //Gamemode init
-	loadAssetRAM("Graphics/exanimations.bin", 8);
-	loadAssetRAM("Graphics/hud.bin", 11);
-	memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800);
-
-	global_frame_counter = 0;
-	ingame_frame_counter = 0;
-
-	Clear_OAM();
-	memset(&RAM[0x6000], 0, 0x4000); //Clear OW/Free part of RAM
-}
-
 string GFX_Names[12] = {
 	"gfx_1",
 	"gfx_2",
@@ -355,13 +342,13 @@ public:
 
 	void LoadLevel(uint_fast16_t num)
 	{
+		GameInitialize();
 		level_data.clear();
 		writeToRam(0x010B, num, 2);
 		initialize_map16("Map16/global.jfkmap16");
 		Initialize_Level();
 		cout << green << "[Level Manager] Loading level " << int_to_hex(num) << endl;
 		read_from_palette(Modpack + "/levels/" + int_to_hex(num) + "/level_palette.mw3");
-		game_init();
 		initialize_map16(Modpack + "/levels/" + int_to_hex(num) + "/level_map16.jfkmap16");
 		LoadLevelFromFile(Modpack + "/levels/" + int_to_hex(num) + "/level_data.txt", num);
 
@@ -400,10 +387,6 @@ public:
 			start_y = RAM[0x3F0D] + RAM[0x3F0E] * 256;
 		}
 		writeToRam(0xF31, request_level_entry("time_limit") * 40, 2);
-#ifndef DISABLE_NETWORK
-		Do_RAM_Change();
-#endif
-		need_preload_sprites = true;
 	}
 };
 

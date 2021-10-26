@@ -134,14 +134,14 @@ void drawBackground() {
 		}
 	}
 	else {
-		if (layer2mode_x || layer2mode_y) {
+		if (hdmaModeEnabled[HDMA_L2_MODEX] || hdmaModeEnabled[HDMA_L2_MODEY]) {
 			SrcR = {0, 0, int(int_res_x), 1};
 			DestR = { 0, 0, int(int_res_x), 1 };
 			for (int i = 0; i < int(int_res_y); i++) {
 				int index = (i - formula_y + (272 + (224 - int_res_y))) & 0x1FF;
 				int hdma_scan = (i - formula_y + 256 + (224 - int_res_y)) & 0x1FF;
-				SrcR.y = (layer2_shiftY[hdma_scan] + index) & 0x1FF;
-				SrcR.x = -((layer2_shiftX[hdma_scan] & 0x1FF) + formula_x);
+				SrcR.y = (hdmaLineData[hdma_scan][HDMA_L2_MODEY] + index) & 0x1FF;
+				SrcR.x = -((hdmaLineData[hdma_scan][HDMA_L2_MODEX] & 0x1FF) + formula_x);
 				RenderCopyOpenGLEx(&SrcR, &DestR, L2BG, 512, 512);
 				DestR.y++;
 			}
@@ -314,8 +314,22 @@ void handleRenderingForPlayer(int player)
 		}
 		convertL1Tex();
 
-		if (!layer1mode_y && !layer1mode_x)
-		{
+		if (hdmaModeEnabled[HDMA_L1_MODEX] || hdmaModeEnabled[HDMA_L1_MODEY]) {
+			SrcR.x = 0;
+			SrcR.w = int_res_x + 16;
+			SrcR.h = 1;
+			DestR.w = int_res_x + 16;
+			DestR.h = 1;
+			for (int i = 0; i < int(int_res_y + 16); i++) {
+				int hdma_scan = (256 - CameraY + i + offsetYPixel) & 0x1FF;
+				SrcR.y = (i + (hdmaLineData[hdma_scan][HDMA_L1_MODEY]));
+
+				DestR.y = ((i + -16 + offsetYPixel));
+				DestR.x = (-offsetXPixel + hdmaLineData[hdma_scan][HDMA_L1_MODEX]);
+				RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
+			}
+		}
+		else {
 			SrcR.x = 0;
 			SrcR.y = 0;
 			SrcR.w = int_res_x + 16;
@@ -326,25 +340,6 @@ void handleRenderingForPlayer(int player)
 			DestR.w = int_res_x + 16;
 			DestR.h = int_res_y + 16;
 			RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
-		}
-		else
-		{
-			SrcR.x = 0;
-			SrcR.w = int_res_x + 16;
-			SrcR.h = 1;
-			DestR.w = int_res_x + 16;
-			DestR.h = 1;
-
-
-			for (int i = 0; i < int(int_res_y + 16); i++)
-			{
-				int hdma_scan = (256 - CameraY + i + offsetYPixel) & 0x1FF;
-				SrcR.y = (i + (layer1_shiftY[hdma_scan]));
-
-				DestR.y = ((i + -16 + offsetYPixel));
-				DestR.x = (-offsetXPixel + layer1_shiftX[hdma_scan]);
-				RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
-			}
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -663,8 +658,7 @@ void render()
 	}
 
 	//Overworld rendering
-	if (gamemode == GAMEMODE_OVERWORLD)
-	{
+	if (gamemode == GAMEMODE_OVERWORLD) {
 		overworld.Render();
 		return;
 	}

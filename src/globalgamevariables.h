@@ -89,14 +89,13 @@ uint_fast8_t pipe_colors[4] = { 3, 5, 6, 7 };
 #define inside 0
 
 //DMA/DHMA
-bool layer1mode_x = false;
-int_fast16_t layer1_shiftX[512];
-bool layer1mode_y = false;
-int_fast16_t layer1_shiftY[512];
-bool layer2mode_x = false;
-int_fast16_t layer2_shiftX[512];
-bool layer2mode_y = false;
-int_fast16_t layer2_shiftY[512];
+bool hdmaModeEnabled[4];
+int_fast16_t hdmaLineData[512][4];
+
+#define HDMA_L1_MODEX 0
+#define HDMA_L1_MODEY 1
+#define HDMA_L2_MODEX 2
+#define HDMA_L2_MODEY 3
 
 //Threads
 #ifndef DISABLE_NETWORK
@@ -341,7 +340,6 @@ bool pressed_select;
 bool pressed_start;
 
 bool need_preload_sprites = false;
-
 bool ow_has_been_loaded = false;
 
 bool smooth_camera = false;
@@ -392,6 +390,15 @@ uint_fast8_t music_latest_sync;
 uint_fast8_t CurrentPacket_header;
 //TO-DO : add packet compression. (Is this even possible?)
 sf::Packet CurrentPacket;
+
+//Trigger major change
+void TriggerRAMSync() {
+	need_preload_sprites = true; recent_big_change = true; latest_sync++;
+}
+#else
+void TriggerRAMSync() {
+	need_preload_sprites = true;
+}
 #endif
 
 //Discord webhook logging for servers, only works in WIN32
@@ -502,7 +509,6 @@ void ConvertPalette() {
 
 //Sprite Caching
 void PreloadSPR() {
-	if (!isClient && networking) { return; }
 	//This makes palette
 	ConvertPalette();
 
@@ -537,7 +543,6 @@ void PreloadSPR() {
 
 //Layer 3 Caching
 void PreloadL3() {
-	if (!isClient && networking) { return; }
 	//This makes palette
 	ConvertPalette();
 	uint_fast8_t temporaryPixelBuffer[8192];
@@ -597,9 +602,7 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 		if (entry != cachedAssets.end()) {
 			cachedAssetObject* En = entry->second;
 			memcpy(&RAM[VRAM_Location + offset], En->data, En->datasize);
-			if (offset == 0xB000) {
-				PreloadL3();
-			}
+			TriggerRAMSync();
 			return;
 		}
 	}
@@ -618,9 +621,20 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 		else { //Just put this into RAM normally.
 			input.read((char*)&RAM[VRAM_Location + offset], fsize);
 		}
-		if (offset == 0xB000) {
-			PreloadL3();
-		}
+		TriggerRAMSync();
 	}
 	input.close();
+}
+
+//Gamemode init
+void GameInitialize() {
+	loadAssetRAM("Graphics/exanimations.bin", 8);
+	loadAssetRAM("Graphics/hud.bin", 11);
+	memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800);
+
+	global_frame_counter = 0;
+	ingame_frame_counter = 0;
+
+	memset(&RAM[0x6000], 0, 0x4000); //Clear OW/Free part of RAM
+	TriggerRAMSync();
 }

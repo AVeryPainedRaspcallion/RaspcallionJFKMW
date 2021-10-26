@@ -31,7 +31,6 @@ void server_code() {
 	}
 #endif
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
-	game_init();
 	cout << yellow << "[JFKMW] Starting up a server." << endl;
 
 	//Prepare level
@@ -97,7 +96,7 @@ void server_code() {
 				RAM[0x3F11] = 0;
 				RAM[0x3F10] = 0;
 				RAM[0x9D] = 1;
-				Do_RAM_Change();
+				TriggerRAMSync();
 				cout << green << "[Network] Syncing RAM to other players.." << endl;
 			}
 			if (command == "stats") {

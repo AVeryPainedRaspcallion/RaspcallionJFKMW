@@ -55,8 +55,7 @@ static int lua_spawn_sprite(lua_State* L) {
 	return 1;
 }
 
-static int draw_to_oam(lua_State* L)
-{
+static int draw_to_oam(lua_State* L) {
 	uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
 	if (!(RAM[0x2A80 + sprite_index] & 2)) {
 		return 0;
@@ -74,8 +73,7 @@ static int draw_to_oam(lua_State* L)
 	return 0;
 }
 
-static int slideDeathHandler(lua_State* L)
-{
+static int slideDeathHandler(lua_State* L) {
 	uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
 	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 2);
 	uint_fast8_t flags = (uint_fast8_t)lua_tonumber(L, 3);
@@ -113,33 +111,19 @@ static int spriteDeathParticle(lua_State* L) {
 }
 
 static int setSpriteX(lua_State* L) {
-	uint_fast8_t sprite_index = (uint_fast8_t)lua_tointeger(L, 1);
-	double newPosX = (double)lua_tonumber(L, 2);
-
+	uint_fast8_t sprite_index = (uint_fast8_t)lua_tointeger(L, 1); double newPosX = (double)lua_tonumber(L, 2); 
 	RAM[0x2100 + sprite_index] = uint_fast8_t(newPosX);
-	RAM[0x2180 + sprite_index] = uint_fast8_t(newPosX / 256.0);
-	if (newPosX < 0)
-	{
-		RAM[0x2180 + sprite_index] = 0xFF;
-	}
+	RAM[0x2180 + sprite_index] = uint_fast8_t(newPosX / 256.0) - (newPosX < 0);
 	RAM[0x2200 + sprite_index] = uint_fast8_t(newPosX * 256.0);
 
 	return 0;
 }
 
-static int setSpriteY(lua_State* L)
-{
-	uint_fast8_t sprite_index = (uint_fast8_t)lua_tointeger(L, 1);
-	double newPosY = (double)lua_tonumber(L, 2) + 16;
-
+static int setSpriteY(lua_State* L) {
+	uint_fast8_t sprite_index = (uint_fast8_t)lua_tointeger(L, 1); double newPosY = (double)lua_tonumber(L, 2) + 16;
 	RAM[0x2280 + sprite_index] = uint_fast8_t(newPosY);
-	RAM[0x2300 + sprite_index] = uint_fast8_t(newPosY / 256.0);
-	if (newPosY < 0)
-	{
-		RAM[0x2300 + sprite_index] = 0xFF;
-	}
+	RAM[0x2300 + sprite_index] = uint_fast8_t(newPosY / 256.0) - (newPosY < 0);
 	RAM[0x2380 + sprite_index] = uint_fast8_t(newPosY * 256.0);
-
 	return 0;
 }
 
@@ -176,19 +160,13 @@ static int clearStatusBar(lua_State* L) {
 	return 0;
 }
 
+//use load asset instead.
 static int loadNewGFX(lua_State* L) {
 	int gfx_file = (int)lua_tointeger(L, 1);
 	int offset = (int)lua_tointeger(L, 2);
 	loadAssetRAM("Graphics/GFX" + int_to_hex(gfx_file, true) + ".bin", offset, false, true);
-
-	if (offset >= 0)
-	{
-#ifndef DISABLE_NETWORK
-		Do_RAM_Change();
-#endif
-	}
-	if (!networking && offset >= 0xC000) {
-		need_preload_sprites = true;
+	if (offset >= 0) {
+		TriggerRAMSync();
 	}
 	return 0;
 }
@@ -206,12 +184,7 @@ static int loadNewAsset(lua_State* L) {
 		loadAssetRAM(Modpack + "/lualibs/" + ((string)lua_tostring(L, 1)), -0x20000 + offset, false, true);
 	}
 	if (offset >= 0x20000) {
-#ifndef DISABLE_NETWORK
-		Do_RAM_Change();
-#endif
-	}
-	if (!networking && offset >= 0x2C000) {
-		need_preload_sprites = true;
+		TriggerRAMSync();
 	}
 	return 0;
 }
@@ -220,8 +193,7 @@ static int loadNewAsset(lua_State* L) {
 int jfkmw_require(lua_State* L) {
 	string file = Modpack + "/lualibs/" + string(lua_tostring(L, 1));
 	std::ifstream fs(file);
-	if (fs.good())
-	{
+	if (fs.good()) {
 		std::ostringstream sstream; sstream << fs.rdbuf();
 		const std::string str(sstream.str());
 		luaL_dostring(L, str.c_str());
@@ -270,6 +242,12 @@ static int discordMessageHook(lua_State* L) {
 	if (!networking) { return 0; }
 	string text = (string)lua_tostring(L, 1);
 	discord_message(text);
+	return 0;
+}
+
+static int bitmapTo4Bpp(lua_State* L) {
+	int dest = (int)lua_tointeger(L, 2);
+	CCDMA_Bitmap4BPP((int)lua_tointeger(L, 1), dest, (int)lua_tointeger(L, 3), (int)lua_tointeger(L, 4), (bool)lua_toboolean(L, 5));
 	return 0;
 }
 
@@ -349,6 +327,7 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, loadNewAsset); lua_setglobal(L, "loadLevelAsset");
 	lua_pushcfunction(L, clearStatusBar); lua_setglobal(L, "clearStatusBar");
 	lua_pushcfunction(L, lua_addscore); lua_setglobal(L, "addScore");
+	lua_pushcfunction(L, bitmapTo4Bpp); lua_setglobal(L, "bitmapTo4Bpp");
 	lua_register(L, "asmRead", lua_get_ram);
 	lua_register(L, "charToSmw", lua_chartosmw);
 	lua_register(L, "getPlayerX", getPlayerX);

@@ -147,8 +147,7 @@ istream& getline(istream& stream, string& str) {
 #endif
 #include "main.h"
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 #ifdef _WIN32
 	std::set_terminate([]() { cout << red << "[JFKMW] Crashed. Unhandled exception." << endl; system("pause"); std::abort(); });
 #endif

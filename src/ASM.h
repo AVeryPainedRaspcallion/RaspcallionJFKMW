@@ -1,8 +1,7 @@
 #pragma once
-/*
-	JFK Mario World ASM emulation backend implementation
-*/
+//ASM-related backend things.
 
+//advanced ram writes
 void writeToRam(uint_fast32_t pointer, uint_fast32_t value, uint_fast8_t size = 1) {
 	if ((pointer+size) > RAM_Size) {
 		return;
@@ -14,13 +13,11 @@ void writeToRam(uint_fast32_t pointer, uint_fast32_t value, uint_fast8_t size = 
 	for (uint_fast8_t i = 0; i < size; i++) {
 		RAM[pointer + i] = uint_fast8_t(value >> (i << 3));
 	}
-	if (pointer == 0x420B) {
-		ProcessDMA();
-	}
+	if (pointer == 0x420B) { ProcessDMA(); }
 }
 
 uint_fast32_t getRamValue(uint_fast32_t pointer, uint_fast8_t size = 1) {
-	if ((pointer+size) >= RAM_Size) { return -1; }
+	if ((pointer+size) > RAM_Size) { return -1; }
 	uint_fast32_t temp = RAM[pointer];
 	if (size > 1) {
 		for (uint_fast8_t i = 1; i < size; i++) {
@@ -51,10 +48,8 @@ uint_fast16_t sprite_f_send[spr_ent_net] =
 	1, //Num
 	2, //Xpos
 	3, //Xpos
-	//4, //Xpos
 	5, //Ypos
 	6, //Ypos
-	//7, //Ypos
 	8, //Xspd
 	9, //Yspd
 	10, //Xsize
@@ -117,8 +112,7 @@ void Sync_Server_RAM(bool compressed = false)
 			if (i != 2) {
 				uint_fast8_t new_i; CurrentPacket >> new_i;
 				uint_fast8_t new_s; CurrentPacket >> new_s;
-				if (new_s != audio_sync[i])
-				{
+				if (new_s != audio_sync[i]) {
 					audio_sync[i] = new_s;
 					RAM[0x1DF9 + i] = new_i;
 				}
@@ -181,8 +175,7 @@ void Sync_Server_RAM(bool compressed = false)
 		CurrentPacket >> RAM[0x3F05];
 
 		//Send L3 parameters
-		if (RAM[0x3F1F] & 8)
-		{
+		if (RAM[0x3F1F] & 8) {
 			CurrentPacket >> RAM[0x3F1C];
 			CurrentPacket >> RAM[0x3F1B];
 			CurrentPacket >> RAM[0x3F1D];
@@ -231,13 +224,11 @@ void Sync_Server_RAM(bool compressed = false)
 			uint_fast16_t p; uint_fast8_t t1; uint_fast8_t t2;
 			CurrentPacket >> p;
 			CurrentPacket >> t1; CurrentPacket >> t2;
-			if (p < 0x800)
-			{
+			if (p < 0x800) {
 				RAM[VRAM_Convert(0xB800) + p] = t1;
 				RAM[VRAM_Convert(0xB801) + p] = t2;
 			}
-			else
-			{
+			else {
 				break;
 			}
 		}
@@ -254,7 +245,6 @@ bool checkRAMarea_net(uint_fast32_t i)
 		((checkArea(i, 0x3000, 0x3CFF) || checkArea(i, 0, 0xFF)) ||
 		(checkArea(i, 0x5000, 0x5FFF) || checkArea(i, 0x2000, 0x2FFF))) ||
 		checkArea(i, 0x7000, 0xBFFF)
-
 		;
 }
 
@@ -278,14 +268,7 @@ bool checkRamDecay(uint_fast16_t i, bool dec) {
 	return false;
 }
 
-
-void Do_RAM_Change() {
-	recent_big_change = true;
-	latest_sync++;
-}
-
-void Push_Server_RAM(bool compress = false)
-{
+void Push_Server_RAM(bool compress = false) {
 	WAIT_READ_COMPLETE
 	doing_read = true;
 	if (!compress)

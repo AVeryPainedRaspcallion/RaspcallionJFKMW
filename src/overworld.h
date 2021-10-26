@@ -107,7 +107,7 @@ public:
 	//Initialize overworld
 	void Initialize()
 	{
-		game_init();
+		GameInitialize();
 
 		//Reset camera
 		FreeCam = false;
@@ -175,9 +175,6 @@ public:
 		ingame_frame_counter = 0;
 		global_frame_counter = 0;
 
-		//Clear OAM
-		Clear_OAM();
-
 		//Load OW Data (With swag)
 		ifstream infile(Modpack + "/MainOW_L1.bin", ios::binary);
 		infile.read((char*)&RAM[0xA000], 0x800);
@@ -210,8 +207,6 @@ public:
 		for (int i = 0; i < 9; i++) {
 			loadAssetRAM(Modpack + "/OW_GFX" + int_to_hex(i, true) + ".bin", i);
 		}
-
-		need_preload_sprites = true;
 
 		//Loaded it
 		cout << yellow << "[JFKMW] Loaded overworld from modpack " << Modpack << endl;

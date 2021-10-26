@@ -7,8 +7,7 @@ void ResetHDMA()
 }
 
 #ifndef DISABLE_NETWORK
-void sendHDMAnet()
-{
+void sendHDMAnet() {
 	CurrentPacket << RAM[0x420C];
 	CurrentPacket << RAM[0x420B];
 
@@ -38,8 +37,7 @@ void sendHDMAnet()
 	}
 }
 
-void decompressHDMAnet()
-{
+void decompressHDMAnet() {
 	CurrentPacket >> RAM[0x420C];
 	CurrentPacket >> RAM[0x420B];
 
@@ -73,17 +71,11 @@ void decompressHDMAnet()
 
 void ProcessHDMA()
 {
-	/*
-		Reset Horizontal Tables
-	*/
-	layer1mode_x = false;
-	layer1mode_y = false;
-	layer2mode_x = false;
-	layer2mode_y = false;
-	memset(layer1_shiftX, 0, 512 * sizeof(int_fast16_t));
-	memset(layer1_shiftY, 0, 512 * sizeof(int_fast16_t));
-	memset(layer2_shiftX, 0, 512 * sizeof(int_fast16_t));
-	memset(layer2_shiftY, 0, 512 * sizeof(int_fast16_t));
+	//Reset Horizontal Tables
+	for (int i = 0; i < 4; i++) {
+		hdmaModeEnabled[i] = false;
+	}
+	memset(hdmaLineData, 0, sizeof(hdmaLineData));
 
 	for (uint_fast8_t c = 0; c < 8; c++)
 	{
@@ -100,14 +92,8 @@ void ProcessHDMA()
 			uint_fast16_t i = 0;
 			uint_fast16_t scanline = 0;
 
-			if (reg == 0x0D) { layer1mode_x = true; }
-			if (reg == 0x0E) { layer1mode_y = true; }
-			if (reg == 0x0F) { layer2mode_x = true; }
-			if (reg == 0x10) { layer2mode_y = true; }
-
-
-			while (true)
-			{
+			if (reg >= 0x0D && reg <= 0x10) { hdmaModeEnabled[reg - 0xD] = true; }
+			while (true) {
 				uint_fast16_t scanlines = RAM[bank + i];
 				if (scanlines == 0)
 				{
@@ -121,12 +107,8 @@ void ProcessHDMA()
 						int value = RAM[bank + 1 + i] + (size > 2 ? (RAM[bank + 2 + i] << 8) : 0);
 						if (value >= 0x8000) { value = -(0x10000 - value); }
 
-						if (scanline < 512)
-						{
-							if (reg == 0x0D) { layer1_shiftX[scanline] = int_fast16_t(value); }
-							if (reg == 0x0E) { layer1_shiftY[scanline] = int_fast16_t(value); }
-							if (reg == 0x0F) { layer2_shiftX[scanline] = int_fast16_t(value); }
-							if (reg == 0x10) { layer2_shiftY[scanline] = int_fast16_t(value); }
+						if (scanline < 512) {
+							if (reg >= 0x0D && reg <= 0x10) { hdmaLineData[scanline][reg - 0xD] = int_fast16_t(value); }
 						}
 						scanline++;
 					}
