@@ -102,36 +102,34 @@ void CCDMA_Bitmap4BPP(int src, int dest, int width, int height, bool packed) {
 	int odest = dest;
 	memset(&RAM[dest], 0, width * height * 32);
 	uint_fast8_t row = 0;
-	if (!packed) {
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				for (int bp = 0; bp < 4; bp++) {
-					for (int r = 0; r < 8; r++) {
-						if (!packed) {
-							row = ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 7;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 6;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 5;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 3] >> bp) & 1) << 4;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 4] >> bp) & 1) << 3;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 5] >> bp) & 1) << 2;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 6] >> bp) & 1) << 1;
-							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 7] >> bp) & 1);
-						}
-						else {
-							row = ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width)] >> (bp + 4)) & 1) << 7;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 6;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 1] >> (bp + 4)) & 1) << 5;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 4;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 2] >> (bp + 4)) & 1) << 3;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 2;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 3] >> (bp + 4)) & 1) << 1;
-							row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 3] >> bp) & 1);
-						}
-						RAM[dest + ((bp >> 1) * 16) + (bp & 1) + (r * 2)] = row;
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			for (int bp = 0; bp < 4; bp++) {
+				for (int r = 0; r < 8; r++) {
+					if (!packed) {
+						row = ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 7;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 6;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 5;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 3] >> bp) & 1) << 4;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 4] >> bp) & 1) << 3;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 5] >> bp) & 1) << 2;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 6] >> bp) & 1) << 1;
+						row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 7] >> bp) & 1);
 					}
+					else {
+						row = ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width)] >> (bp + 4)) & 1) << 7;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 6;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 1] >> (bp + 4)) & 1) << 5;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 4;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 2] >> (bp + 4)) & 1) << 3;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 2;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 3] >> (bp + 4)) & 1) << 1;
+						row |= ((RAM[src + (x * 4) + (y * 64 * width) + (r * 8 * width) + 3] >> bp) & 1);
+					}
+					RAM[dest + ((bp >> 1) * 16) + (bp & 1) + (r * 2)] = row;
 				}
-				dest += 32;
 			}
+			dest += 32;
 		}
 	}
 	if (odest >= 0x20000) {
