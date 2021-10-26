@@ -1405,6 +1405,7 @@ public:
 					jump_is_spin = false;
 					SLIDING = false;
 					CROUCH = false;
+					P_METER = 0;
 					X_SPEED = p_pad[button_right] - p_pad[button_left];
 					Y_SPEED = p_pad[button_up] - p_pad[button_down];
 					if (X_SPEED != 0) {
