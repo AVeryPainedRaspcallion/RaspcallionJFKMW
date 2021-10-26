@@ -107,7 +107,7 @@ void CCDMA_Bitmap4BPP(int src, int dest, int width, int height, bool packed) {
 			for (int x = 0; x < width; x++) {
 				for (int bp = 0; bp < 4; bp++) {
 					for (int r = 0; r < 8; r++) {
-						if (packed) {
+						if (!packed) {
 							row = ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width)] >> bp) & 1) << 7;
 							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 1] >> bp) & 1) << 6;
 							row |= ((RAM[src + (x * 8) + (y * 64 * width) + (r * 8 * width) + 2] >> bp) & 1) << 5;
