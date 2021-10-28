@@ -138,12 +138,6 @@ static int draw_to_oam_direct(lua_State* L) {
 	return 0;
 }
 
-static int lua_bitand(lua_State* L) {
-	uint_fast8_t result = ((uint_fast8_t)lua_tointeger(L, 1)) & ((uint_fast8_t)lua_tointeger(L, 2));
-	lua_pushnumber(L, result);
-	return 1;
-}
-
 static int drawtohud(lua_State* L) {
 	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 1);
 	uint_fast8_t prop = (uint_fast8_t)lua_tonumber(L, 2) & 0x0F;
@@ -310,7 +304,6 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, lua_spawn_sprite); lua_setglobal(L, "spawnSprite");
 	lua_pushcfunction(L, draw_to_oam); lua_setglobal(L, "drawOam");
 	lua_pushcfunction(L, draw_to_oam_direct); lua_setglobal(L, "drawOamDirect");
-	lua_pushcfunction(L, lua_bitand); lua_setglobal(L, "bitand");
 	lua_pushcfunction(L, jfkmw_require); lua_setglobal(L, "require");
 	lua_pushcfunction(L, drawtohud); lua_setglobal(L, "drawToHud");
 	lua_pushcfunction(L, killPlayer); lua_setglobal(L, "killPlayer");
