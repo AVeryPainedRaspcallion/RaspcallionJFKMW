@@ -51,8 +51,6 @@ void CompressOAM_Server() {
 	CurrentPacket << OAM_data_compressed_size;
 	CurrentPacket << OAM_Tiles_sent;
 	CurrentPacket.append(OAM_data_comp, OAM_data_compressed_size);
-
-	cout << OAM_data_compressed_size << " t: " << int(OAM_Tiles_sent) << endl;
 }
 
 //This decompresses the data on the client side.
@@ -66,8 +64,6 @@ void DecompressOAM_Player() {
 		CurrentPacket >> RAM_compressed[i];
 	}
 	LZ4_decompress_safe((char*)RAM_compressed, (char*)OAM_data_comp, CompressedSize, 0x10000);
-
-	cout << CompressedSize << " t: " << int(OAM_Tiles_amount_compressed) << endl;
 
 	//Fetch data
 	int CurrIndex = 0;
