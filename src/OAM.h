@@ -31,9 +31,8 @@ void CompressOAM_Server() {
 	uint_fast16_t OAM_Tiles_sent = 0;
 	uint_fast16_t OAM_Tiles_amount_compressed = uint_fast16_t(min(0xFFFF, OAM_Tiles.size()));
 	while(OAM_Tiles_sent < OAM_Tiles_amount_compressed) {
-		if (CurrIndex >= 0xFFF0) {
-			break;
-		}
+		//We don't want to pass the assigned buffer.
+		if (CurrIndex >= 0xFFF0) { break; }
 		OAMTile& T = OAM_Tiles[OAM_Tiles_sent]; uint_fast16_t X = uint_fast16_t(T.posx); uint_fast16_t Y = uint_fast16_t(T.posy);
 		RAM_compressed[CurrIndex++] = T.tile;
 		RAM_compressed[CurrIndex++] = T.size;
@@ -52,6 +51,8 @@ void CompressOAM_Server() {
 	CurrentPacket << OAM_data_compressed_size;
 	CurrentPacket << OAM_Tiles_sent;
 	CurrentPacket.append(OAM_data_comp, OAM_data_compressed_size);
+
+	cout << OAM_data_compressed_size << " t: " << int(OAM_Tiles_sent) << endl;
 }
 
 //This decompresses the data on the client side.
@@ -66,6 +67,8 @@ void DecompressOAM_Player() {
 	}
 	LZ4_decompress_safe((char*)RAM_compressed, (char*)OAM_data_comp, CompressedSize, 0x10000);
 
+	cout << CompressedSize << " t: " << int(OAM_Tiles_amount_compressed) << endl;
+
 	//Fetch data
 	int CurrIndex = 0;
 	if (OAM_Tiles.size() != OAM_Tiles_amount_compressed) {
@@ -73,12 +76,13 @@ void DecompressOAM_Player() {
 	}
 	for (uint_fast16_t i = 0; i < OAM_Tiles_amount_compressed; i++) {
 		OAMTile& T = OAM_Tiles[i];
-		T.tile = OAM_data_comp[CurrIndex++];
-		T.size = OAM_data_comp[CurrIndex++];
-		T.posx = OAM_data_comp[CurrIndex++] + Sint8(OAM_data_comp[CurrIndex++]) * 256;
-		T.posy = OAM_data_comp[CurrIndex++] + Sint8(OAM_data_comp[CurrIndex++]) * 256;
-		T.props = OAM_data_comp[CurrIndex++] + (OAM_data_comp[CurrIndex++] << 8);
-		T.rot = OAM_data_comp[CurrIndex++];
+		T.tile = OAM_data_comp[CurrIndex];
+		T.size = OAM_data_comp[CurrIndex + 1];
+		T.posx = OAM_data_comp[CurrIndex + 2] + Sint8(OAM_data_comp[CurrIndex + 3]) * 256;
+		T.posy = OAM_data_comp[CurrIndex + 4] + Sint8(OAM_data_comp[CurrIndex + 5]) * 256;
+		T.props = OAM_data_comp[CurrIndex + 6] + (OAM_data_comp[CurrIndex + 7] << 8);
+		T.rot = OAM_data_comp[CurrIndex + 8];
+		CurrIndex += 9;
 	}
 }
 #endif
