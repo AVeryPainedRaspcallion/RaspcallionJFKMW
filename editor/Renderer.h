@@ -24,11 +24,11 @@ void DrawButtonBar(bool isPressed, int icon, void* spwn, void* kill) {
 }
 
 
-void DrawLevelPart(int p) {
+void DrawLevelPart(int p, bool invert = false) {
 	if (p >= 0 && p < levelLData.size()) {
 		LevelObject& part = levelLData[p];
 
-		SrcR = { int((part.tile & 0xF) << 4), int((part.tile >> 4) << 4), 16, 16 };
+		SrcR = { int((part.tile & 0xF) << 4) + invert * 256, int((part.tile >> 4) << 4), 16, 16 };
 		DestR = { (part.x * hudScale) - camOffsetX, h - 22 - ((part.y + 1) * hudScale) + camOffsetY, hudScale, hudScale };
 
 		if (DestR.x >= (-part.size_x * hudScale) && DestR.y >= (-part.size_y * hudScale) && DestR.x < w && DestR.y < h) {
@@ -68,7 +68,7 @@ void Render() {
 		DrawLevelPart(i);
 	}
 	if (SelectedLevelPart > -1) {
-		DrawLevelPart(SelectedLevelPart);
+		DrawLevelPart(SelectedLevelPart, true);
 		getPartRecs(SelectedLevelPart);
 
 		SDL_SetRenderDrawColor(ren, 0, 255, 0, (MouseResizing || (CheckMouseInBounds(&blockarea) && !CheckMouseInBounds(&blockareares))) && win_focus ? 192 : 64);
