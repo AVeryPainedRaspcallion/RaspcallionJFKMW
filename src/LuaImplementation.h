@@ -142,6 +142,7 @@ static int pushOAM(lua_State* L) {
 	uint_fast8_t sx = lua_isnil(L, 8) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 8);
 	uint_fast8_t sy = lua_isnil(L, 9) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 9);
 	Create_OAMTile(tile, size, xpos, ypos, props, rot, sx, sy);
+	return 0;
 }
 static int pushParticle(lua_State* L) {
 	createParticle(
