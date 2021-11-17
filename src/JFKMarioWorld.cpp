@@ -66,8 +66,7 @@ namespace fs = std::filesystem;
 #include <SDL_mixer.h>
 
 //OPENGL
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <GL/glew.h>
 
 //LZ4
 #include "lz4.h"

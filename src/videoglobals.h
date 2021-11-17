@@ -73,6 +73,8 @@ GL_Texture screen_t_l1GL;
 SDL_Rect DestR;
 SDL_Rect SrcR;
 
+GLuint framebuffer;
+GL_Texture framebuffero;
 GL_Texture cached_l3_tilesGL[8];
 GL_Texture cached_spr_tilesGL[16];
 GL_Texture cached_bg_sprites[16];
@@ -135,7 +137,7 @@ void InitializeOpenGLViewport() {
 
     gContext = SDL_GL_CreateContext(win);
     if (gContext == NULL) {
-        cout << red << "[SDL] OpenGL context could not be created! SDL Error: " << SDL_GetError() << endl;
+        cout << red << "[SDL] OpenGL context could not be created! SDL Error: " << SDL_GetError() << endl; exit(1); return;
     }
     else {
         //Use Vsync
@@ -149,6 +151,11 @@ void InitializeOpenGLViewport() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        cout << red << "[GLEW] GLEW Init error!" << endl; exit(1); return;
+    }
+
     glOrtho(0, int_res_x, int_res_y, 0, -1, 1);
     glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -161,16 +168,30 @@ void InitializeOpenGLViewport() {
     SDL_Surface* surf = IMG_Load(path_s.c_str());
     ConvertSDLSurfaceToOpenGL(DefaultGLTexture, surf);
     SDL_FreeSurface(surf);
+
+    //Prepare framebuffer
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glGenRenderbuffers(1, &framebuffero);
+    glBindRenderbuffer(GL_RENDERBUFFER, framebuffero);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, int_res_x, int_res_y);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, framebuffero);
 }
 
 void OpenGLClear() {
-    DestR = { sp_offset_x, sp_offset_y, int(int_res_x * scale), int(int_res_y * scale) };
-    glViewport(DestR.x, DestR.y, DestR.w, DestR.h);
-    glClearColor(0.f, 0.f, 0.f, 1.f);
+    //Start FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glViewport(0, 0, int_res_x, int_res_y);
+    glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRedraw() {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, int_res_x, int_res_y, sp_offset_x, sp_offset_y, sp_offset_x + int_res_x * scale, sp_offset_y + int_res_y * scale,
+        GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
     SDL_GL_SwapWindow(win);
 }
 

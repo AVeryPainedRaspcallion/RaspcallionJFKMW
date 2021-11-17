@@ -147,7 +147,6 @@ public:
 
 	//Use this to kill the player.
 	void Die() {
-		return;
 		if (PlayerControlled) {
 			if (!DEAD) {
 				X_SPEED = 0;
