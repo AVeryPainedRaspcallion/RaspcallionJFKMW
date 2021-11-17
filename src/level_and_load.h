@@ -1,6 +1,6 @@
 #pragma once
 
-string GFX_Names[12] = {
+string GFX_Names[16] = {
 	"gfx_1",
 	"gfx_2",
 	"gfx_3",
@@ -12,10 +12,14 @@ string GFX_Names[12] = {
 	"sp_1",
 	"sp_2",
 	"sp_3",
-	"sp_4"
+	"sp_4",
+	"sp_5",
+	"sp_6",
+	"sp_7",
+	"sp_8"
 };
 
-int GFX_Locations[12] = {
+int GFX_Locations[16] = {
 	0,
 	1,
 	2,
@@ -27,7 +31,11 @@ int GFX_Locations[12] = {
 	12,
 	13,
 	14,
-	15
+	15,
+	16,
+	17,
+	18,
+	19
 };
 
 class LevelSprite {
@@ -353,8 +361,7 @@ public:
 		LoadLevelFromFile(Modpack + "/levels/" + int_to_hex(num) + "/level_data.txt", num);
 
 		deleteAssetCache();
-		for (int i = 0; i < 12; i++)
-		{
+		for (int i = 0; i < 16; i++) {
 			loadAssetRAM("Graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
 			loadAssetRAM(Modpack + "/levels/" + int_to_hex(num) + "/" + GFX_Names[i] + ".bin", GFX_Locations[i]);
 		}
