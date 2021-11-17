@@ -28,12 +28,12 @@ workspace "JFKMarioWorld"
 	
 	filter "platforms:Win*" 
 		system "windows"
-		links { "lua51", "SDL2", "SDL2_mixer", "SDL2_image", "opengl32", "winmm", "ws2_32" }
+		links { "lua51", "SDL2", "SDL2_mixer", "SDL2_image", "glew32", "glu32", "opengl32", "winmm", "ws2_32" }
 		defines { "_WIN32", "SFML_STATIC" }
 		
 	filter "platforms:Linux*" 
 		system "linux"
-		links { "dl", "luajit", "SDL2", "SDL2_mixer", "SDL2_image", "GL", "GLU", "sfml-system", "sfml-network" }
+		links { "dl", "luajit", "SDL2", "SDL2_mixer", "SDL2_image", "GL", "GLU", "GLEW", "sfml-system", "sfml-network" }
 		linkgroups "On" -- if you don't use this then the linker breaks (blame gcc for being shit)
 		defines { "__linux__" }
 		
@@ -42,7 +42,7 @@ project "JFKMarioWorld"
 	language "C++"
 	cppdialect "C++17"
 	targetdir "bin/%{cfg.buildcfg}"
-	includedirs { "libs", "libs/SDL/include", "libs/SDL_mixer", "libs/SDL_image", "libs/SFML/include", "libs/moonjit/src", "libs/lz4/lib" }
+	includedirs { "libs", "libs/SDL/include", "libs/SDL_mixer", "libs/SDL_image", "libs/glew-2.1.0/include", "libs/SFML/include", "libs/moonjit/src", "libs/lz4/lib" }
 	libdirs { "libs" }
 
 	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c", "libs/lz4/lib/lz4.c" }
