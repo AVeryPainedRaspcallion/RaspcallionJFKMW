@@ -512,7 +512,7 @@ void PreloadSPR() {
 	//This makes palette
 	ConvertPalette();
 
-	uint_fast8_t i, index, temporaryPixelBuffer[32768];
+	uint_fast8_t i, index, temporaryPixelBuffer[0x10000];
 	uint_fast32_t px;
 	for (uint_fast16_t tile_t = 0; tile_t < 0x200; tile_t++) {
 		memcpy(graphics_array, &VRAM[0xC000 + (tile_t << 5)], 32);
@@ -531,7 +531,7 @@ void PreloadSPR() {
 		rmask, gmask, bmask, amask);
 	for (uint_fast16_t e = 0; e < 256; e += 16) {
 		SDL_memset(cached_spr_surf->pixels, 0, cached_spr_surf->h * cached_spr_surf->pitch);
-		for (px = 0; px < 32768; px++) {
+		for (px = 0; px < 0x10000; px++) {
 			if (temporaryPixelBuffer[px]) {
 				*((Uint32*)(cached_spr_surf)->pixels + px) = palette_array[temporaryPixelBuffer[px] + e];
 			}
