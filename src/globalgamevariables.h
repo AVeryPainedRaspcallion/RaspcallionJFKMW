@@ -41,8 +41,8 @@ bool multichannel_sounds = false;
 string midi_patchset = "NONE";
 
 //RAM sizes.
-#define RAM_Size 0x30000
-#define VRAM_Size 0x10000
+#define RAM_Size 0x40000
+#define VRAM_Size 0x20000
 #define VRAM_Location 0x20000
 #define VRAM_Convert(x) VRAM_Location+x
 #define LEVEL_DECAY_SIZE 0x8000
