@@ -84,8 +84,8 @@ void renderPlayers(bool D) {
 				int_fast16_t y_position = int_fast16_t(CurrentMario.y + 24);
 				for (int e = 0; e < OAMGroupSorted[5].size(); e++) {
 					OAMTile& T = OAM_Tiles[OAMGroupSorted[5][e]];
-					if (T.rot == i) {
-						draw_tile_custom(T.posx + x_position - CameraX, -y_position - T.posy + CameraY + int_res_y, T.size, 0, T.tile + ((T.props & 16) << 4), T.props);
+					if (T.rotation == i) {
+						draw_tile_custom(T.pos_x + x_position - CameraX, -y_position - T.pos_y + CameraY + int_res_y, T.bsize, 0, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
 					}
 				}
 
@@ -107,11 +107,13 @@ void draw_number_dec(uint_fast8_t pos_x, uint_fast8_t pos_y, int number, uint_fa
 }
 
 //OAM Renderer
-#define renderOamGroup(priority) if (drawSprites) { \
-	for (int i = 0; i < OAMGroupSorted[priority].size(); i++) { \
-		OAMTile& T = OAM_Tiles[OAMGroupSorted[priority][i]]; \
-		draw_tile_custom(T.posx - CameraX, int_fast16_t(int_res_y) - T.posy - 32 + CameraY, T.size, T.rot, T.tile + ((T.props & 16) << 4), T.props); \
-	} \
+void renderOamGroup(int priority) {
+	if (drawSprites) {
+		for (int i = 0; i < OAMGroupSorted[priority].size(); i++) {
+			OAMTile& T = OAM_Tiles[OAMGroupSorted[priority][i]];
+			draw_tile_custom(T.pos_x - CameraX, int_fast16_t(int_res_y) - T.pos_y - 32 + CameraY, T.bsize, T.rotation, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
+		}
+	}
 }
 
 void drawBackground() {
@@ -597,7 +599,7 @@ void handleRenderingForPlayer(int player)
 	if (drawSprites) {
 		for (int i = 0; i < OAMGroupSorted[4].size(); i++) {
 			OAMTile& T = OAM_Tiles[OAMGroupSorted[4][i]];
-			draw_tile_custom(T.posx + (int_res_x - 256) / 2, T.posy, T.size, T.rot, T.tile + ((T.props & 16) << 4), T.props);
+			draw_tile_custom(T.pos_x + (int_res_x - 256) / 2, T.pos_y, T.bsize, T.rotation, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
 		}
 	}
 
@@ -620,15 +622,8 @@ void handleRenderingForPlayer(int player)
 		
 	}
 
+	//Debug CPU meter
 	if (drawDiag) {
-		draw_tile_custom(0, blocks_on_screen / 4, 0, 0, 0x31, 0xC);
-#ifdef WIN32
-		PROCESS_MEMORY_COUNTERS memCounter;
-		BOOL result = K32GetProcessMemoryInfo(GetCurrentProcess(), &memCounter, sizeof(memCounter));
-		uint_fast8_t virtualMemUsedByMe = uint_fast8_t(memCounter.WorkingSetSize / 1048576);
-		draw_tile_custom(0, virtualMemUsedByMe, 0, 0, 0x31, 0xB);
-#endif
-
 		draw_tile_custom(0, int((total_time_ticks.count() * 1000.0) * 16.0), 0, 0, 0x31, 0xA);
 	}
 

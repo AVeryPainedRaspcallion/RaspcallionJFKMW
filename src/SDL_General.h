@@ -227,9 +227,7 @@ void draw8x8_tile_f(int_fast16_t x, int_fast16_t y, uint_fast16_t tile, uint_fas
 	x += (!flipx) * 7; y += flipy * 7; palette = palette << 4;	tile = tile << 5;
 	uint_fast8_t color1, i, index;
 	memcpy(graphics_array, &VRAM[tile], 32);
-
-	for (index = 0; index < 16; index+=2)
-	{
+	for (index = 0; index < 16; index+=2) {
 		for (i = 0; i < 8; i++) {
 			color1 =
 				((graphics_array[0 + index] >> i) & 1) +
@@ -248,6 +246,7 @@ void draw8x8_tile_f(int_fast16_t x, int_fast16_t y, uint_fast16_t tile, uint_fas
 	}
 }
 
+//2bpp
 void draw8x8_tile_2bpp(int_fast16_t x, int_fast16_t y, uint_fast8_t tile, uint_fast16_t palette_offs) {
 	if (tile > 0x7f) {
 		return;
@@ -263,27 +262,19 @@ void draw8x8_tile_2bpp(int_fast16_t x, int_fast16_t y, uint_fast8_t tile, uint_f
 	RenderCopyOpenGLEx(&SrcR, &DestR, cached_l3_tilesGL[palette_offs & 0x7], 128, 64);
 }
 
-void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fast8_t rot, uint_fast16_t tile, uint_fast8_t palette) {
+//OAM Drawer
+void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fast8_t rot, uint_fast16_t tile, uint_fast16_t props, uint_fast8_t sx = 0x20, uint_fast8_t sy = 0x20) {
 	uint_fast8_t size_x = (size & 0xF) + 1;
 	uint_fast8_t size_y = (size >> 4) + 1;
-	DestR.x = x;
-	DestR.y = y;
-	DestR.w = size_x << 3; //Same bs as above.
-	DestR.h = size_y << 3;
-	if (DestR.x > -DestR.w && DestR.x < int(int_res_x) && DestR.y > -DestR.h && DestR.y < int(int_res_y))
-	{
+	DestR.x = x; DestR.y = y;
+	DestR.w = size_x << 3; DestR.h = size_y << 3;
+	if (DestR.x > -DestR.w && DestR.x < int(int_res_x) && DestR.y > -DestR.h && DestR.y < int(int_res_y)) {
 		SrcR.x = (tile << 3) & 0x7F;
 		SrcR.y = ((tile >> 4) << 3) & 0xFF;
-		SrcR.w = size_x << 3;
-		SrcR.h = size_y << 3;
-		if (palette & 0x20) {
-			DestR.x += size_x << 3;
-			DestR.w *= -1;
-		}
-		if (palette & 0x40) {
-			DestR.y += size_y << 3;
-			DestR.h *= -1;
-		}
-		RenderCopyOpenGLEx(&SrcR, &DestR, cached_spr_tilesGL[palette & 0xF], 128, 256, (float(rot) / 256.f) * 360.f);
+		SrcR.w = DestR.w;
+		SrcR.h = DestR.h;
+		if (props & 0x10) { DestR.x += DestR.w; DestR.w *= -1; }
+		if (props & 0x20) { DestR.y += DestR.h; DestR.h *= -1; }
+		RenderCopyOpenGLEx(&SrcR, &DestR, cached_spr_tilesGL[props & 0xF], 128, 256, (float(rot) / 256.f) * 360.f);
 	}
 }

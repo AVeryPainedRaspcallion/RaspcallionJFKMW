@@ -628,14 +628,16 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 
 //OAM Definition
 struct OAMTile {
-	uint_fast8_t tile = 0;
-	uint_fast8_t size = 0;
-	int_fast16_t posx = 0;
-	int_fast16_t posy = 0;
-	uint_fast16_t props = 0;
-	uint_fast8_t rot = 0;
+	//pos
+	int_fast16_t pos_x = 0;
+	int_fast16_t pos_y = 0;
+	uint_fast8_t tile = 0; //expanded by props
+	uint_fast8_t bsize = 0x00; //YYYYXXXX
+	uint_fast16_t props = 0; //--MAFSRR CCYXPPPP
+	uint_fast8_t rotation = 0; //0-255, 64 = 90*
+	uint_fast8_t scale_x = 0x20; //0x20 = 1x, 0x10 = 2x, 0x40 = 0.5x
+	uint_fast8_t scale_y = 0x20;
 };
-
 vector<OAMTile> OAM_Tiles;
 
 //Gamemode init
