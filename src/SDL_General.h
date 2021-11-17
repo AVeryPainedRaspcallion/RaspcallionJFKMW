@@ -270,7 +270,7 @@ void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fa
 	DestR.w = size_x << 3; DestR.h = size_y << 3;
 	if (DestR.x > -DestR.w && DestR.x < int(int_res_x) && DestR.y > -DestR.h && DestR.y < int(int_res_y)) {
 		SrcR.x = (tile << 3) & 0x7F;
-		SrcR.y = ((tile >> 4) << 3) & 0xFF;
+		SrcR.y = (tile >> 4) << 3;
 		SrcR.w = DestR.w;
 		SrcR.h = DestR.h;
 		if (props & 0x10) { DestR.x += DestR.w; DestR.w *= -1; }
@@ -280,7 +280,7 @@ void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fa
 			DestR.h *= 0x20; DestR.h /= max(1, sy);
 		}
 		if (props & 0x1000) { glBlendFunc(GL_ONE, GL_ONE); }
-		RenderCopyOpenGLEx(&SrcR, &DestR, cached_spr_tilesGL[props & 0xF], 128, 256, (float(rot) / 256.f) * 360.f);
+		RenderCopyOpenGLEx(&SrcR, &DestR, cached_spr_tilesGL[props & 0xF], 128, 512, (float(rot) / 256.f) * 360.f);
 		if (props & 0x1000) { glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); }
 	}
 }

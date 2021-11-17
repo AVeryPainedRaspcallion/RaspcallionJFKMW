@@ -527,7 +527,7 @@ void PreloadSPR() {
 	}
 
 	//Create a surface, only needed once
-	SDL_Surface* cached_spr_surf = SDL_CreateRGBSurface(0, 128, 256, 32,
+	SDL_Surface* cached_spr_surf = SDL_CreateRGBSurface(0, 128, 512, 32,
 		rmask, gmask, bmask, amask);
 	for (uint_fast16_t e = 0; e < 256; e += 16) {
 		SDL_memset(cached_spr_surf->pixels, 0, cached_spr_surf->h * cached_spr_surf->pitch);
