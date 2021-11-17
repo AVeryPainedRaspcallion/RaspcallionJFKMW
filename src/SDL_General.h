@@ -275,6 +275,10 @@ void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fa
 		SrcR.h = DestR.h;
 		if (props & 0x10) { DestR.x += DestR.w; DestR.w *= -1; }
 		if (props & 0x20) { DestR.y += DestR.h; DestR.h *= -1; }
+		if (props & 0x2000) {
+			DestR.w *= 0x20; DestR.w /= sx;
+			DestR.h *= 0x20; DestR.h /= sy;
+		}
 		RenderCopyOpenGLEx(&SrcR, &DestR, cached_spr_tilesGL[props & 0xF], 128, 256, (float(rot) / 256.f) * 360.f);
 	}
 }
