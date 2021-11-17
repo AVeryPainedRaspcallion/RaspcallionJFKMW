@@ -137,7 +137,7 @@ static int pushOAM(lua_State* L) {
 	}
 	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 4);
 	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 5);
-	uint_fast16_t props = (uint_fast8_t)lua_tonumber(L, 6);
+	uint_fast16_t props = (uint_fast16_t)lua_tonumber(L, 6);
 	uint_fast8_t rot = lua_isnil(L, 7) ? 0 : (uint_fast8_t)lua_tonumber(L, 7);
 	uint_fast8_t sx = lua_isnil(L, 8) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 8);
 	uint_fast8_t sy = lua_isnil(L, 9) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 9);

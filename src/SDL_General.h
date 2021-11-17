@@ -276,8 +276,8 @@ void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fa
 		if (props & 0x10) { DestR.x += DestR.w; DestR.w *= -1; }
 		if (props & 0x20) { DestR.y += DestR.h; DestR.h *= -1; }
 		if (props & 0x2000) {
-			DestR.w *= 0x20; DestR.w /= sx;
-			DestR.h *= 0x20; DestR.h /= sy;
+			DestR.w *= 0x20; DestR.w /= max(1, sx);
+			DestR.h *= 0x20; DestR.h /= max(1, sy);
 		}
 		if (props & 0x1000) { glBlendFunc(GL_ONE, GL_ONE); }
 		RenderCopyOpenGLEx(&SrcR, &DestR, cached_spr_tilesGL[props & 0xF], 128, 256, (float(rot) / 256.f) * 360.f);

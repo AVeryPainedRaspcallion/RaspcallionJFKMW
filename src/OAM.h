@@ -6,7 +6,7 @@ void Clear_OAM() {
 	CurrentSlot = 0;
 }
 
-void Create_OAMTile(uint_fast8_t tile, uint_fast8_t size, int_fast16_t posx, int_fast16_t posy, uint_fast16_t props, uint_fast8_t rot = 0, uint_fast8_t sx = 0x2, uint_fast8_t sy = 0x20) {
+void Create_OAMTile(uint_fast8_t tile, uint_fast8_t size, int_fast16_t posx, int_fast16_t posy, uint_fast16_t props, uint_fast8_t rot = 0, uint_fast8_t sx = 0x20, uint_fast8_t sy = 0x20) {
 	if (CurrentSlot >= OAM_Tiles.size()) {
 		//Create a new tile if we ran out of OAM slots..
 		OAM_Tiles.push_back(OAMTile{ posx, posy, tile, size, props, rot, sx, sy });
