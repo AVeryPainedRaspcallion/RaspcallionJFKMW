@@ -55,58 +55,108 @@ static int lua_spawn_sprite(lua_State* L) {
 	return 1;
 }
 
-static int draw_to_oam(lua_State* L) {
-	uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
-	if (!(RAM[0x2A80 + sprite_index] & 2)) {
-		return 0;
-	}
-	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 2);
-	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 3);
-	uint_fast8_t angle = (uint_fast8_t)lua_tonumber(L, 4);
-	int offset_x = (int)lua_tonumber(L, 5);
-	int offset_y = (int)lua_tonumber(L, 6);
-	uint_fast16_t pal = (uint_fast16_t)lua_tonumber(L, 7);
-	uint_fast16_t sprite_x_position = uint_fast16_t(int(offset_x + RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256));
-	uint_fast16_t sprite_y_position = uint_fast16_t(int(offset_y + RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256));
-
-	Create_OAMTile(tile, size, sprite_x_position, sprite_y_position, pal, angle);
+/*
+	TO-DO: Deprecate (and remove eventually)
+*/
+uint_fast16_t convertOldProps(uint_fast16_t props) {
+	return (props & 0xF) +
+		((props & 0x10) << 2) +
+		((props & 0x60) >> 1) +
+		((props & 0x780) << 1);
+}
+static int createParticleHook(lua_State* L) {
+	uint_fast8_t tile = (uint_fast8_t)lua_tointeger(L, 1);
+	uint_fast8_t size = (uint_fast8_t)lua_tointeger(L, 2);
+	uint_fast8_t prop = (uint_fast8_t)lua_tointeger(L, 3);
+	uint_fast8_t anim_type = (uint_fast8_t)lua_tointeger(L, 4);
+	double x = (double)lua_tonumber(L, 5);
+	double y = (double)lua_tonumber(L, 6);
+	double sx = (double)lua_tonumber(L, 7);
+	double sy = (double)lua_tonumber(L, 8);
+	double grav = (double)lua_tonumber(L, 9);
+	int start_time = (int)lua_tointeger(L, 10);
+	int delete_time = (int)lua_tointeger(L, 11);
+	createParticle(tile, size, convertOldProps(prop), anim_type, x, y, sx, sy, grav, start_time, delete_time);
 	return 0;
 }
-
 static int slideDeathHandler(lua_State* L) {
 	uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
 	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 2);
 	uint_fast8_t flags = (uint_fast8_t)lua_tonumber(L, 3);
-	int offset_x = (int)lua_tonumber(L, 4);
-	int offset_y = (int)lua_tonumber(L, 5);
-
-	uint_fast16_t sprite_x_position = uint_fast16_t(int(RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256)) + offset_x;
-	uint_fast16_t sprite_y_position = uint_fast16_t(int(RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256)) + offset_y;
-
+	int_fast16_t offset_x = (int_fast16_t)lua_tonumber(L, 4) + RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256;
+	int_fast16_t offset_y = (int_fast16_t)lua_tonumber(L, 5) + RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256;
 	double sy = Calculate_Speed(512);
-	double sx = -int_fast8_t(RAM[0x2680 + sprite_index]) / (1.0 + double(RAM[0x85])*0.25);
-
-	createParticle(tile, 0x11, flags, 0xFF, sprite_x_position, sprite_y_position, sx, sy, Calculate_Speed(48 / (1 + RAM[0x85])), 0, 0, RAM[0x85] ? -1 : -4);
-
-	//Hitspark
-	createParticle(0x60, 0x11, 0x88, 5, sprite_x_position, sprite_y_position, 0, 0, 0);
-
+	double sx = -int_fast8_t(RAM[0x2680 + sprite_index]) / (1.0 + double(RAM[0x85]) * 0.25);
+	createParticle(tile, 0x11, convertOldProps(flags), 0xFF, offset_x, offset_y, sx, sy, Calculate_Speed(48 / (1 + RAM[0x85])), 0, 0, RAM[0x85] ? -1 : -4);
+	createParticle(0x60, 0x11, convertOldProps(0x88), 5, offset_x, offset_y, 0, 0, 0);
 	return 0;
 }
-
 static int spriteDeathParticle(lua_State* L) {
 	uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
 	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 2);
 	uint_fast8_t flags = (uint_fast8_t)lua_tonumber(L, 3);
 	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 4);
-	int offset_x = (int)lua_tonumber(L, 5);
-	int offset_y = (int)lua_tonumber(L, 6);
+	int_fast16_t offset_x = (int_fast16_t)lua_tonumber(L, 5) + RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256;
+	int_fast16_t offset_y = (int_fast16_t)lua_tonumber(L, 6) + RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256;
+	createParticle(tile, size, convertOldProps(flags), 0xFF, offset_x, offset_y, 0, 0, Calculate_Speed(48), 0, 0, -4);
+	return 0;
+}
+static int draw_to_oam(lua_State* L) {
+	uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
+	if (!(RAM[0x2A80 + sprite_index] & 2)) { return 0; }
+	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 2);
+	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 3);
+	uint_fast8_t angle = (uint_fast8_t)lua_tonumber(L, 4);
+	int_fast16_t offset_x = ((int_fast16_t)lua_tonumber(L, 5)) + RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256;
+	int_fast16_t offset_y = ((int_fast16_t)lua_tonumber(L, 6)) + RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256;
+	uint_fast16_t pal = (uint_fast16_t)lua_tonumber(L, 7);
+	Create_OAMTile(tile, size, offset_x, offset_y, convertOldProps(pal), angle);
+	return 0;
+}
+static int draw_to_oam_direct(lua_State* L) {
+	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 1);
+	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 2);
+	uint_fast8_t angle = (uint_fast8_t)lua_tonumber(L, 3);
+	int_fast16_t sprite_x_position = (int_fast16_t)lua_tonumber(L, 4);
+	int_fast16_t sprite_y_position = (int_fast16_t)lua_tonumber(L, 5);
+	uint_fast16_t pal = (uint_fast16_t)lua_tonumber(L, 6);
+	Create_OAMTile(tile, size, sprite_x_position, sprite_y_position, convertOldProps(pal), angle);
+	return 0;
+}
+/*
+	TO-DO: Deprecate (and remove eventually)
+*/
 
-	uint_fast16_t sprite_x_position = uint_fast16_t(int(RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256)) + offset_x;
-	uint_fast16_t sprite_y_position = uint_fast16_t(int(RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256)) + offset_y;
-
-	createParticle(tile, size, flags, 0xFF, sprite_x_position, sprite_y_position, 0, 0, Calculate_Speed(48), 0, 0, -4);
-
+static int pushOAM(lua_State* L) {
+	int_fast16_t xpos = (int_fast16_t)lua_tonumber(L, 2);
+	int_fast16_t ypos = (int_fast16_t)lua_tonumber(L, 3);
+	if (!lua_isnil(L, 1)) {
+		uint_fast8_t sprite_index = (uint_fast8_t)lua_tonumber(L, 1);
+		xpos += RAM[0x2100 + sprite_index] + int_fast8_t(RAM[0x2180 + sprite_index]) * 256;
+		ypos += RAM[0x2280 + sprite_index] + int_fast8_t(RAM[0x2300 + sprite_index]) * 256;
+	}
+	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 4);
+	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 5);
+	uint_fast16_t props = (uint_fast8_t)lua_tonumber(L, 6);
+	uint_fast8_t rot = (uint_fast8_t)lua_tonumber(L, 7);
+	uint_fast8_t sx = lua_isnil(L, 8) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 8);
+	uint_fast8_t sy = lua_isnil(L, 9) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 9);
+	Create_OAMTile(tile, size, xpos, ypos, props, rot, sx, sy);
+}
+static int pushParticle(lua_State* L) {
+	createParticle(
+		(uint_fast8_t)lua_tointeger(L, 1), //Tile
+		(uint_fast8_t)lua_tointeger(L, 2), //Size
+		(uint_fast16_t)lua_tointeger(L, 3), //Props
+		(uint_fast8_t)lua_tointeger(L, 4), //Anim Type
+		(double)lua_tonumber(L, 5), //X
+		(double)lua_tonumber(L, 6), //Y
+		(double)lua_tonumber(L, 7), //SX
+		(double)lua_tonumber(L, 8), //SY
+		(double)lua_tonumber(L, 9), //GRAV
+		(int)lua_tointeger(L, 10), //START_T
+		(int)lua_tointeger(L, 11) //DELETE_T
+	);
 	return 0;
 }
 
@@ -124,17 +174,6 @@ static int setSpriteY(lua_State* L) {
 	RAM[0x2280 + sprite_index] = uint_fast8_t(newPosY);
 	RAM[0x2300 + sprite_index] = uint_fast8_t(newPosY / 256.0) - (newPosY < 0);
 	RAM[0x2380 + sprite_index] = uint_fast8_t(newPosY * 256.0);
-	return 0;
-}
-
-static int draw_to_oam_direct(lua_State* L) {
-	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 1);
-	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 2);
-	uint_fast8_t angle = (uint_fast8_t)lua_tonumber(L, 3);
-	uint_fast16_t sprite_x_position = (uint_fast16_t)lua_tonumber(L, 4);
-	uint_fast16_t sprite_y_position = (uint_fast16_t)lua_tonumber(L, 5);
-	uint_fast16_t pal = (uint_fast16_t)lua_tonumber(L, 6);
-	Create_OAMTile(tile, size, sprite_x_position, sprite_y_position, pal, angle);
 	return 0;
 }
 
@@ -216,22 +255,6 @@ static int setPlayerState(lua_State* L) {
 	return 0;
 }
 
-static int createParticleHook(lua_State* L) {
-	uint_fast8_t tile = (uint_fast8_t)lua_tointeger(L, 1);
-	uint_fast8_t size = (uint_fast8_t)lua_tointeger(L, 2);
-	uint_fast8_t prop = (uint_fast8_t)lua_tointeger(L, 3);
-	uint_fast8_t anim_type = (uint_fast8_t)lua_tointeger(L, 4);
-	double x = (double)lua_tonumber(L, 5);
-	double y = (double)lua_tonumber(L, 6);
-	double sx = (double)lua_tonumber(L, 7);
-	double sy = (double)lua_tonumber(L, 8);
-	double grav = (double)lua_tonumber(L, 9);
-	int start_time = (int)lua_tointeger(L, 10);
-	int delete_time = (int)lua_tointeger(L, 11);
-	createParticle(tile, size, prop, anim_type, x, y, sx, sy, grav, start_time, delete_time);
-	return 0;
-}
-
 static int discordMessageHook(lua_State* L) {
 	if (!networking) { return 0; }
 	string text = (string)lua_tostring(L, 1);
@@ -302,16 +325,11 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, lua_write); lua_setglobal(L, "marioPrint");
 	lua_pushcfunction(L, lua_write_ram); lua_setglobal(L, "asmWrite");
 	lua_pushcfunction(L, lua_spawn_sprite); lua_setglobal(L, "spawnSprite");
-	lua_pushcfunction(L, draw_to_oam); lua_setglobal(L, "drawOam");
-	lua_pushcfunction(L, draw_to_oam_direct); lua_setglobal(L, "drawOamDirect");
 	lua_pushcfunction(L, jfkmw_require); lua_setglobal(L, "require");
 	lua_pushcfunction(L, drawtohud); lua_setglobal(L, "drawToHud");
 	lua_pushcfunction(L, killPlayer); lua_setglobal(L, "killPlayer");
 	lua_pushcfunction(L, damagePlayer); lua_setglobal(L, "damagePlayer");
 	lua_pushcfunction(L, setPlayerState); lua_setglobal(L, "setPlayerState");
-	lua_pushcfunction(L, createParticleHook); lua_setglobal(L, "createParticle");
-	lua_pushcfunction(L, slideDeathHandler); lua_setglobal(L, "deathBySlide");
-	lua_pushcfunction(L, spriteDeathParticle); lua_setglobal(L, "deathByJump");
 	lua_pushcfunction(L, discordMessageHook); lua_setglobal(L, "discordMessage");
 	lua_pushcfunction(L, lua_jfkmwostime); lua_setglobal(L, "jfkmwOSTime");
 	lua_pushcfunction(L, setSpriteX); lua_setglobal(L, "setSpriteX");
@@ -321,6 +339,17 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, clearStatusBar); lua_setglobal(L, "clearStatusBar");
 	lua_pushcfunction(L, lua_addscore); lua_setglobal(L, "addScore");
 	lua_pushcfunction(L, bitmapTo4Bpp); lua_setglobal(L, "bitmapTo4Bpp");
+
+	lua_pushcfunction(L, pushOAM); lua_setglobal(L, "pushOAM");
+	lua_pushcfunction(L, pushParticle); lua_setglobal(L, "pushParticle");
+
+	//Deprecated
+	lua_pushcfunction(L, createParticleHook); lua_setglobal(L, "createParticle");
+	lua_pushcfunction(L, slideDeathHandler); lua_setglobal(L, "deathBySlide");
+	lua_pushcfunction(L, spriteDeathParticle); lua_setglobal(L, "deathByJump");
+	lua_pushcfunction(L, draw_to_oam); lua_setglobal(L, "drawOam");
+	lua_pushcfunction(L, draw_to_oam_direct); lua_setglobal(L, "drawOamDirect");
+
 	lua_register(L, "asmRead", lua_get_ram);
 	lua_register(L, "charToSmw", lua_chartosmw);
 	lua_register(L, "getPlayerX", getPlayerX);
@@ -329,6 +358,7 @@ void lua_connect_functions(lua_State* L) {
 	lua_register(L, "getSpriteY", getSpriteY);
 	lua_register(L, "asmCheckBit", lua_checkbit);
 	lua_register(L, "getPlayerUsername", lua_get_username);
+
 }
 
 //LUA General

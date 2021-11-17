@@ -180,7 +180,7 @@ void handleRenderingForPlayer(int player)
 	//Sort OAM
 	for (int i = 0; i < 6; i++) { if (OAMGroupSorted[i].size() > 0) { OAMGroupSorted[i].clear(); } }
 	for (int i = 0; i < OAM_Tiles.size(); i++) {
-		OAMGroupSorted[OAM_Tiles[i].props & 0x400 ? 5 : min(4, (OAM_Tiles[i].props >> 7) & 7)].push_back(i);
+		OAMGroupSorted[OAM_Tiles[i].props & 0x800 ? 5 : min(4, (OAM_Tiles[i].props >> 8) & 7)].push_back(i);
 	}
 
 	//Transition and shit

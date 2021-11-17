@@ -5,7 +5,7 @@ class Particle
 public:
 	uint_fast8_t spr_tile = 0;
 	uint_fast8_t spr_size = 0x11;
-	uint_fast8_t pal_props = 0;
+	uint_fast16_t pal_props = 0;
 	uint_fast8_t special_animation_type = 0;
 	double spr_x = 0;
 	double spr_y = 0;
@@ -29,27 +29,27 @@ public:
 			{
 			case 0:
 				spr_tile = 0x3D;
-				pal_props = 0x88;
+				pal_props = 0x108;
 				break;
 			case 1:
 				spr_tile = 0x3C;
-				pal_props = 0x88;
+				pal_props = 0x108;
 				break;
 			case 2:
 				spr_tile = 0x3C;
-				pal_props = 0xA8;
+				pal_props = 0x118;
 				break;
 			case 3:
 				spr_tile = 0x3C;
-				pal_props = 0xE8;
+				pal_props = 0x138;
 				break;
 			case 4:
 				spr_tile = 0x3C;
-				pal_props = 0xC8;
+				pal_props = 0x128;
 				break;
 			case 5:
 				spr_tile = 0x3D;
-				pal_props = 0xC8;
+				pal_props = 0x128;
 				break;
 			}
 			break;
@@ -57,27 +57,21 @@ public:
 				Coin spark
 			*/
 		case 2:
-			pal_props = 0x88;
-			if (t < 0)
-			{
+			pal_props = 0x108;
+			if (t < 0) {
 				spr_tile = 0;
 			}
-			else
-			{
-				if ((t >> 3) == 0)
-				{
+			else {
+				if ((t >> 3) == 0) {
 					spr_tile = 0x7D;
 				}
-				if ((t >> 3) == 1)
-				{
+				if ((t >> 3) == 1) {
 					spr_tile = 0x7C;
 				}
-				if ((t >> 3) == 2)
-				{
+				if ((t >> 3) == 2) {
 					spr_tile = 0x76;
 				}
-				if (t > 15)
-				{
+				if (t > 15) {
 					to_del = true;
 				}
 			}
@@ -86,11 +80,9 @@ public:
 				Player skid
 			*/
 		case 3:
-			pal_props = 0x88;
+			pal_props = 0x108;
 			spr_tile = 0x62 + ((t >> 2) << 1);
-
-			if (t > 10)
-			{
+			if (t > 10) {
 				to_del = true;
 			}
 
@@ -99,7 +91,7 @@ public:
 				Smoke
 			*/
 		case 4:
-			pal_props = 0x88;
+			pal_props = 0x108;
 			spr_tile = 0x60 + ((t >> 3) << 1);
 			spr_size = 0x11;
 
@@ -113,14 +105,11 @@ public:
 				Hit spark
 			*/
 		case 5:
-			pal_props = 0x88;
 			spr_tile = 0x44;
 			spr_size = 0x11;
+			pal_props = 0x108 | (((t / 2) % 2) * 0x10);
 
-			pal_props = 0x88 | (((t / 2) % 2) * 0x20);
-
-			if (t > 8)
-			{
+			if (t > 8) {
 				to_del = true;
 			}
 
@@ -133,27 +122,27 @@ public:
 			{
 			case 0:
 				spr_tile = 0x3D;
-				pal_props = 0x80;
+				pal_props = 0x100;
 				break;
 			case 1:
 				spr_tile = 0x3C;
-				pal_props = 0x80;
+				pal_props = 0x100;
 				break;
 			case 2:
 				spr_tile = 0x3C;
-				pal_props = 0xA0;
+				pal_props = 0x110;
 				break;
 			case 3:
 				spr_tile = 0x3C;
-				pal_props = 0xE0;
+				pal_props = 0x130;
 				break;
 			case 4:
 				spr_tile = 0x3C;
-				pal_props = 0xC0;
+				pal_props = 0x120;
 				break;
 			case 5:
 				spr_tile = 0x3D;
-				pal_props = 0xC0;
+				pal_props = 0x120;
 				break;
 			}
 			pal_props += 8 + (t & 7);
@@ -186,7 +175,7 @@ public:
 				Stars
 			*/
 		case 9:
-			pal_props = 0x8B;
+			pal_props = 0x10B;
 			spr_tile = 0x4C + ((t >> 2) << 4);
 
 			if (t > 10)
@@ -199,7 +188,7 @@ public:
 			Smoke
 		*/
 		case 10:
-			pal_props = 0x88;
+			pal_props = 0x108;
 			spr_tile = 0x62 + ((t >> 3) << 1);
 			spr_size = 0x11;
 			spr_sx = spr_sx * -1.1;
@@ -229,8 +218,7 @@ public:
 		spr_y += spr_sy;
 		t++;
 
-		if (!spr_tile)
-		{
+		if (!spr_tile) {
 			return;
 		}
 		int_fast16_t s_x = int_fast16_t(spr_x);
@@ -241,7 +229,7 @@ public:
 };
 vector<Particle> particles;
 
-void createParticle(uint_fast8_t t, uint_fast8_t size, uint_fast8_t prop, uint_fast8_t anim_type, double x, double y, double sx, double sy, double grav, int tt = 0, int t_del = 0, double max_y_speed = 0)
+void createParticle(uint_fast8_t t, uint_fast8_t size, uint_fast16_t prop, uint_fast8_t anim_type, double x, double y, double sx, double sy, double grav, int tt = 0, int t_del = 0, double max_y_speed = 0)
 {
 	if (isClient) { return; } //Only server and singleplayer can create particles.
 	particles.push_back(Particle{ t, size, prop, anim_type, x, y, sx, sy, grav, tt, false, t_del, max_y_speed});
