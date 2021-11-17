@@ -138,7 +138,7 @@ static int pushOAM(lua_State* L) {
 	uint_fast8_t tile = (uint_fast8_t)lua_tonumber(L, 4);
 	uint_fast8_t size = (uint_fast8_t)lua_tonumber(L, 5);
 	uint_fast16_t props = (uint_fast8_t)lua_tonumber(L, 6);
-	uint_fast8_t rot = (uint_fast8_t)lua_tonumber(L, 7);
+	uint_fast8_t rot = lua_isnil(L, 7) ? 0 : (uint_fast8_t)lua_tonumber(L, 7);
 	uint_fast8_t sx = lua_isnil(L, 8) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 8);
 	uint_fast8_t sy = lua_isnil(L, 9) ? 0x20 : (uint_fast8_t)lua_tonumber(L, 9);
 	Create_OAMTile(tile, size, xpos, ypos, props, rot, sx, sy);
@@ -155,8 +155,8 @@ static int pushParticle(lua_State* L) {
 		(double)lua_tonumber(L, 7), //SX
 		(double)lua_tonumber(L, 8), //SY
 		(double)lua_tonumber(L, 9), //GRAV
-		(int)lua_tointeger(L, 10), //START_T
-		(int)lua_tointeger(L, 11) //DELETE_T
+		lua_isnil(L, 10) ? 0 : (int)lua_tointeger(L, 10), //START_T
+		lua_isnil(L, 11) ? 0 : (int)lua_tointeger(L, 11) //DELETE_T
 	);
 	return 0;
 }
