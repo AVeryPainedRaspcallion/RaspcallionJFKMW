@@ -263,12 +263,6 @@ static int discordMessageHook(lua_State* L) {
 	return 0;
 }
 
-static int bitmapTo4Bpp(lua_State* L) {
-	int dest = (int)lua_tointeger(L, 2);
-	CCDMA_Bitmap4BPP((int)lua_tointeger(L, 1), dest, (int)lua_tointeger(L, 3), (int)lua_tointeger(L, 4), (bool)lua_toboolean(L, 5));
-	return 0;
-}
-
 extern "C" {
 int getPlayerX(lua_State* L) {
 	int plr = (int)lua_tointeger(L, 1); plr--;
@@ -339,7 +333,6 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, loadNewAsset); lua_setglobal(L, "loadLevelAsset");
 	lua_pushcfunction(L, clearStatusBar); lua_setglobal(L, "clearStatusBar");
 	lua_pushcfunction(L, lua_addscore); lua_setglobal(L, "addScore");
-	lua_pushcfunction(L, bitmapTo4Bpp); lua_setglobal(L, "bitmapTo4Bpp");
 
 	lua_pushcfunction(L, pushOAM); lua_setglobal(L, "pushOAM");
 	lua_pushcfunction(L, pushParticle); lua_setglobal(L, "pushParticle");

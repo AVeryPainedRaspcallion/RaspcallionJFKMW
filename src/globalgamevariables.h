@@ -514,7 +514,7 @@ void PreloadSPR() {
 
 	uint_fast8_t i, index, temporaryPixelBuffer[0x10000];
 	uint_fast32_t px;
-	for (uint_fast16_t tile_t = 0; tile_t < 0x200; tile_t++) {
+	for (uint_fast16_t tile_t = 0; tile_t < 0x400; tile_t++) {
 		memcpy(graphics_array, &VRAM[0xC000 + (tile_t << 5)], 32);
 		px = ((tile_t & 0xF) << 3) + 7 + ((tile_t >> 4) << 10);
 		for (index = 0; index < 16; index += 2) {
