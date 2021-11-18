@@ -317,6 +317,15 @@ int lua_chartosmw(lua_State* L) {
 void lua_connect_functions(lua_State* L) {
 	luaL_openlibs(L);
 
+	//Load Commons
+	string file = "Lua/__COMMON.lua";
+	std::ifstream fs(file);
+	if (fs.good()) {
+		std::ostringstream sstream; sstream << fs.rdbuf();
+		luaL_dostring(L, sstream.str().c_str());
+	}
+	fs.close();
+
 	lua_pushcfunction(L, lua_write); lua_setglobal(L, "marioPrint");
 	lua_pushcfunction(L, lua_write_ram); lua_setglobal(L, "asmWrite");
 	lua_pushcfunction(L, lua_spawn_sprite); lua_setglobal(L, "spawnSprite");
