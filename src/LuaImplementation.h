@@ -217,7 +217,7 @@ static int loadNewAsset(lua_State* L) {
 	else {
 		loadAssetRAM(Modpack + "/lualibs/" + ((string)lua_tostring(L, 1)), -0x20000 + offset, false, true);
 	}
-	if (offset >= 0x20000 && offset < 0x2C000) {
+	if (offset >= 0x20000) {
 		TriggerRAMSync();
 	}
 	return 0;
