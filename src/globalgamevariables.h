@@ -509,6 +509,7 @@ void ConvertPalette() {
 
 //Sprite Caching
 void PreloadSPR() {
+	chrono::high_resolution_clock::time_point START_CHECK = chrono::high_resolution_clock::now();
 	//This makes palette
 	ConvertPalette();
 
@@ -539,6 +540,8 @@ void PreloadSPR() {
 		ConvertSDLSurfaceToOpenGL(cached_spr_tilesGL[e >> 4], cached_spr_surf);
 	}
 	SDL_FreeSurface(cached_spr_surf);
+	chrono::high_resolution_clock::time_point CURRENT_CHECK = chrono::high_resolution_clock::now();
+	cout << yellow << "[Sprite Caching] Took " << int(chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK).count() * 1000) << "ms." << endl;
 }
 
 //Layer 3 Caching
