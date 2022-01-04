@@ -43,4 +43,4 @@ obj
 
 premake5.exe
 
-libs/lua51.lib
+libs\lua51.lib
