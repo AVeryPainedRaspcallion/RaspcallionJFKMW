@@ -1,9 +1,11 @@
 [submodule "libs/SDL"]
 	path = libs/SDL
 	url = https://github.com/libsdl-org/SDL.git
+	branch = main
 [submodule "libs/SDL_image"]
 	path = libs/SDL_image
 	url = https://github.com/libsdl-org/SDL_image.git
+	branch = main
 [submodule "libs/SDL_mixer"]
 	path = libs/SDL_mixer
 	url = https://github.com/soulik/SDL_mixer.git
@@ -16,3 +18,4 @@
 [submodule "libs/lz4"]
 	path = libs/lz4
 	url = https://github.com/lz4/lz4.git
+	branch = dev
