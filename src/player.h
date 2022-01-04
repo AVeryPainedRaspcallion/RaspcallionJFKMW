@@ -1467,14 +1467,14 @@ public:
 	//Camera Script Variables Local
 	double camera_focus_y = 0;
 	double camera_snap_dist = -16;
-	double camera_distance_from_mario = 0;
+	double camera_distance_from_player = 0;
 	uint_fast8_t camera_state = 0;
 	int_fast8_t WALKING_DIR_OLD = -1;
 	int_fast8_t WALKING_DIR_CAMERA = 0;
 	void ResetCamera() {
 		camera_focus_y = 0;
 		camera_snap_dist = 0;
-		camera_distance_from_mario = 0;
+		camera_distance_from_player = 0;
 		camera_state = 0;
 	}
 
@@ -1486,7 +1486,7 @@ public:
 			WALKING_DIR_OLD = WALKING_DIR_CAMERA;
 			camera_state = 0; //Set Camera State to Wait For Move
 		}
-		if (abs(camera_distance_from_mario) > 128) {
+		if (abs(camera_distance_from_player) > 128) {
 			camera_state = 1;
 		}
 
@@ -1495,19 +1495,19 @@ public:
 			if (abs(DISTANCE_FROM_CAMERA) > 32) {
 				camera_state = 1;
 				camera_snap_dist = DISTANCE_FROM_CAMERA > 0 ? -12 : 12;
-				camera_distance_from_mario = x - (CAMERA_X + camera_snap_dist);
+				camera_distance_from_player = x - (CAMERA_X + camera_snap_dist);
 			}
 		}
 
 		if (camera_state == 1) {
-			int camera_focus_speed = abs(camera_distance_from_mario) > 128 ? 16 : 2;
-			if (camera_distance_from_mario > 0) {
-				camera_distance_from_mario = max(0.0, camera_distance_from_mario - camera_focus_speed);
+			int camera_focus_speed = abs(camera_distance_from_player) > 128 ? 16 : 2;
+			if (camera_distance_from_player > 0) {
+				camera_distance_from_player = max(0.0, camera_distance_from_player - camera_focus_speed);
 			}
-			if (camera_distance_from_mario < 0) {
-				camera_distance_from_mario = min(0.0, camera_distance_from_mario + camera_focus_speed);
+			if (camera_distance_from_player < 0) {
+				camera_distance_from_player = min(0.0, camera_distance_from_player + camera_focus_speed);
 			}
-			CAMERA_X = x - camera_snap_dist - camera_distance_from_mario;
+			CAMERA_X = x - camera_snap_dist - camera_distance_from_player;
 		}
 	}
 
@@ -1536,7 +1536,7 @@ public:
 				CAMERA_X = double(120 + RAM[0x1462] + RAM[0x1463] * 256);
 				if (!sm_mode) {
 					camera_snap_dist = 0;
-					camera_distance_from_mario = x - CAMERA_X;
+					camera_distance_from_player = x - CAMERA_X;
 				}
 			}
 			else {
@@ -1720,36 +1720,36 @@ public:
 #endif
 };
 
-//Mario management
-vector<MPlayer> Mario;
-void AddNewPlayer() { Mario.push_back(MPlayer(LevelManager.start_x, LevelManager.start_y)); }
-void RemovePlayer() { Mario.pop_back(); }
+//Player management
+vector<MPlayer> Players;
+void AddNewPlayer() { Players.push_back(MPlayer(LevelManager.start_x, LevelManager.start_y)); }
+void RemovePlayer() { Players.pop_back(); }
 void CheckForPlayers() //Have to be careful when fucking with this. Or else memory might leak.
 {
-	while (Mario.size() > PlayerAmount) { RemovePlayer(); }
-	while (Mario.size() < PlayerAmount) { AddNewPlayer(); }
+	while (Players.size() > PlayerAmount) { RemovePlayer(); }
+	while (Players.size() < PlayerAmount) { AddNewPlayer(); }
 }
 
-// Get Mario
-MPlayer& get_mario(uint_fast8_t number) {
+// Get Player
+MPlayer& GetPlayerByNumber(uint_fast8_t number) {
 	CheckForPlayers();
-	return number < Mario.size() ? Mario[number] : Mario[0];
+	return number < Players.size() ? Players[number] : Players[0];
 }
 
-//player interaction with other players, for now it's just mario combat
+//player interaction with other players, for now it's just player combat
 void PlayerInteraction()
 {
 	if (!pvp) {
 		return;
 	}
-	for (int i = 0; i < Mario.size(); i++) {
-		MPlayer& CurrPlayer = Mario[i];
+	for (int i = 0; i < Players.size(); i++) {
+		MPlayer& CurrPlayer = Players[i];
 		if (CurrPlayer.DEAD) {
 			continue;
 		}
 		else {
-			for (int e = 0; e < Mario.size(); e++) {
-				MPlayer& PlrInteract = Mario[e];
+			for (int e = 0; e < Players.size(); e++) {
+				MPlayer& PlrInteract = Players[e];
 				if ((&PlrInteract == &CurrPlayer || PlrInteract.DEAD) || PlrInteract.INVINCIBILITY_FRAMES > 0) {
 					continue;
 				}

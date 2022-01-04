@@ -39,29 +39,29 @@ void PreparePacket(uint8_t header) {
 	CurrentPacket_header = header;
 }
 
-//Send all mario data
-void pack_mario_data(uint_fast8_t skip = 0) {
+//Send all player data
+void pack_player_data(uint_fast8_t skip = 0) {
 	if (!isClient) {
 		CurrentPacket << PlayerAmount;
-		for (uint_fast8_t i = 0; i < Mario.size(); i++) {
-			MPlayer& CurrentMario = Mario[i];
+		for (uint_fast8_t i = 0; i < Players.size(); i++) {
+			MPlayer& CurrentPlayer = Players[i];
 			if (i != skip) {
-				CurrentMario.NetPackVariables(true);
+				CurrentPlayer.NetPackVariables(true);
 			}
 			else {
-				CurrentMario.NetPackSpecificVariables();
+				CurrentPlayer.NetPackSpecificVariables();
 			}
 		}
 	}
 	else {
-		MPlayer& CurrentMario = get_mario(SelfPlayerNumber);
+		MPlayer& CurrentPlayer = GetPlayerByNumber(SelfPlayerNumber);
 		CurrentPacket << SelfPlayerNumber;
 		CurrentPacket << latest_sync;
 		CurrentPacket << music_latest_sync;
-		CurrentPacket << CurrentMario.server_position_sync_c;
-		CurrentPacket << CurrentMario.current_chat;
-		CurrentPacket << CurrentMario.curr_chat_string;
-		CurrentMario.NetPackVariables(false);
+		CurrentPacket << CurrentPlayer.server_position_sync_c;
+		CurrentPacket << CurrentPlayer.current_chat;
+		CurrentPacket << CurrentPlayer.curr_chat_string;
+		CurrentPlayer.NetPackVariables(false);
 	}
 }
 
@@ -168,11 +168,11 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 			}
 			
 			PlayerAmount = uint_fast8_t(clients.size());
-			MPlayer& CurrentMario = get_mario(PlrNum);
-			CurrentPacket >> CurrentMario.server_position_sync_c;
-			CurrentPacket >> CurrentMario.current_chat;
-			CurrentPacket >> CurrentMario.curr_chat_string;
-			CurrentMario.NetUnpackVariables(false);
+			MPlayer& CurrentPlayer = GetPlayerByNumber(PlrNum);
+			CurrentPacket >> CurrentPlayer.server_position_sync_c;
+			CurrentPacket >> CurrentPlayer.current_chat;
+			CurrentPacket >> CurrentPlayer.curr_chat_string;
+			CurrentPlayer.NetUnpackVariables(false);
 		}
 	}
 	else
@@ -192,15 +192,15 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 			CurrentPacket >> player_netcommand[SelfPlayerNumber];
 			CurrentPacket >> PlayerAmount;
 
-			//Mario list update in case
+			//Player list update in case
 			CheckForPlayers();
-			for (uint_fast8_t i = 0; i < Mario.size(); i++) {
-				MPlayer& CurrentMario = Mario[i];
+			for (uint_fast8_t i = 0; i < Players.size(); i++) {
+				MPlayer& CurrentPlayer = Players[i];
 				if (i != SelfPlayerNumber) {
-					CurrentMario.NetUnpackVariables(true);
+					CurrentPlayer.NetUnpackVariables(true);
 				}
 				else {
-					CurrentMario.NetUnpackSpecificVariables();
+					CurrentPlayer.NetUnpackSpecificVariables();
 				}
 			}
 
@@ -355,8 +355,8 @@ void Server_To_Clients() {
 			CurrentPacket << i;
 			CurrentPacket << player_netcommand[i];
 
-			//Send mario data
-			pack_mario_data(i);
+			//Send player data
+			pack_player_data(i);
 
 			//DATA SYNC
 			bool d_change = client.latest_sync_p != latest_sync;
@@ -472,7 +472,7 @@ void NetWorkLoop() {
 	}
 	else {
 		//Client
-		while (Mario.size() == 0) {
+		while (Players.size() == 0) {
 			receive_all_packets(socketG);
 		}
 
@@ -480,7 +480,7 @@ void NetWorkLoop() {
 		cout << blue << "[Network] Connected to server. " << int(PlayerAmount) << " player(s) connected." << endl;
 		while (!quit && !disconnected) {
 			receive_all_packets(socketG);
-			PreparePacket(Header_UpdatePlayerData); pack_mario_data(); SendPacket();
+			PreparePacket(Header_UpdatePlayerData); pack_player_data(); SendPacket();
 		}
 		receive_all_packets(socketG);
 	}

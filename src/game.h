@@ -53,8 +53,8 @@ void game_loop_code()
 
 	//Prepare players
 	CheckForPlayers();
-	for (uint_fast8_t i = 0; i < Mario.size(); i++) {
-		MPlayer& CurrPlayer = Mario[i];
+	for (uint_fast8_t i = 0; i < Players.size(); i++) {
+		MPlayer& CurrPlayer = Players[i];
 		CurrPlayer.player_index = i;
 		if (!isClient && networking) { CurrPlayer.PlayerControlled = false; }
 		else {
@@ -74,7 +74,7 @@ void game_loop_code()
 
 		if (gamemode == GAMEMODE_OVERWORLD) {
 			//Main overworld loop.
-			if (Mario.size() == 0) {
+			if (Players.size() == 0) {
 				return;
 			}
 			overworld.Process();
@@ -187,9 +187,9 @@ void game_loop_code()
 			}
 
 			int camera_total_x = 0; int camera_total_y = 0;
-			for (uint_fast8_t i = 0; i < Mario.size(); i++)
+			for (uint_fast8_t i = 0; i < Players.size(); i++)
 			{
-				MPlayer& CurrPlayer = Mario[i];
+				MPlayer& CurrPlayer = Players[i];
 				CurrPlayer.player_index = i;
 				if (CurrPlayer.PlayerControlled) {
 					CurrPlayer.mouse_x = mouse_x + CameraX;
@@ -268,12 +268,12 @@ void game_loop_code()
 				}
 			}
 
-			RAM[0x3F0F] = uint_fast8_t(Mario.size());
+			RAM[0x3F0F] = uint_fast8_t(Players.size());
 
 			PlayerInteraction();
 
-			camera_total_x /= int(Mario.size());
-			camera_total_y /= int(Mario.size());
+			camera_total_x /= int(Players.size());
+			camera_total_y /= int(Players.size());
 
 			if (!isClient) {
 				if (RAM[0x1411] != 0) {

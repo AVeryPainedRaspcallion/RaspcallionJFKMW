@@ -129,7 +129,7 @@ istream& getline(istream& stream, string& str) {
 #include "level_and_load.h"
 #include "input.h"
 #include "Sprite_system.h"
-#include "mario.h"
+#include "player.h"
 #include "messageboxes.h"
 #include "chat.h"
 #include "debugging.h"

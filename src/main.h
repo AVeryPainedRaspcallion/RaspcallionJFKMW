@@ -98,7 +98,7 @@ void player_code() {
 #endif
 		//Player Init Wait
 		cout << yellow << "[JFKMW] Waiting for player..." << endl;
-		while (Mario.size() == 0) {
+		while (Players.size() == 0) {
 			DATA_SAFETY_WAIT
 		}
 

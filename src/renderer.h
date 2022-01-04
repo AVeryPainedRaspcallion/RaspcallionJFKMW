@@ -5,13 +5,13 @@
 //Sorted OAM groups
 vector<int> OAMGroupSorted[6];
 
-//Mario Drawing Macros
-#define DRAW_GRABBED_SPRITE uint_fast8_t tile = uint_fast8_t(getRamValue(0x2F00 + CurrentMario.GRABBED_SPRITE, 1)); \
+//Player Drawing Macros
+#define DRAW_GRABBED_SPRITE uint_fast8_t tile = uint_fast8_t(getRamValue(0x2F00 + CurrentPlayer.GRABBED_SPRITE, 1)); \
 if (tile != 0) {\
-	uint_fast8_t size = uint_fast8_t(((RAM[0x2E80 + CurrentMario.GRABBED_SPRITE] & 0x7F) >> 4) + (((RAM[0x2E80 + CurrentMario.GRABBED_SPRITE] & 0x7F) >> 4) << 4));\
-	int_fast16_t x_position = int_fast16_t(double(CurrentMario.x + ((CurrentMario.climbing || CurrentMario.SKIDDING != 0) ? 0 : (CurrentMario.to_scale * -12.0))));\
-	int_fast16_t y_position = int_fast16_t(double(CurrentMario.y - 1 - (CurrentMario.STATE > 0 ? 13.0 : 16.0) - (CurrentMario.CROUCH ? 2 : 0) * (CurrentMario.STATE > 0)));\
-	uint_fast8_t pal = RAM[0x2E80 + CurrentMario.GRABBED_SPRITE] & 0xF;\
+	uint_fast8_t size = uint_fast8_t(((RAM[0x2E80 + CurrentPlayer.GRABBED_SPRITE] & 0x7F) >> 4) + (((RAM[0x2E80 + CurrentPlayer.GRABBED_SPRITE] & 0x7F) >> 4) << 4));\
+	int_fast16_t x_position = int_fast16_t(double(CurrentPlayer.x + ((CurrentPlayer.climbing || CurrentPlayer.SKIDDING != 0) ? 0 : (CurrentPlayer.to_scale * -12.0))));\
+	int_fast16_t y_position = int_fast16_t(double(CurrentPlayer.y - 1 - (CurrentPlayer.STATE > 0 ? 13.0 : 16.0) - (CurrentPlayer.CROUCH ? 2 : 0) * (CurrentPlayer.STATE > 0)));\
+	uint_fast8_t pal = RAM[0x2E80 + CurrentPlayer.GRABBED_SPRITE] & 0xF;\
 	draw_tile_custom(x_position - CameraX, int_res_y - 32 - y_position + CameraY, size, 0, tile, pal);\
 }
 
@@ -25,45 +25,45 @@ void draw_number_hex(uint_fast8_t pos_x, uint_fast8_t pos_y, uint_fast16_t numbe
 }
 
 void renderPlayers(bool D) {
-	//Draw Mario
+	//Draw Player
 	if (!(RAM[0x3F1F] & 2)) {
-		for (int i = 0; i < Mario.size(); i++) {
-			MPlayer& CurrentMario = Mario[i];
-			if (CurrentMario.in_pipe == D) {
+		for (int i = 0; i < Players.size(); i++) {
+			MPlayer& CurrentPlayer = Players[i];
+			if (CurrentPlayer.in_pipe == D) {
 
 				//Some powerup rendering things..
-				if (!CurrentMario.invisible) {
+				if (!CurrentPlayer.invisible) {
 					//Cape
-					if (CurrentMario.STATE == 2) {
+					if (CurrentPlayer.STATE == 2) {
 						CreateSpriteCrop("Sprites/player/Power.png",
-							(CurrentMario.to_scale * 8) + int(CurrentMario.x) - int(CameraX),
-							int_res_y - 32 + ((CurrentMario.CROUCH && CurrentMario.CAPE_ST == -1) * 5) - int(CurrentMario.y - 1) + int(CameraY),
-							CurrentMario.to_scale * -16, 32, (CurrentMario.CAPE_FRAME & 3) << 4, (CurrentMario.CAPE_ST + 1) << 5, 64, 128);
+							(CurrentPlayer.to_scale * 8) + int(CurrentPlayer.x) - int(CameraX),
+							int_res_y - 32 + ((CurrentPlayer.CROUCH && CurrentPlayer.CAPE_ST == -1) * 5) - int(CurrentPlayer.y - 1) + int(CameraY),
+							CurrentPlayer.to_scale * -16, 32, (CurrentPlayer.CAPE_FRAME & 3) << 4, (CurrentPlayer.CAPE_ST + 1) << 5, 64, 128);
 					}
 				}
 
 				//Grabbed shit (below, when not skidding)
-				if (CurrentMario.GRABBED_SPRITE != 0xFF && CurrentMario.SKIDDING == 0) {
+				if (CurrentPlayer.GRABBED_SPRITE != 0xFF && CurrentPlayer.SKIDDING == 0) {
 					DRAW_GRABBED_SPRITE
 				}
 
 				//Render player itself.
-				if (!CurrentMario.invisible) {
-					CreateSpriteCrop("Sprites/player/Skin" + to_string(CurrentMario.skin) + ".png",
-						-8 + int(CurrentMario.x) - int(CameraX),
-						int_res_y - 32 - int(CurrentMario.y - 1) + int(CameraY),
-						int(CurrentMario.to_scale * (CurrentMario.SKIDDING != 0 ? -1 : 1)) * 32, 32,
-						(CurrentMario.pose & 0xF) << 5, ((CurrentMario.pose >> 4) << 5) + CurrentMario.state_str() * 64, 512, 256, CurrentMario.INVINCIBILITY_FRAMES_STAR);
+				if (!CurrentPlayer.invisible) {
+					CreateSpriteCrop("Sprites/player/Skin" + to_string(CurrentPlayer.skin) + ".png",
+						-8 + int(CurrentPlayer.x) - int(CameraX),
+						int_res_y - 32 - int(CurrentPlayer.y - 1) + int(CameraY),
+						int(CurrentPlayer.to_scale * (CurrentPlayer.SKIDDING != 0 ? -1 : 1)) * 32, 32,
+						(CurrentPlayer.pose & 0xF) << 5, ((CurrentPlayer.pose >> 4) << 5) + CurrentPlayer.state_str() * 64, 512, 256, CurrentPlayer.INVINCIBILITY_FRAMES_STAR);
 				}
 
 				//Grabbed shit (on-top, when skidding)
-				if (CurrentMario.GRABBED_SPRITE != 0xFF && CurrentMario.SKIDDING != 0) {
+				if (CurrentPlayer.GRABBED_SPRITE != 0xFF && CurrentPlayer.SKIDDING != 0) {
 					DRAW_GRABBED_SPRITE
 				}
 
 				//Embedded
-				int_fast16_t x_position = int_fast16_t(CurrentMario.x);
-				int_fast16_t y_position = int_fast16_t(CurrentMario.y + 24);
+				int_fast16_t x_position = int_fast16_t(CurrentPlayer.x);
+				int_fast16_t y_position = int_fast16_t(CurrentPlayer.y + 24);
 				for (int e = 0; e < OAMGroupSorted[5].size(); e++) {
 					OAMTile& T = OAM_Tiles[OAMGroupSorted[5][e]];
 					if (T.rotation == i) {
@@ -71,8 +71,8 @@ void renderPlayers(bool D) {
 					}
 				}
 
-				if (CurrentMario.powerup_anim && (CurrentMario.powerup_anim >> 6) == 1) {
-					draw_tile_custom(x_position - CameraX, int_res_y - y_position + CameraY, 0x11, 0, PlayerCapeSmokeFrames[(31 - (CurrentMario.powerup_anim & 0x3F)) / 7], 8);
+				if (CurrentPlayer.powerup_anim && (CurrentPlayer.powerup_anim >> 6) == 1) {
+					draw_tile_custom(x_position - CameraX, int_res_y - y_position + CameraY, 0x11, 0, PlayerCapeSmokeFrames[(31 - (CurrentPlayer.powerup_anim & 0x3F)) / 7], 8);
 				}
 			}
 		}
@@ -155,7 +155,7 @@ void handleRenderingForPlayer(int player)
 	//Blocks
 	blocks_on_screen = 0;
 	CheckForPlayers();
-	if (Mario.size() < player) {
+	if (Players.size() < player) {
 		return;
 	}
 
@@ -170,7 +170,7 @@ void handleRenderingForPlayer(int player)
 	uint_fast8_t mosaic_val = RAM[0x3F10] >> 4;
 	uint_fast8_t bright_val = RAM[0x3F10] & 0xF;
 
-	MPlayer& LocalPlayer = get_mario(player);
+	MPlayer& LocalPlayer = GetPlayerByNumber(player);
 	LocalPlayer.ProcessCamera();
 	double CAM_X = LocalPlayer.CAMERA_X;
 	double CAM_Y = LocalPlayer.CAMERA_Y;
@@ -178,8 +178,8 @@ void handleRenderingForPlayer(int player)
 	//Local MP
 	if (local_multiplayer) {
 		double totalDiv = 1;
-		for (int i = 1; i < Mario.size(); i++) {
-			MPlayer& PlayerMP = get_mario(i);
+		for (int i = 1; i < Players.size(); i++) {
+			MPlayer& PlayerMP = GetPlayerByNumber(i);
 			PlayerMP.ProcessCamera();
 			CAM_X += PlayerMP.CAMERA_X;
 			CAM_Y += PlayerMP.CAMERA_Y;
@@ -528,18 +528,18 @@ void handleRenderingForPlayer(int player)
 		if (!(RAM[0x3F1F] & 2))
 		{
 			//Draw L3 player names
-			for (int i = 0; i < Mario.size(); i++)
+			for (int i = 0; i < Players.size(); i++)
 			{
-				MPlayer& CurrentMario = Mario[i];
+				MPlayer& CurrentPlayer = Players[i];
 
 				int s_off_x = (int_res_x - 256) / 2;
 				int s_off_y = (int_res_y - 224) / 2;
-				if (!CurrentMario.PlayerControlled && CurrentMario.x > (CameraX - camBoundX) && CurrentMario.y > (CameraY - camBoundY) && CurrentMario.x < (CameraX + int_res_x + camBoundX) && CurrentMario.y < (CameraY + int_res_y + camBoundY))
+				if (!CurrentPlayer.PlayerControlled && CurrentPlayer.x > (CameraX - camBoundX) && CurrentPlayer.y > (CameraY - camBoundY) && CurrentPlayer.x < (CameraX + int_res_x + camBoundX) && CurrentPlayer.y < (CameraY + int_res_y + camBoundY))
 				{
 					for (int i = 0; i < 5; i++)
 					{
-						uint_fast8_t new_l = char_to_smw(CurrentMario.player_name_cut[i]);
-						draw8x8_tile_2bpp(-s_off_x + -12 + int(CurrentMario.x) - int(CameraX) + i * 8, s_off_y + 224 - int(CurrentMario.y + (CurrentMario.STATE ? 40 : 32)) + int(CameraY), new_l, 6);
+						uint_fast8_t new_l = char_to_smw(CurrentPlayer.player_name_cut[i]);
+						draw8x8_tile_2bpp(-s_off_x + -12 + int(CurrentPlayer.x) - int(CameraX) + i * 8, s_off_y + 224 - int(CurrentPlayer.y + (CurrentPlayer.STATE ? 40 : 32)) + int(CameraY), new_l, 6);
 					}
 				}
 			}

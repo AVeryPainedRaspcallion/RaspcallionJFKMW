@@ -18,9 +18,9 @@ void Send_Chat(string c) {
 
 //Serverside chat handler
 void Chat_ServerSide() {
-	for (int i = 0; i < Mario.size(); i++)
+	for (int i = 0; i < Players.size(); i++)
 	{
-		MPlayer& CurrPlayer = Mario[i];
+		MPlayer& CurrPlayer = Players[i];
 		if (CurrPlayer.current_chat != CurrPlayer.old_chat) {
 			//Update curr pchatstring to send later
 			Curr_PChatString = CurrPlayer.curr_chat_string;
@@ -101,7 +101,7 @@ void Chat_ClientSide() {
 			Chatting = !Chatting;
 			if (Chatting == false) {
 				if (gamemode != GAMEMODE_TITLE) {
-					MPlayer& LocalPlayer = get_mario(SelfPlayerNumber);
+					MPlayer& LocalPlayer = GetPlayerByNumber(SelfPlayerNumber);
 					LocalPlayer.Chat(Typing_In_Chat);
 				}
 			}
@@ -168,18 +168,18 @@ void Chat_Render()
 		//Player list
 		if (showing_player_list) {
 			int y = 26;
-			for (int i = 0; i < Mario.size(); i++)
+			for (int i = 0; i < Players.size(); i++)
 			{
-				MPlayer& CurrentMario = Mario[i];
+				MPlayer& CurrentPlayer = Players[i];
 				draw8x8_tile_2bpp(8, y << 3, i + 1, 6);
 				draw8x8_tile_2bpp(14, y << 3, 0x3C, 6);
 
 				for (int i = 0; i < player_name_size; i++) {
-					draw8x8_tile_2bpp(24 + (i << 3), y << 3, char_to_smw(CurrentMario.player_name_cut[i]), 6);
+					draw8x8_tile_2bpp(24 + (i << 3), y << 3, char_to_smw(CurrentPlayer.player_name_cut[i]), 6);
 				}
 
 				//KO's
-				string WC = to_string(CurrentMario.KO_counter) + " KO's " + to_string(CurrentMario.WO_counter) + " WO's";
+				string WC = to_string(CurrentPlayer.KO_counter) + " KO's " + to_string(CurrentPlayer.WO_counter) + " WO's";
 				int x = 240;
 				for (int i = int(WC.length()-1); i >= 0; i--) {
 					draw8x8_tile_2bpp(x, y << 3, char_to_smw(WC[i]), 6);

@@ -50,8 +50,8 @@ public:
 
 	//Warp
 	void Warp() {
-		for (uint_fast8_t i = 0; i < Mario.size(); i++) {
-			OverworldPlayer = &Mario[i];
+		for (uint_fast8_t i = 0; i < Players.size(); i++) {
+			OverworldPlayer = &Players[i];
 			OverworldPlayer->x = WarpDestinationX;
 			OverworldPlayer->y = WarpDestinationY;
 			OverworldPlayer->server_position_sync_x = WarpDestinationX;
@@ -146,8 +146,8 @@ public:
 		//Tell to reinitialize positions
 		initializedPosition = false;
 		if (!isClient) {
-			for (uint_fast8_t i = 0; i < Mario.size(); i++) {
-				Mario[i].ow_pos_inited = false;
+			for (uint_fast8_t i = 0; i < Players.size(); i++) {
+				Players[i].ow_pos_inited = false;
 			}
 		}
 		
@@ -353,27 +353,27 @@ public:
 		RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
 
 		//Render all of em
-		for (int i = 0; i < Mario.size(); i++) {
-			uint_fast8_t SPR = Mario[i].X_SPEED != 0 ? (SPR = Mario[i].X_SPEED > 0 ? 1 : 3) : 0;
+		for (int i = 0; i < Players.size(); i++) {
+			uint_fast8_t SPR = Players[i].X_SPEED != 0 ? (SPR = Players[i].X_SPEED > 0 ? 1 : 3) : 0;
 
 			//Player pos checks
-			uint_fast8_t plr_tile = Get_Tile(int(Mario[i].x) >> 4, int(Mario[i].y + 32) >> 4);
-			Mario[i].IN_WT = ((plr_tile >= 0x28 && plr_tile <= 0x3E) || (plr_tile >= 0x6A && plr_tile <= 0x6D)) || plr_tile == 0x50;
-			Mario[i].climbing = plr_tile == 0x3F;
+			uint_fast8_t plr_tile = Get_Tile(int(Players[i].x) >> 4, int(Players[i].y + 32) >> 4);
+			Players[i].IN_WT = ((plr_tile >= 0x28 && plr_tile <= 0x3E) || (plr_tile >= 0x6A && plr_tile <= 0x6D)) || plr_tile == 0x50;
+			Players[i].climbing = plr_tile == 0x3F;
 
-			if (Mario[i].Y_SPEED < 0) { SPR = 2; }
+			if (Players[i].Y_SPEED < 0) { SPR = 2; }
 			if (RAM[0x3F11] == 4) { SPR = 4; }
-			if (Mario[i].climbing) { SPR = 5; }
+			if (Players[i].climbing) { SPR = 5; }
 
-			//Walking mario on the OW border
-			CreateSpriteCrop("Sprites/mario/Skin" + to_string(Mario[i].skin) + ".png",
-				((int_res_x - 256) / 2) + 16 + int(Mario[i].x - OverworldPlayer->CAMERA_X),
-				((int_res_y - 224) / 2) + (Mario[i].IN_WT ? 33 : 27) + int(Mario[i].y - OverworldPlayer->CAMERA_Y),
-				16, (Mario[i].IN_WT ? 18 : 24),
+			//Walking player on the OW border
+			CreateSpriteCrop("Sprites/player/Skin" + to_string(Players[i].skin) + ".png",
+				((int_res_x - 256) / 2) + 16 + int(Players[i].x - OverworldPlayer->CAMERA_X),
+				((int_res_y - 224) / 2) + (Players[i].IN_WT ? 33 : 27) + int(Players[i].y - OverworldPlayer->CAMERA_Y),
+				16, (Players[i].IN_WT ? 18 : 24),
 				(((ingame_frame_counter >> 3) & 3) << 4) + (SPR << 6), 192, 512, 256, 0);
 
 			//Water thing
-			if (Mario[i].IN_WT) {
+			if (Players[i].IN_WT) {
 				CreateSprite("Sprites/ui/OW_Water_" + to_string((ingame_frame_counter >> 3) & 1) + ".png", DestR.x, DestR.y + 15, 16, 4);
 			}
 		}
@@ -393,8 +393,8 @@ public:
 					256,
 					224);
 			}
-			//Walking mario on the OW border
-			CreateSpriteCrop("Sprites/mario/Skin" + to_string(my_skin) + ".png",
+			//Walking player on the OW border
+			CreateSpriteCrop("Sprites/player/Skin" + to_string(my_skin) + ".png",
 				((int_res_x - 256) / 2) + 24,
 				((int_res_y - 224) / 2) + 6,
 				32, 32,
@@ -457,7 +457,7 @@ public:
 		//Clientside (Movement) Behaviour
 		if (!networking || isClient) {
 			//For player
-			OverworldPlayer = &get_mario(SelfPlayerNumber);
+			OverworldPlayer = &GetPlayerByNumber(SelfPlayerNumber);
 			OverworldPlayer->getInput();
 			CalculateSubmap(false);
 
@@ -632,9 +632,9 @@ public:
 
 		//Serverside behaviour
 		if (!isClient) {
-			for (uint_fast8_t i = 0; i < Mario.size(); i++) {
+			for (uint_fast8_t i = 0; i < Players.size(); i++) {
 				//Player
-				OverworldPlayer = &Mario[i];
+				OverworldPlayer = &Players[i];
 				if (!OverworldPlayer->ow_pos_inited && networking) {
 					OverworldPlayer->x = overworldSavedX;
 					OverworldPlayer->y = overworldSavedY;
