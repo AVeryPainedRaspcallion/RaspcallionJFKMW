@@ -12,7 +12,7 @@ void addScore(uint_fast32_t Amount) {
 	writeToRam(0x3F13, getRamValue(0x3F13, 3) + Amount, 3);
 }
 
-//lua functions to bind to jfk mario world.
+//lua functions to bind to JFKMW.
 static int lua_write(lua_State* L) {
 	string str = (string)lua_tostring(L, 1); // get function argument
 	lua_print(str);
@@ -380,7 +380,7 @@ void lua_loadfile(string file)
 		LUA_STATE = NULL;
 		return;
 	}
-	//main connectors back to jfk mario world.
+	//main connectors back to JFKMW.
 	lua_print("loaded " + file);
 }
 

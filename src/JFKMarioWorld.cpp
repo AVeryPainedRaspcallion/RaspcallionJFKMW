@@ -1,5 +1,5 @@
 ﻿/*
-	JFK Mario World cpp file. This is the main file of jfk mario world and the start of the game.
+	JFKMW cpp file. This is the main file of JFKMW and the start of the game.
 	Some features are enabled/disabled in different platforms, such as Linux distributions.
 	This is a very old codebase, and has been maintained for over 3 years. Some of the coding practices on here are not recommended to use normally (and I apologize for any shitcode), and are to be improved soon.
 */

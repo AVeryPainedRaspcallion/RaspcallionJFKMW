@@ -1,6 +1,6 @@
 #pragma once
 /*
-	JFK Mario World Overworld Implementation
+	JFKMW Overworld Implementation
 
 	Should improve later but for now it's fine.
 */

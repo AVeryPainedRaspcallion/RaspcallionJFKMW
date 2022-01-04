@@ -450,7 +450,7 @@ void NetWorkLoop() {
 		cout << blue << "[Server] Server is running on port " << dec << PORT << endl;
 
 		//Discord
-		discord_message("There's a JFK mario world server version " + GAME_VERSION + " being hosted, the ip is **" + sf::IpAddress::getPublicAddress(sf::seconds(5.f)).toString() + "**, port is " + to_string(PORT));
+		discord_message("There's a JFKMW server version " + GAME_VERSION + " being hosted, the ip is **" + sf::IpAddress::getPublicAddress(sf::seconds(5.f)).toString() + "**, port is " + to_string(PORT));
 
 		// Endless loop that waits for new connections
 		while (!quit) {
