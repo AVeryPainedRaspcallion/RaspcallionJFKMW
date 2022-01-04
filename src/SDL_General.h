@@ -174,7 +174,7 @@ bool done() {
 					return true;
 					break;
 				case 4:
-					string str = "JFKMW has been a ongoing 6 year effort to create a fun Super Mario World experience for everyone, with lots of modability and options.\n\nThanks to all contributors, programmers, and level designers.\n\n\nJFKMW, Made by the JFKMW Team, originally programmed by a good friend covered in white feathers.\n\nVersion " + GAME_VERSION;
+					string str = "JFKMW has been a ongoing 6 year effort to create a fun experience for everyone, with lots of modability and options.\n\nThanks to all contributors, programmers, and level designers.\n\n\nJFKMW, Made by the JFKMW Team, originally programmed by a good friend covered in white feathers.\n\nVersion " + GAME_VERSION;
 					std::wstring stemp = std::wstring(str.begin(), str.end());
 					LPCWSTR sw = stemp.c_str();
 					MessageBox(NULL, sw, L"About", MB_OK);

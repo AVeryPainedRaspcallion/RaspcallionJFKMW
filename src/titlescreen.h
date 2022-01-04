@@ -163,10 +163,10 @@ void RenderTitlescreen() {
 			}
 		}
 		else {
-			DrawTitlestringNotCenter("MARIO A ...SINGLEPLAYER", 48, 168 - 48);
-			DrawTitlestringNotCenter("MARIO B ...MULTIPLAYER", 48, 168 - 32);
-			DrawTitlestringNotCenter("MARIO C ...LEVEL DEBUG", 48, 168 - 16);
-			DrawTitlestringNotCenter("MARIO D ...CHANGE PACK", 48, 168);
+			DrawTitlestringNotCenter("OPTION A ...SINGLEPLAYER", 40, 168 - 48);
+			DrawTitlestringNotCenter("OPTION B ...MULTIPLAYER", 40, 168 - 32);
+			DrawTitlestringNotCenter("OPTION C ...LEVEL DEBUG", 40, 168 - 16);
+			DrawTitlestringNotCenter("OPTION D ...CHANGE PACK", 40, 168);
 			if ((global_frame_counter & 0x1F) > 0x7) { draw8x8_tile_2bpp(32, 120 + choice * 16, 0x3B, 0); }
 		}
 	}

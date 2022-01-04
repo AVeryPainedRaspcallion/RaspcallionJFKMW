@@ -319,6 +319,7 @@ void lua_connect_functions(lua_State* L) {
 	luaL_openlibs(L);
 	luaL_dostring(L, lua_common_v.c_str());
 
+	//Functions
 	lua_pushcfunction(L, lua_write); lua_setglobal(L, "jfkmwPrint");
 	lua_pushcfunction(L, lua_write_ram); lua_setglobal(L, "asmWrite");
 	lua_pushcfunction(L, lua_spawn_sprite); lua_setglobal(L, "spawnSprite");
@@ -336,6 +337,7 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, clearStatusBar); lua_setglobal(L, "clearStatusBar");
 	lua_pushcfunction(L, lua_addscore); lua_setglobal(L, "addScore");
 
+	//New OAM functions
 	lua_pushcfunction(L, pushOAM); lua_setglobal(L, "pushOAM");
 	lua_pushcfunction(L, pushParticle); lua_setglobal(L, "pushParticle");
 
@@ -346,6 +348,7 @@ void lua_connect_functions(lua_State* L) {
 	lua_pushcfunction(L, draw_to_oam); lua_setglobal(L, "drawOam");
 	lua_pushcfunction(L, draw_to_oam_direct); lua_setglobal(L, "drawOamDirect");
 
+	//More functions
 	lua_register(L, "asmRead", lua_get_ram);
 	lua_register(L, "charToSmw", lua_chartosmw);
 	lua_register(L, "getPlayerX", getPlayerX);
