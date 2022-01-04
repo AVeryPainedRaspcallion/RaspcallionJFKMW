@@ -35,7 +35,7 @@ void renderPlayers(bool D) {
 				if (!CurrentMario.invisible) {
 					//Cape
 					if (CurrentMario.STATE == 2) {
-						CreateSpriteCrop("Sprites/mario/Power.png",
+						CreateSpriteCrop("Sprites/player/Power.png",
 							(CurrentMario.to_scale * 8) + int(CurrentMario.x) - int(CameraX),
 							int_res_y - 32 + ((CurrentMario.CROUCH && CurrentMario.CAPE_ST == -1) * 5) - int(CurrentMario.y - 1) + int(CameraY),
 							CurrentMario.to_scale * -16, 32, (CurrentMario.CAPE_FRAME & 3) << 4, (CurrentMario.CAPE_ST + 1) << 5, 64, 128);
@@ -49,7 +49,7 @@ void renderPlayers(bool D) {
 
 				//Render player itself.
 				if (!CurrentMario.invisible) {
-					CreateSpriteCrop("Sprites/mario/Skin" + to_string(CurrentMario.skin) + ".png",
+					CreateSpriteCrop("Sprites/player/Skin" + to_string(CurrentMario.skin) + ".png",
 						-8 + int(CurrentMario.x) - int(CameraX),
 						int_res_y - 32 - int(CurrentMario.y - 1) + int(CameraY),
 						int(CurrentMario.to_scale * (CurrentMario.SKIDDING != 0 ? -1 : 1)) * 32, 32,
