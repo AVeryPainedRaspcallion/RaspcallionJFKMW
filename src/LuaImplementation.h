@@ -319,7 +319,7 @@ void lua_connect_functions(lua_State* L) {
 	luaL_openlibs(L);
 	luaL_dostring(L, lua_common_v.c_str());
 
-	lua_pushcfunction(L, lua_write); lua_setglobal(L, "marioPrint");
+	lua_pushcfunction(L, lua_write); lua_setglobal(L, "jfkmwPrint");
 	lua_pushcfunction(L, lua_write_ram); lua_setglobal(L, "asmWrite");
 	lua_pushcfunction(L, lua_spawn_sprite); lua_setglobal(L, "spawnSprite");
 	lua_pushcfunction(L, jfkmw_require); lua_setglobal(L, "require");
