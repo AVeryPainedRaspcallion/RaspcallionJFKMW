@@ -38,14 +38,7 @@ void renderPlayers(bool D) {
 						CreateSpriteCrop("Sprites/mario/Power.png",
 							(CurrentMario.to_scale * 8) + int(CurrentMario.x) - int(CameraX),
 							int_res_y - 32 + ((CurrentMario.CROUCH && CurrentMario.CAPE_ST == -1) * 5) - int(CurrentMario.y - 1) + int(CameraY),
-							CurrentMario.to_scale * -16, 32, (CurrentMario.CAPE_FRAME & 3) << 4, (CurrentMario.CAPE_ST + 1) << 5, 256, 256);
-					}
-					//Wings Powerup (custom)
-					if (CurrentMario.STATE == 4) {
-						CreateSpriteCrop("Sprites/mario/Power.png",
-							-16 + int(CurrentMario.x) - int(CameraX),
-							int_res_y - 40 - int(CurrentMario.y - 1) + int(CameraY),
-							CurrentMario.to_scale * 48, 48, 208, (int(CurrentMario.wings_anim_frame / 8.0) % 4) * 48, 256, 256);
+							CurrentMario.to_scale * -16, 32, (CurrentMario.CAPE_FRAME & 3) << 4, (CurrentMario.CAPE_ST + 1) << 5, 64, 128);
 					}
 				}
 
@@ -61,17 +54,6 @@ void renderPlayers(bool D) {
 						int_res_y - 32 - int(CurrentMario.y - 1) + int(CameraY),
 						int(CurrentMario.to_scale * (CurrentMario.SKIDDING != 0 ? -1 : 1)) * 32, 32,
 						(CurrentMario.pose & 0xF) << 5, ((CurrentMario.pose >> 4) << 5) + CurrentMario.state_str() * 64, 512, 256, CurrentMario.INVINCIBILITY_FRAMES_STAR);
-					
-					//Inversion's Adventure Guns Powerup (custom)
-					if (CurrentMario.STATE == 5) {
-						if (CurrentMario.mouse_state[1]) {
-							CreateSpriteCrop("Sprites/mario/Power.png",
-								-16 + int(CurrentMario.x) - int(CameraX) - CurrentMario.to_scale * 4,
-								int_res_y - 20 - int(CurrentMario.y - 1) + int(CameraY),
-								CurrentMario.to_scale * -48, 16, 48 + (CurrentMario.guns_current_gun * 48), 240, 256, 256);
-						}
-						if (CurrentMario.PlayerControlled) { CreateSpriteCrop("Sprites/mario/Power.png", (int_res_x / 2) - 8, 16, 16, 16, (CurrentMario.guns_current_gun * 16), 240, 256, 256); }
-					}
 				}
 
 				//Grabbed shit (on-top, when skidding)

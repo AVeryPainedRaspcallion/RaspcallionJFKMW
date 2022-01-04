@@ -139,11 +139,8 @@ void InitializeOpenGLViewport() {
     if (gContext == NULL) {
         cout << red << "[SDL] OpenGL context could not be created! SDL Error: " << SDL_GetError() << endl; exit(1); return;
     }
-    else {
-        //Use Vsync
-        if (SDL_GL_SetSwapInterval(1) < 0) {
-            cout << red << "[SDL] Can't turn vsync on for OpenGL!: " << SDL_GetError() << endl;
-        }
+    if (SDL_GL_SetSwapInterval(1) < 0) {
+        cout << red << "[SDL] Can't turn vsync on for OpenGL!: " << SDL_GetError() << endl; exit(1); return;
     }
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
@@ -189,7 +186,7 @@ void OpenGLClear() {
 void OpenGLRedraw() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, int_res_x, int_res_y, sp_offset_x, sp_offset_y, sp_offset_x + int_res_x * scale, sp_offset_y + int_res_y * scale,
+    glBlitFramebuffer(0, 0, int_res_x, int_res_y, sp_offset_x, sp_offset_y, int(sp_offset_x + int_res_x * scale), int(sp_offset_y + int_res_y * scale),
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     SDL_GL_SwapWindow(win);
@@ -203,7 +200,6 @@ void OpenGLFillRect(SDL_Rect* Rect) {
     int XE = Rect->x + Rect->w;
     int YS = Rect->y;
     int YE = Rect->y + Rect->h;
-
     glBegin(GL_QUADS);
     glColor4ub(opengl_r, opengl_g, opengl_b, opengl_a);
     glVertex2i(XS, YS); glVertex2i(XE, YS); glVertex2i(XE, YE); glVertex2i(XS, YE);

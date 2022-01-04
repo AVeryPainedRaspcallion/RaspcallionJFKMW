@@ -46,16 +46,6 @@ public:
 	uint_fast8_t CAPE_FRAME = 0;
 	int CAPE_ST = 0;
 
-	//Wings
-	double wings_anim_frame = 0;
-	double wings_anim_speed = 1.0;
-	int wings_allowed_fly_timer = 0;
-
-	//IA-guns
-	uint_fast8_t guns_cooldown = 0;
-	uint_fast8_t guns_current_gun = 0;
-	bool guns_was_firing = false;
-
 	//Collision rleated, positions
 	double height = 14.0;
 	double x = 16.0;
@@ -407,89 +397,6 @@ public:
 		}
 	}
 
-	//WINGS (test powerup)
-	void ProcessWings() {
-		if (STATE == 4) {
-			if (ON_FL || climbing) {
-				wings_allowed_fly_timer = 60 * 2;
-			}
-			wings_anim_speed = max(wings_allowed_fly_timer <= 0 ? 0.4 : 0.75, wings_anim_speed - 1.0 / 40.0);
-			if (p_pad[button_b]) {
-				if (!ON_FL && !climbing) {
-					if (wings_allowed_fly_timer > 0) {
-						wings_anim_speed = 4.0;
-						if (Y_SPEED < 3.0) {
-							Y_SPEED += 70.0 / 256.0;
-						}
-						wings_allowed_fly_timer--;
-					}
-					else {
-						Y_SPEED = max(-2.0, Y_SPEED);
-					}
-				}
-			}
-			wings_anim_frame = wings_anim_frame + wings_anim_speed;
-		}
-	}
-
-	//IA Guns (test powerup)
-	void ProcessGuns() {
-		if (STATE == 5) {
-			//Remove reserve (pointless)
-			reserve_item = 0;
-
-			//Control
-			if (isClient || !networking) {
-				uint_fast8_t change = mouse_state[2] - mouse_state[3]; guns_current_gun += change;
-				if (change) { RAM[0x1DFC] = 6; }
-				if (guns_current_gun > 250) { guns_current_gun = 2; }
-				if (guns_current_gun > 2) { guns_current_gun = 0; }
-				if (mouse_state[1]) {
-					to_scale = double(mouse_x) > (x+8) ? 1 : -1;
-					WALKING_DIR = to_scale;
-				}
-			}
-			if (!isClient && mouse_state[1]) {
-				bool can_fire = mouse_state[0] && !(global_frame_counter % 8);
-
-				//nooo you cant autofire pistols or shotguns :((
-				if (guns_current_gun < 2) {
-					can_fire = false;
-					if (!guns_cooldown) {
-						if (guns_was_firing != mouse_state[0]) {
-							guns_was_firing = mouse_state[0];
-							if (guns_was_firing) {
-								can_fire = true;
-							}
-						}
-					}
-					else { guns_cooldown--; }
-				}
-
-				//should we fire? yes we can!
-				if (can_fire) {
-					int bullets = guns_current_gun == 1 ? 1 : 0;
-					for (int i = -bullets; i < (1 + bullets); i++) {
-						double ANG = atan2(double(mouse_y) - 8 - y - 6, double(mouse_x) - x);
-						double XSPEEDNEW = cos(ANG) * 2.0;
-						double YSPEEDNEW = sin(ANG) * 2.0;
-						uint_fast8_t bullet = spawnSpriteObj(0x53, 0x1, uint_fast16_t(x + XSPEEDNEW * 12), uint_fast16_t(y + 6 + YSPEEDNEW * 10), 1);
-						if (bullet != 0xFF) {
-							RAM[0x2000 + bullet] = 4;
-							RAM[0x1DFC] = 9;
-							RAM[0x2400 + bullet] = uint_fast8_t(XSPEEDNEW * 56.0);
-							RAM[0x2480 + bullet] = uint_fast8_t(min(127,max(-127, (i * 32) + YSPEEDNEW * 63.0)));
-						}
-
-						if (guns_current_gun == 1) {
-							guns_cooldown = 60;
-						}
-					}
-				}
-			}
-		}
-	}
-
 	//CAPE & CAPE CLOTH SIMULATION
 	void Cape_Cloth_Simulation()
 	{
@@ -549,25 +456,21 @@ public:
 					if (!cape_ascent_timer || Y_SPEED <= 0) {
 						cape_ascent_timer = 0;
 						//Put the cape set state code here.. Otherwise nothing
-						//cout << "Enter Flight" << endl;
 					}
 					else {
 						cape_ascent_timer--;
 					}
 				}
 			}
-			else
-			{
+			else {
 				//Deault slow fall logic
 				cape_ascent_timer = 0;
-				if (p_pad[button_b] || p_pad[button_a])
-				{
+				if (p_pad[button_b] || p_pad[button_a]) {
 					Y_SPEED = max(-1.0, Y_SPEED);
 				}
 			}
 		}
-		else
-		{
+		else {
 			cape_state = 0;
 			cape_ascent_timer = 0;
 			cape_spin_timer = 0;
@@ -580,26 +483,15 @@ public:
 			if (STATE == 3 && !in_pipe && !SLIDING && GRABBED_SPRITE == 0xFF && !CROUCH && !climbing) {
 				if (fire_anim_timer) { fire_anim_timer--; }
 				if (pressed_y) {
-					uint_fast16_t x_position = uint_fast16_t(double(x + to_scale * -11.0));
-					uint_fast16_t y_position = uint_fast16_t(double(y + 9.0));
-
-					uint_fast8_t s = spawnSpriteObj(0x33, 0x1, x_position, y_position, to_scale);
-					RAM[0x2E00 + s] = player_index;
-					RAM[0x2480 + s] = 0xD8;
-
 					fire_anim_timer = 10;
-
+					uint_fast8_t s = spawnSpriteObj(0x33, 0x1, uint_fast16_t(double(x + to_scale * -11.0)), uint_fast16_t(double(y + 9.0)), to_scale);
+					RAM[0x2E00 + s] = player_index; RAM[0x2480 + s] = 0xD8;
 					RAM[0x1DFC] = 6;
 				}
 				if (jump_is_spin && !(ingame_frame_counter % 16) && !ON_FL) {
 					uint_fast8_t rand_dir = (ingame_frame_counter >> 4) & 1;
-					uint_fast16_t x_position = uint_fast16_t(double(x + 8 + rand_dir * -16.0));
-					uint_fast16_t y_position = uint_fast16_t(double(y + 9.0));
-
-					uint_fast8_t s = spawnSpriteObj(0x33, 0x1, x_position, y_position, 0xFF + (rand_dir << 1));
-					RAM[0x2E00 + s] = player_index;
-					RAM[0x2480 + s] = 0xD8;
-
+					uint_fast8_t s = spawnSpriteObj(0x33, 0x1, uint_fast16_t(double(x + 8 + rand_dir * -16.0)),  uint_fast16_t(double(y + 9.0)), 0xFF + (rand_dir << 1));
+					RAM[0x2E00 + s] = player_index; RAM[0x2480 + s] = 0xD8;
 					RAM[0x1DFC] = 6;
 				}
 			}
@@ -615,11 +507,8 @@ public:
 			if (p_pad[button_start] != old_s) {
 				old_s = p_pad[button_start];
 				if (old_s && reserve_item != 0) {
-					uint_fast16_t x_position = uint_fast16_t(max(0.0, CAMERA_X - 120.0) + 120.0);
-					uint_fast16_t y_position = uint_fast16_t(max(0.0, CAMERA_Y - 112.0) + 176.0);
-					uint_fast8_t s = spawnSpriteObj(reserve_lookup[reserve_item], 0x1, x_position, y_position, 0);
-					RAM[0x2A00 + s] = 1;
-					RAM[0x1DFC] = 0xC;
+					uint_fast8_t s = spawnSpriteObj(reserve_lookup[reserve_item], 0x1, uint_fast16_t(max(0.0, CAMERA_X - 120.0) + 120.0), uint_fast16_t(max(0.0, CAMERA_Y - 112.0) + 176.0), 0);
+					RAM[0x2A00 + s] = 1; RAM[0x1DFC] = 0xC;
 					reserve_item = 0;
 				}
 			}
@@ -627,8 +516,7 @@ public:
 	}
 
 	//Pipe enter state.
-	void EnterPipe(int_fast8_t xe, int_fast8_t ye)
-	{
+	void EnterPipe(int_fast8_t xe, int_fast8_t ye) {
 		in_pipe = true; pipe_speed_x = xe; pipe_speed_y = ye; writeToRam(0x1DF9, 0x4, 1);
 	}
 
@@ -1563,10 +1451,6 @@ public:
 			//Swimming code end, close of brackets
 		}
 
-		//Fan-made powerups (when making or adding new powerups, also make sure to check renderer.h and modify as required.)
-		ProcessWings();
-		ProcessGuns();
-
 		//Process Normal stuff, rest is history.
 		ProcessCape();
 		ProcessFireballs();
@@ -1705,7 +1589,7 @@ public:
 		CurrentPacket << WALKING_DIR;
 		CurrentPacket << cape_ascent_timer;
 
-		uint_fast8_t bools_2 = (STATE & 0x7) + (guns_current_gun << 6); CurrentPacket << bools_2;
+		CurrentPacket << STATE;
 		CurrentPacket << int_fast16_t(CAMERA_X); CurrentPacket << int_fast16_t(CAMERA_Y);
 
 		CurrentPacket << SLOPE_TYPE;
@@ -1721,13 +1605,11 @@ public:
 
 		//Input
 		uint_fast8_t input_d = 0;
-		for (int inputs = 0; inputs < total_inputs; inputs++)
-		{
+		for (int inputs = 0; inputs < total_inputs; inputs++) {
 			input_d |= (p_pad[inputs] << inputs);
 		}
 		CurrentPacket << input_d;
-		for (int plr_name = 0; plr_name < player_name_size; plr_name++)
-		{
+		for (int plr_name = 0; plr_name < player_name_size; plr_name++) {
 			CurrentPacket << uint_fast8_t(player_name_cut[plr_name]);
 		}
 	}
@@ -1758,9 +1640,7 @@ public:
 		CurrentPacket >> WALKING_DIR;
 		CurrentPacket >> cape_ascent_timer;
 
-		uint_fast8_t bools_2; CurrentPacket >> bools_2;
-		STATE = bools_2 & 0x7;
-		guns_current_gun = bools_2 >> 6;
+		CurrentPacket >> STATE;
 
 		int_fast16_t CAMERA_X_N, CAMERA_Y_N; CurrentPacket >> CAMERA_X_N; CurrentPacket >> CAMERA_Y_N;
 		CAMERA_X = CAMERA_X_N; CAMERA_Y = CAMERA_Y_N;
@@ -1796,8 +1676,7 @@ public:
 	}
 
 	//NETWORKING: Send Specifics
-	void NetPackSpecificVariables()
-	{
+	void NetPackSpecificVariables() {
 		CurrentPacket << GRABBED_SPRITE;
 		CurrentPacket << fire_anim_timer;
 		CurrentPacket << cape_spin_timer;
@@ -1816,8 +1695,7 @@ public:
 	}
 
 	//NETWORKING: Receive Specifics
-	void NetUnpackSpecificVariables()
-	{
+	void NetUnpackSpecificVariables() {
 		CurrentPacket >> GRABBED_SPRITE;
 		CurrentPacket >> fire_anim_timer;
 		CurrentPacket >> cape_spin_timer;
