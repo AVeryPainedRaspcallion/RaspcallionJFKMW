@@ -1632,7 +1632,6 @@ public:
 		if (((ON_FL && Y_SPEED <= 0) || (new_focus > (camera_focus_y + 96) || IN_WT)) || ((P_METER >= P_METER_REQUIRED && Y_SPEED > 0) || climbing)) {
 			camera_focus_y = new_focus;
 		}
-
 		if (y < (CAMERA_Y - 44)) { CAMERA_Y = max(y + 44, CAMERA_Y - 4); camera_focus_y = CAMERA_Y; }
 		if (CAMERA_Y < camera_focus_y) { CAMERA_Y = min(camera_focus_y, CAMERA_Y + 3); }
 	}
