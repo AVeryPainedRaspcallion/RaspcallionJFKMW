@@ -12,6 +12,7 @@
 [submodule "libs/SFML"]
 	path = libs/SFML
 	url = https://github.com/SFML/SFML.git
+	branch = 2.5.x
 [submodule "libs/moonjit"]
 	path = libs/moonjit
 	url = https://github.com/moonjit/moonjit.git
