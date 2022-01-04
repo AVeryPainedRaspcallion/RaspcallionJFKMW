@@ -232,7 +232,7 @@ bool SaveFile() {
 //Play Test Level
 void PlayTest() {
 	if (SaveFile()) {
-		string command = "start \"\" /d \"" + path + "\" \"JFKMarioWorld.exe\" -l " + CurrentLevel + "," + CurrentPack.substr(6);
+		string command = "start \"\" /d \"" + path + "\" \"JFKMW.exe\" -l " + CurrentLevel + "," + CurrentPack.substr(6);
 		cout << yellow << command << white << endl;
 		system(command.c_str());
 	}

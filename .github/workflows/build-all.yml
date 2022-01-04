@@ -40,13 +40,13 @@ jobs:
     - name: Upload release
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: linux_JFKMarioWorld
+        name: linux_JFKMW
         path: bin/Release/
         
     - name: Upload debug
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: linux_debug_JFKMarioWorld
+        name: linux_debug_JFKMW
         path: bin/Debug/
  build-windows:
     runs-on: windows-latest
@@ -80,11 +80,11 @@ jobs:
     - name: Upload release
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: win_JFKMarioWorld
+        name: win_JFKMW
         path: bin/Release/
         
     - name: Upload debug
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: win_debug_JFKMarioWorld
+        name: win_debug_JFKMW
         path: bin/Debug/

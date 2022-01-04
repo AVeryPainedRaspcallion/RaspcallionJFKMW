@@ -1,4 +1,4 @@
-workspace "JFKMarioWorld"
+workspace "JFKMW"
     configurations { "Debug", "Release" }
 	
 	filter "action:vs*"
@@ -37,7 +37,7 @@ workspace "JFKMarioWorld"
 		linkgroups "On" -- if you don't use this then the linker breaks (blame gcc for being shit)
 		defines { "__linux__" }
 		
-project "JFKMarioWorld"
+project "JFKMW"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"
