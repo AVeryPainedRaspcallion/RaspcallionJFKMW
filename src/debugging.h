@@ -33,9 +33,6 @@ void dump_level_data() {
 }
 
 void debugging_functions() {
-	if (!debugging_enabled) {
-		return;
-	}
 	bool stat = false;
 	if (!Chatting)
 	{

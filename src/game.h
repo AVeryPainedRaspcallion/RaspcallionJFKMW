@@ -303,10 +303,13 @@ void game_loop_code()
 	RAM[0x14] = ingame_frame_counter & 0xFF;
 
 	ProcessHDMA();
-	debugging_functions();
 
 	//Finish OAM if we're the server or playing singleplayer.
 	if (!isClient || !networking) {
 		Finish_OAM();
+	}
+
+	if (debugging_enabled) {
+		debugging_functions();
 	}
 }

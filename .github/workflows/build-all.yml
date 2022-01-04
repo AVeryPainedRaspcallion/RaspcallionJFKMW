@@ -29,7 +29,7 @@ jobs:
     - name: Setup packages
       run: |
         sudo apt-get update
-        sudo apt-get install libgl-dev libglu-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsfml-dev
+        sudo apt-get install libgl-dev libglu-dev libglew-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsfml-dev
       
     - name: Build binaries
       working-directory: ${{env.GITHUB_WORKSPACE}}

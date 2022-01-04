@@ -2,6 +2,7 @@
 //lua integration for jfkmw
 bool lua_loaded = false;
 lua_State* LUA_STATE;
+string lua_common_v;
 
 void lua_print(string text) {
 	cout << lua_color << "[Lua] " << text << endl;
@@ -316,6 +317,7 @@ int lua_chartosmw(lua_State* L) {
 //functions end
 void lua_connect_functions(lua_State* L) {
 	luaL_openlibs(L);
+	luaL_dostring(L, lua_common_v.c_str());
 
 	lua_pushcfunction(L, lua_write); lua_setglobal(L, "marioPrint");
 	lua_pushcfunction(L, lua_write_ram); lua_setglobal(L, "asmWrite");
@@ -382,16 +384,14 @@ void lua_loadfile(string file)
 	lua_print("loaded " + file);
 }
 
-void lua_run_init()
-{
+void lua_run_init() {
 	if (LUA_STATE != NULL) {
 		lua_getglobal(LUA_STATE, "Init"); lua_pcall(LUA_STATE, 0, 0, 0);
 		lua_getglobal(LUA_STATE, "Main"); lua_pcall(LUA_STATE, 0, 0, 0);
 	}
 }
 
-void lua_run_main()
-{
+void lua_run_main() {
 	if (LUA_STATE != NULL) {
 		lua_getglobal(LUA_STATE, "Main");
 		int ret = lua_pcall(LUA_STATE, 0, 0, 0);
@@ -405,8 +405,7 @@ void lua_run_main()
 	}
 }
 
-void lua_on_chatted(string message, int plr = 0)
-{
+void lua_on_chatted(string message, int plr = 0) {
 	if (gamemode != GAMEMODE_MAIN || LUA_STATE == NULL) {
 		return;
 	}
