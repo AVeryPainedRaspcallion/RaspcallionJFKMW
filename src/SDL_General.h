@@ -77,7 +77,7 @@ void screen(int width, int height)
 		}
 	}
 
-	win = SDL_CreateWindow("JFKMW Client", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
+	win = SDL_CreateWindow("RaspcallionJFKMW Client", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
 	if (win == NULL) { cout << cyan << "[SDL] Window error: " << SDL_GetError() << endl; SDL_Quit(); exit(1); }
 	cout << cyan << "[SDL] Window created, initializing renderer..." << endl;
 

@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
 	}
 
 #ifdef _WIN32
-	string t = "JFKMW Console - " + string(hosting ? "Server" : "Client") + " " + GAME_VERSION + " (" + __DATE__ + " " + __TIME__ + ")";
+	string t = "RaspcallionJFKMW Console - " + string(hosting ? "Server" : "Client") + " " + GAME_VERSION + " (" + __DATE__ + " " + __TIME__ + ")";
 	SetConsoleTitle(wstring(t.begin(), t.end()).c_str());
 #endif
 
