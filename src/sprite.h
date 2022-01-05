@@ -106,7 +106,7 @@ public:
 	void LoadFromNet() {
 		Unload();
 		CurrentPacket >> png_data_size;
-		if (png_data_size > 0) {
+		if (png_data_size > 0 && png_data_size <= CurrentPacket.getDataSize()) {
 			png_data_raw = new uint_fast8_t[png_data_size];
 			for (int i = 0; i < png_data_size; i++) {
 				CurrentPacket >> png_data_raw[i];

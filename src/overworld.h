@@ -164,7 +164,7 @@ public:
 		old_map = 0xFF;
 
 		//Load exanimation file, and clear out hud memory.
-		loadAssetRAM("Graphics/hud.bin", 11);
+		loadAssetRAM(Modpack + "/graphics/hud.bin", 11);
 		memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800);
 
 		//Clear overworld L1 and L2

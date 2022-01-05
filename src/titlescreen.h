@@ -174,7 +174,7 @@ void RenderTitlescreen() {
 		DrawTitlestring(last_status, 160);
 		DrawTitlestring(latest_error, 168);
 	}
-	CreateSprite("Sprites/ui/title.png",
+	CreateSprite(Modpack + "/title.png",
 		((int_res_x - 256) / 2),
 		((int_res_y - 224) / 2),
 		256, 224);

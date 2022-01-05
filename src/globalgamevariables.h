@@ -1,6 +1,6 @@
 #pragma once
 
-string GAME_VERSION = "4.1.0b";
+string GAME_VERSION = "4.2.0b";
 
 //General
 #define Calculate_Speed(x) double(x) / 256.0
@@ -480,7 +480,7 @@ void ConvertPalette() {
 	palette_array[0x0F] = 0xFFF0A858;
 
 	//Text 1 (White)
-	palette_array[0x1A] = 0xFFFFFFFF;
+	palette_array[0x1A] = 0xFFFFD0B0;
 	palette_array[0x1B] = 0xFFFFFFFF;
 
 	//Text 2 (Yellow)
@@ -490,7 +490,7 @@ void ConvertPalette() {
 		palette_array[0x1F] = 0xFF000000;
 	}
 	else {
-		palette_array[0x1E] = 0xFF70D8F8;
+		palette_array[0x1E] = 0xFF38A0D8;
 		palette_array[0x1F] = 0xFF70D8F8;
 	}
 
@@ -626,6 +626,9 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 		}
 		TriggerRAMSync();
 	}
+	else {
+		cout << red << "[Asset] Failed to load " << file << " to 0x" << hex << offset << dec << ", File does not exist." << endl;
+	}
 	input.close();
 }
 
@@ -645,8 +648,8 @@ vector<OAMTile> OAM_Tiles;
 
 //Gamemode init
 void GameInitialize() {
-	loadAssetRAM("Graphics/exanimations.bin", 8);
-	loadAssetRAM("Graphics/hud.bin", 11);
+	loadAssetRAM(Modpack + "/graphics/exanimations.bin", 8);
+	loadAssetRAM(Modpack + "/graphics/hud.bin", 11);
 	memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800);
 
 	global_frame_counter = 0;

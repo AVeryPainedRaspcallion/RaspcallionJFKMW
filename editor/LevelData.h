@@ -30,7 +30,7 @@ public:
 	//Assets
 	void ReloadAssets() {
 		for (int i = 0; i < 8; i++) {
-			LoadAssetIntoVRAM("Graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
+			LoadAssetIntoVRAM(CurrentPack + "/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
 			LoadAssetIntoVRAM(CurrentPack + "/levels/" + CurrentLevel + "/" + GFX_Names[i] + ".bin", GFX_Locations[i]);
 		}
 		load_background(request_level_entry("background"));

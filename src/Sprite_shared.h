@@ -16,7 +16,7 @@ void loadSpriteGroup(string path) {
 
 void preloadSpriteCache() {
 	for (int i = 0; i < 256; i++) { SPR_CODE[i] = ""; }
-	loadSpriteGroup("Lua/");
+	loadSpriteGroup(Modpack + "/lua/");
 }
 
 void CreateNewSpr(uint_fast8_t i, uint_fast8_t sprite_num, uint_fast8_t new_state, uint_fast16_t x, uint_fast16_t y, uint_fast8_t direction) {

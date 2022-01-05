@@ -314,8 +314,8 @@ void InitializeMap16()
 
 	//kys.. kys bro
 	memset(&MAP16, 0, 0x4000 * sizeof(uint_fast8_t));
-	LoadAssetIntoVRAM("Graphics/exanimations.bin", 8);
-	LoadMap16File("Map16/global.jfkmap16");
+	LoadAssetIntoVRAM(CurrentPack + "/graphics/exanimations.bin", 8);
+	LoadMap16File(CurrentPack + "/global.jfkmap16");
 	LoadMap16File(CurrentPack + "/levels/" + CurrentLevel + "/level_map16.jfkmap16");
 	LoadPaletteFile(CurrentPack + "/levels/" + CurrentLevel + "/level_palette.mw3");
 

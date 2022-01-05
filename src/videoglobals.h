@@ -100,6 +100,8 @@ SDL_GLContext gContext;
 
 //tex conversions
 void ConvertSDLSurfaceToOpenGL(GL_Texture textureid, SDL_Surface* surface) {
+    if (surface == nullptr) { cout << red << "[OpenGL] Critical: Tried to convert a texture that was nullptr." << endl; return; }
+
     GLenum texture_format;
     GLint  nOfColors;
     // get the number of channels in the SDL surface
@@ -161,8 +163,7 @@ void InitializeOpenGLViewport() {
     glGenTextures(16, cached_spr_tilesGL);
     glGenTextures(16, cached_bg_sprites);
 
-    string path_s = "Sprites/ui/TextureDef.png";
-    SDL_Surface* surf = IMG_Load(path_s.c_str());
+    SDL_Surface* surf = IMG_Load("Sprites/gldefault.png");
     ConvertSDLSurfaceToOpenGL(DefaultGLTexture, surf);
     SDL_FreeSurface(surf);
 

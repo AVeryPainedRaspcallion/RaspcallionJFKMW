@@ -353,7 +353,7 @@ public:
 		GameInitialize();
 		level_data.clear();
 		writeToRam(0x010B, num, 2);
-		initialize_map16("Map16/global.jfkmap16");
+		initialize_map16(Modpack + "/global.jfkmap16");
 		Initialize_Level();
 		cout << green << "[Level Manager] Loading level " << int_to_hex(num) << endl;
 		read_from_palette(Modpack + "/levels/" + int_to_hex(num) + "/level_palette.mw3");
@@ -362,7 +362,7 @@ public:
 
 		deleteAssetCache();
 		for (int i = 0; i < 16; i++) {
-			loadAssetRAM("Graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
+			loadAssetRAM(Modpack + "/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
 			loadAssetRAM(Modpack + "/levels/" + int_to_hex(num) + "/" + GFX_Names[i] + ".bin", GFX_Locations[i]);
 		}
 

@@ -39,7 +39,7 @@ public:
 	void LoadFromNet() {
 		Unload();
 		CurrentPacket >> snd_data_size;
-		if (snd_data_size > 0) {
+		if (snd_data_size > 0 && snd_data_size <= CurrentPacket.getDataSize()) {
 			snd_data_raw = new uint_fast8_t[snd_data_size];
 			for (int i = 0; i < snd_data_size; i++) {
 				CurrentPacket >> snd_data_raw[i];

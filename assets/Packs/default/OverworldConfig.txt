@@ -1,0 +1,2 @@
+//JFKMW Overworld Config, all values must be in hex.
+forced_level = 1

@@ -199,7 +199,7 @@ static int clearStatusBar(lua_State* L) {
 static int loadNewGFX(lua_State* L) {
 	int gfx_file = (int)lua_tointeger(L, 1);
 	int offset = (int)lua_tointeger(L, 2);
-	loadAssetRAM("Graphics/GFX" + int_to_hex(gfx_file, true) + ".bin", offset, false, true);
+	loadAssetRAM(Modpack + "/graphics/GFX" + int_to_hex(gfx_file, true) + ".bin", offset, false, true);
 	if (offset >= 0) {
 		TriggerRAMSync();
 	}
