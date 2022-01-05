@@ -627,7 +627,9 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 		TriggerRAMSync();
 	}
 	else {
-		cout << red << "[Asset] Failed to load " << file << " to 0x" << hex << offset << dec << ", File does not exist." << endl;
+		if (debugging_enabled) {
+			cout << red << "[Asset] Failed to load " << file << " to 0x" << hex << offset << dec << ", File does not exist." << endl;
+		}
 	}
 	input.close();
 }
