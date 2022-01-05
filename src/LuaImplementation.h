@@ -2,7 +2,6 @@
 //lua integration for jfkmw
 bool lua_loaded = false;
 lua_State* LUA_STATE;
-string lua_common_v;
 
 void lua_print(string text) {
 	cout << lua_color << "[Lua] " << text << endl;
@@ -317,7 +316,6 @@ int lua_chartosmw(lua_State* L) {
 //functions end
 void lua_connect_functions(lua_State* L) {
 	luaL_openlibs(L);
-	luaL_dostring(L, lua_common_v.c_str());
 
 	//Functions
 	lua_pushcfunction(L, lua_write); lua_setglobal(L, "jfkmwPrint");
