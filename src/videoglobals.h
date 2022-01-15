@@ -197,10 +197,8 @@ void OpenGLFillRect(SDL_Rect* Rect) {
     if (Rect == nullptr) {
         DestR = { 0, 0, int(int_res_x), int(int_res_y) }; Rect = &DestR;
     }
-    int XS = Rect->x;
-    int XE = Rect->x + Rect->w;
-    int YS = Rect->y;
-    int YE = Rect->y + Rect->h;
+    int XS = Rect->x; int XE = Rect->x + Rect->w;
+    int YS = Rect->y; int YE = Rect->y + Rect->h;
     glBegin(GL_QUADS);
     glColor4ub(opengl_r, opengl_g, opengl_b, opengl_a);
     glVertex2i(XS, YS); glVertex2i(XE, YS); glVertex2i(XE, YE); glVertex2i(XS, YE);

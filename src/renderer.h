@@ -100,42 +100,16 @@ void renderOamGroup(int priority) {
 
 void drawBackground() {
 	GL_Texture L2BG = bg_texture_GL[0];
-	int formula_x = -int(double(CameraX) * (double(RAM[0x3F06]) / 16.0) + getRamValue(0x1466, 2));
+	int formula_x = int(double(CameraX) * (double(RAM[0x3F06]) / 16.0) + getRamValue(0x1466, 2));
 	int formula_y = int(double(CameraY) * (double(RAM[0x3F07]) / 16.0) + getRamValue(0x1468, 2));
-	uint_fast8_t mosaic_val = RAM[0x3F10] >> 4;
-	if (mosaic_val > 0) {
-		uint_fast8_t m = min(16, (3 + mosaic_val));
-		SrcR = { int(-formula_x), int(-formula_y + (496 - int_res_y)), 1, 1 };
-		DestR = { 0, 0, int(m), int(m) };
-		uint_fast16_t draw_x = (int_res_x / m)+1; uint_fast16_t draw_y = (int_res_y / m)+1;
-		for (uint_fast16_t x = 0; x < draw_x; x++) {
-			for (uint_fast16_t y = 0; y < draw_y; y++) {
-				RenderCopyOpenGLEx(&SrcR, &DestR, L2BG, 512, 512);
-				DestR.y += m;
-				SrcR.y += m;
-			}
-			SrcR.y -= (draw_y * m); DestR.y = 0; DestR.x += m; SrcR.x += m;
-		}
-	}
-	else {
-		if (hdmaModeEnabled[HDMA_L2_MODEX] || hdmaModeEnabled[HDMA_L2_MODEY]) {
-			SrcR = {0, 0, int(int_res_x), 1};
-			DestR = { 0, 0, int(int_res_x), 1 };
-			for (int i = 0; i < int(int_res_y); i++) {
-				int index = (i - formula_y + (272 + (224 - int_res_y))) & 0x1FF;
-				int hdma_scan = (i - formula_y + 256 + (224 - int_res_y)) & 0x1FF;
-				SrcR.y = (hdmaLineData[hdma_scan][HDMA_L2_MODEY] + index) & 0x1FF;
-				SrcR.x = -((hdmaLineData[hdma_scan][HDMA_L2_MODEX] & 0x1FF) + formula_x);
-				RenderCopyOpenGLEx(&SrcR, &DestR, L2BG, 512, 512);
-				DestR.y++;
-			}
-		}
-		else
-		{
-			DestR = { -formula_x, -int((int_res_y - 224) + formula_y + 240), int((double(RAM[0x38]) / 32.0) * double(int_res_x)), int((double(RAM[0x39]) / 32.0) * double(int_res_y)) };
-			SrcR = { 0, 0, int(int_res_x), int(int_res_y) };
-			RenderCopyOpenGLEx(&DestR, &SrcR, L2BG, 512, 512);
-		}
+	SrcR = { 0, 0, int(int_res_x), 1 };
+	DestR = { 0, 0, int(int_res_x), 1 };
+	for (int i = 0; i < int(int_res_y); i++) {
+		int index = i - formula_y + (496 - int_res_y);
+		SrcR.y = hdmaLineData[index & 0x1FF][HDMA_L2_MODEY] + index;
+		SrcR.x = formula_x - hdmaLineData[index & 0x1FF][HDMA_L2_MODEX];
+		RenderCopyOpenGLEx(&SrcR, &DestR, L2BG, 512, 512);
+		DestR.y++;
 	}
 }
 
@@ -174,7 +148,7 @@ void handleRenderingForPlayer(int player)
 	LocalPlayer.ProcessCamera();
 	double CAM_X = LocalPlayer.CAMERA_X;
 	double CAM_Y = LocalPlayer.CAMERA_Y;
-	
+
 	//Local MP
 	if (local_multiplayer) {
 		double totalDiv = 1;
@@ -494,15 +468,12 @@ void handleRenderingForPlayer(int player)
 			draw_number_hex(29, 2, RAM[0x14], 2);
 
 			//Ping
-			if (networking)
-			{
-
+			if (networking) {
 				VRAM[0xB800 + 56 + 192] = 0x16;	VRAM[0xB801 + 56 + 192] = 6;
 				VRAM[0xB800 + 58 + 192] = 0x1C;	VRAM[0xB801 + 58 + 192] = 6;
 				draw_number_dec(27, 3, ((abs(latest_server_response) % 3600) % 1000) / 3);
 			}
-			else
-			{
+			else {
 				int time = int(total_time_ticks.count() * 10000.0);
 				VRAM[0xB800 + 58 + 192] = 0x1D; VRAM[0xB801 + 58 + 192] = 6;
 				VRAM[0xB800 + 56 + 192] = time % 10; VRAM[0xB801 + 56 + 192] = 6;
@@ -555,6 +526,33 @@ void handleRenderingForPlayer(int player)
 		Ren_FillRect(nullptr);
 	}
 
+	//Draw windows
+	if (RAM[0x3F1B] & 8) { glBlendFunc(GL_ONE, GL_ONE); }
+	for (int window = 0; window < 2; window++) {
+		//Window is enabled
+		if (RAM[0x3F1B] & (16 << window)) {
+			//Window uses HDMA
+			DestR = { 0, 0, int(int_res_x), 1 };
+			for (int i = 0; i < int(int_res_y); i++) {
+				if (RAM[0x3F1B] & (64 << window)) {
+					int_fast16_t x1 = min(hdmaLineData[i][HDMA_WIN1_R + window * 2], hdmaLineData[i][HDMA_WIN1_L + window * 2]);
+					int_fast16_t x2 = max(hdmaLineData[i][HDMA_WIN1_R + window * 2], hdmaLineData[i][HDMA_WIN1_L + window * 2]);
+					DestR.x = x1;
+					DestR.w = x2 - x1;
+				}
+				if (DestR.w > 0) {
+					uint_fast8_t C_Index = hdmaModeEnabled[HDMA_FIXEDCOLORDATA] ? hdmaLineData[i][HDMA_FIXEDCOLORDATA] : 0x10 + (window << 4);
+					Ren_SetDrawColor(palette_array[C_Index], palette_array[C_Index] >> 8, palette_array[C_Index] >> 16, 255);
+					Ren_FillRect(&DestR);
+				}
+				DestR.y++;
+			}
+		}
+	}
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	//Titlescreen
 	if (gamemode == GAMEMODE_TITLE || gamemode == GAMEMODE_ATTEMPTCONNECTION) {
 		RenderTitlescreen();
 	}

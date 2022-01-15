@@ -1,6 +1,6 @@
 #pragma once
 
-string GAME_VERSION = "4.2.0b";
+string GAME_VERSION = "4.2.1b";
 
 //General
 #define Calculate_Speed(x) double(x) / 256.0
@@ -88,14 +88,20 @@ uint_fast8_t pipe_colors[4] = { 3, 5, 6, 7 };
 #define right 1
 #define inside 0
 
-//DMA/DHMA
-bool hdmaModeEnabled[4];
-int_fast16_t hdmaLineData[512][4];
+//DMA/DHMA (starts from 0x210d, see https://en.wikibooks.org/wiki/Super_NES_Programming/SNES_Hardware_Registers)
+#define HDMA_REGS_TOTAL 9
+bool hdmaModeEnabled[HDMA_REGS_TOTAL];
+int_fast16_t hdmaLineData[512][HDMA_REGS_TOTAL];
 
 #define HDMA_L1_MODEX 0
 #define HDMA_L1_MODEY 1
 #define HDMA_L2_MODEX 2
 #define HDMA_L2_MODEY 3
+#define HDMA_WIN1_L 4
+#define HDMA_WIN1_R 5
+#define HDMA_WIN2_L 6
+#define HDMA_WIN2_R 7
+#define HDMA_FIXEDCOLORDATA 8
 
 //Threads
 #ifndef DISABLE_NETWORK

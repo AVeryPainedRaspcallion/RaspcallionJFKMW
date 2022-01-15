@@ -132,7 +132,7 @@ void Sync_Server_RAM(bool compressed = false)
 		RAM[0x14AF] = (flags >> 3) & 1;
 		RAM[0x85] = (flags >> 4) & 1;
 		RAM[0x40] = flags >> 5;
-		
+
 		//Window flags
 		CurrentPacket >> RAM[0x1B89];
 		uint_fast8_t flags2; CurrentPacket >> flags2;
@@ -173,11 +173,11 @@ void Sync_Server_RAM(bool compressed = false)
 		CurrentPacket >> RAM[0x3F0D];
 		CurrentPacket >> RAM[0x3F0E];
 		CurrentPacket >> RAM[0x3F05];
+		CurrentPacket >> RAM[0x3F1B];
 
 		//Send L3 parameters
 		if (RAM[0x3F1F] & 8) {
 			CurrentPacket >> RAM[0x3F1C];
-			CurrentPacket >> RAM[0x3F1B];
 			CurrentPacket >> RAM[0x3F1D];
 			CurrentPacket >> RAM[0x3F1E];
 		}
@@ -384,11 +384,12 @@ void Push_Server_RAM(bool compress = false) {
 		CurrentPacket << RAM[0x3F0D];
 		CurrentPacket << RAM[0x3F0E];
 		CurrentPacket << RAM[0x3F05];
+		CurrentPacket << RAM[0x3F1B];
+
 		//Send L3 parameters
 		if (RAM[0x3F1F] & 8)
 		{
 			CurrentPacket << RAM[0x3F1C];
-			CurrentPacket << RAM[0x3F1B];
 			CurrentPacket << RAM[0x3F1D];
 			CurrentPacket << RAM[0x3F1E];
 		}
