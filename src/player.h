@@ -292,51 +292,34 @@ public:
 	}
 
 	//Called while the player is dead.
-	int DeathProcess() {
-		if (retryPromptOpen && !networking) {
-			pose = POSE_DEAD;
-			return 1;
-		}
-		x += X_SPEED;
-		y += Y_SPEED;
-
+	void DeathProcess() {
+		ProcessGrabbed();
+		X_SPEED = 0.0; pose = POSE_DEAD;
+		if (retryPromptOpen && !networking) { return; }
 		if ((networking || local_multiplayer) || gamemode == GAMEMODE_TITLE) {
 			double Bound = RAM[0x1412] ? (max(0.0, CAMERA_Y - 128.0) - 16.0) : (double(getRamValue(0x1464, 2)) - 64.0);
-			if (y < Bound || DEATH_TIMER < -360) { //death failsafe to respawn after 6 seconds
-				Respawn();
-			}
+			//death failsafe to respawn after 6 seconds
+			if (y < Bound || DEATH_TIMER < -360) { Respawn(); return; }
 		}
 		else {
 			if (useRetry) {
 				writeToRam(0x3F08, getRamValue(0x010B, 2), 2);
-				if (doRetry) {
-					RAM[0x3F11] = 4;
-				}
+				if (doRetry) { RAM[0x3F11] = 4; }
 			}
-			if (y < -496.0) {
-				RAM[0x3F11] = 5;
-			}
+			if (y < -496.0) { RAM[0x3F11] = 5; }
 		}
-
 		DEATH_TIMER--;
 		if (DEATH_TIMER) {
-			if (!DEATH_TIMER && y > -14.0) {
-				Y_SPEED = Calculate_Speed(1280.0);
-			}
+			if (!DEATH_TIMER && y > -14.0) { Y_SPEED = Calculate_Speed(1280.0); }
 		}
 		if (DEATH_TIMER <= 0) {
-			if (!(global_frame_counter % 5)) {
-				to_scale *= -1;
-			}
+			if (!(global_frame_counter % 5)) { to_scale *= -1; }
 			Y_SPEED = max(-5.0, Y_SPEED - Calculate_Speed(48.0));
 		}
 		else {
-			X_SPEED = 0.0;
 			Y_SPEED = 0.0;
 		}
-
-		pose = POSE_DEAD;
-		return 1;
+		x += X_SPEED; y += Y_SPEED;
 	}
 
 	//Called to process grabbed objects.
@@ -933,9 +916,7 @@ public:
 			pose = PlayerSpinFrames[frIndex];
 			return;
 		}
-		if (climbing) { pose = POSE_CLIMB; }
-		else
-		{
+		if (climbing) { pose = POSE_CLIMB; } else {
 			if (fire_anim_timer > 0) {
 				to_scale = WALKING_DIR > 0 ? -1 : 1;
 				pose = POSE_POWER_FIRE + ON_FL;
@@ -969,10 +950,7 @@ public:
 									pose = POSE_GRAB + Frame;
 								}
 								else {
-									if (CAN_SPRINT) {
-										pose = POSE_RUN + Frame;
-									}
-									else {
+									if (CAN_SPRINT) { pose = POSE_RUN + Frame; } else {
 										pose = POSE_WALK + Frame;
 									}
 								}
@@ -1002,11 +980,9 @@ public:
 		}
 
 		//this will cause 1 frame of delay oh well, it fixes MP atleast
-		if (!PlayerControlled && DEAD != OLD_DEAD && isClient) {
+		if (!PlayerControlled && DEAD != OLD_DEAD && isClient && networking) {
 			OLD_DEAD = DEAD;
-			if (DEAD) {
-				RAM[0x1DFC] = 100;
-			}
+			if (DEAD) { RAM[0x1DFC] = 100; }
 		}
 
 		getInput();
@@ -1014,18 +990,20 @@ public:
 		//lol
 		if (!RAM[0x9D] || powerup_anim) {
 			if (DEAD) {
-				ProcessGrabbed();
-				return DeathProcess();
+				DeathProcess();
 			}
-			if (powerup_anim) {
-				uint_fast8_t FRMD = powerup_anim & 0x3F;
-				uint_fast8_t TYP = powerup_anim >> 6; //0 - small->big 1 - any-> cape  2 - any->flower
-				invisible = false;
-				if (TYP == 0 || TYP == 3) { pose = ((FRMD >> 2) & 1) ? POSE_STAND : POSE_POWER_TRANSITION; } else { Get_Sprite(); }
-				if (TYP == 1) { invisible = FRMD != 31; }
-				if (FRMD > 0) { FRMD--; }
-				if (!FRMD && !networking) { player_netcommand[player_index] = 0; RAM[0x9D] = 1; }
-				powerup_anim = !FRMD ? 0 : (FRMD + (TYP << 6));
+			else {
+				if (powerup_anim) {
+					uint_fast8_t FRMD = powerup_anim & 0x3F;
+					uint_fast8_t TYP = powerup_anim >> 6; //0 - small->big 1 - any-> cape  2 - any->flower
+					invisible = false;
+					if (TYP == 0 || TYP == 3) { pose = ((FRMD >> 2) & 1) ? POSE_STAND : POSE_POWER_TRANSITION; }
+					else { Get_Sprite(); }
+					if (TYP == 1) { invisible = FRMD != 31; }
+					if (FRMD > 0) { FRMD--; }
+					if (!FRMD && !networking) { player_netcommand[player_index] = 0; RAM[0x9D] = 1; }
+					powerup_anim = !FRMD ? 0 : (FRMD + (TYP << 6));
+				}
 			}
 			return 1;
 		}
@@ -1033,30 +1011,19 @@ public:
 
 		if (p_pad[button_y] != old_y) {
 			old_y = p_pad[button_y];
-			if (old_y) {
-				pressed_y = true;
-			}
+			if (old_y) { pressed_y = true; }
 		}
+		if (enemyjump_cooldown) { enemyjump_cooldown--; }
 
-		if (enemyjump_cooldown) {
-			enemyjump_cooldown--;
-		}
-
-		if (y < -32.0 && !DEAD) {
-			Die();
-		}
-
+		//Bottom border
+		if (y < -32.0 && !DEAD) { Die(); }
 		if (RAM[0x1412] == 0 && !(RAM[0x3F1F] & 4)) {
 			if (y < (CAMERA_Y - 192.0) && !DEAD) {
 				Die();
 			}
 		}
 
-		if (DEAD) {
-			ProcessGrabbed();
-			return DeathProcess();
-		}
-
+		if (DEAD) { DeathProcess(); return 1; }
 		if (INVINCIBILITY_FRAMES > 0) {INVINCIBILITY_FRAMES--;}
 		if (INVINCIBILITY_FRAMES_STAR > 0 && !isClient) {
 			bool doStar = INVINCIBILITY_FRAMES_STAR < 64 ? !(ingame_frame_counter & (INVINCIBILITY_FRAMES_STAR < 32 ? (INVINCIBILITY_FRAMES_STAR < 16 ? 7 : 3) : 1)) : true;
@@ -1077,11 +1044,9 @@ public:
 		uint_fast16_t check_x_1 = uint_fast16_t((x + 8) / 16.0);
 		uint_fast16_t check_y_1 = uint_fast16_t((y + height - 1) / 16.0);
 
+		//Water
 		IN_WT = RAM[0x85] != 0 || map16_handler.get_tile(check_x_1, check_y_1) < 4;
-
-		if (WaterLevel > 0 && y <= (WaterLevel - height)) {
-			IN_WT = true;
-		}
+		if (WaterLevel > 0 && y <= (WaterLevel - height)) { IN_WT = true; }
 
 		if (IN_WT != OLD_WT) {
 			OLD_WT = IN_WT;
@@ -1089,11 +1054,12 @@ public:
 				Y_SPEED = 0;
 				X_SPEED = 0;
 				P_METER = 0;
-
 				//Smoke
 				createParticle(0x60, 0x11, 0x8, 10, x, y - (STATE == 0 || CROUCH)*16, 0.5, 1, Calculate_Speed(24));
 			}
 		}
+
+		//Logic
 		if (in_pipe) {
 			ProcessPipes();
 		}
@@ -1226,15 +1192,13 @@ public:
 						}
 					}
 
-					//Accel start
+					//Accel
 					if (MOV) {
 						if (X_SPEED > 0.0 && SPEED_X_TO_SET < 0.0 && WALKING_DIR == -1) {
-							SKIDDING = -1;
-							X_SPEED -= SKID_ACCEL;
+							SKIDDING = -1; X_SPEED -= SKID_ACCEL;
 						}
 						if (X_SPEED < 0.0 && SPEED_X_TO_SET > 0.0 && WALKING_DIR == 1) {
-							SKIDDING = 1;
-							X_SPEED += SKID_ACCEL;
+							SKIDDING = 1; X_SPEED += SKID_ACCEL;
 						}
 						if (!ON_FL) {
 							SKIDDING = 0;
@@ -1254,7 +1218,6 @@ public:
 							}
 						}
 					}
-					//Accel end
 
 					//Slide particles
 					if ((SKIDDING || SLIDING) && !(global_frame_counter & 3) && ON_FL) {
@@ -1289,10 +1252,8 @@ public:
 				}
 				else {
 					//Climb Physics
-					ON_FL = false;
-					jump_is_spin = false;
-					SLIDING = false;
-					CROUCH = false;
+					ON_FL = false; jump_is_spin = false;
+					SLIDING = false; CROUCH = false;
 					P_METER = 0;
 					X_SPEED = p_pad[button_right] - p_pad[button_left];
 					Y_SPEED = p_pad[button_up] - p_pad[button_down];
@@ -1316,16 +1277,14 @@ public:
 							Y_SPEED = 0;
 						}
 					}
-					if (WALKING_DIR == 0) {
-						WALKING_DIR = 1;
-					}
+
+					//Animate
+					if (WALKING_DIR == 0) { WALKING_DIR = 1; }
 					if (X_SPEED != 0 || Y_SPEED != 0) {
 						FRM += 1;
-						if (FRM > 8) {
-							FRM = 0;
-							WALKING_DIR *= -1;
-						}
+						if (FRM > 8) { FRM = 0; WALKING_DIR *= -1; }
 					}
+
 					//Climb Test
 					uint_fast16_t check_x_1 = uint_fast16_t((x + 8) / 16.0);
 					uint_fast16_t check_y_1 = uint_fast16_t((y + height / 2) / 16.0);
@@ -1361,15 +1320,11 @@ public:
 			else {
 				//SWIMCODE
 				climbing = false;
-
 				if (!(global_frame_counter & 0x7F) && WaterLevel == 0) {
 					createParticle(0x21, 0x00, 0x88, 7, x + 4 + to_scale * -6, y - 16.0, 0, 0, 0);
 				}
-				SLIDING = false;
-				jump_is_spin = false;
-
-				CAN_SPRINT = false;
-				CROUCH = false;
+				SLIDING = false;¿ jump_is_spin = false;
+				CAN_SPRINT = false;¿ CROUCH = false;
 
 				MOV = p_pad[button_left] || p_pad[button_right];
 				if (p_pad[button_left]) { WALKING_DIR = -1; }
@@ -1522,12 +1477,11 @@ public:
 
 	//Def Camera
 	void ProcessCamera() {
-		if (RAM[0x3F11] || !RAM[0x9D]) {
-			return;
-		}
+		if (RAM[0x3F11] || !RAM[0x9D]) { return; }
 
 		bool sm_mode = smooth_camera || local_multiplayer;
-		if (!RAM[0x1493] && !DEAD) {
+		if (!DEAD) {
+			//X Position
 			if (!RAM[0x1411]) {
 				int min_x = (RAM[0x1462] + RAM[0x1463] * 256) + 8;
 				if (!(RAM[0x3F1F] & 4)) {
@@ -1535,28 +1489,20 @@ public:
 				}
 				CAMERA_X = double(120 + RAM[0x1462] + RAM[0x1463] * 256);
 				if (!sm_mode) {
-					camera_snap_dist = 0;
-					camera_distance_from_player = x - CAMERA_X;
+					camera_snap_dist = 0; camera_distance_from_player = x - CAMERA_X;
 				}
 			}
 			else {
-				if (sm_mode) {
-					CAMERA_X += (x - CAMERA_X) / smooth_camera_speed;
-				}
-				else {
-					SMWCameraX();
-				}
+				if (sm_mode) { CAMERA_X += (x - CAMERA_X) / smooth_camera_speed; }
+				else { SMWCameraX(); }
 			}
+			//Y Position
 			if (!RAM[0x1412]) {
 				CAMERA_Y = double(104 + RAM[0x1464] + (RAM[0x1465] << 8));
 			}
 			else {
-				if (sm_mode) {
-					CAMERA_Y += ((y + 16) - CAMERA_Y) / smooth_camera_speed;
-				}
-				else {
-					SMWCameraY();
-				}
+				if (sm_mode) { CAMERA_Y += ((y + 16) - CAMERA_Y) / smooth_camera_speed; }
+				else { SMWCameraY(); }
 			}
 		}
 	}
