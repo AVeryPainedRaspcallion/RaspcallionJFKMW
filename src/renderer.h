@@ -98,6 +98,7 @@ void renderOamGroup(int priority) {
 	}
 }
 
+//Background renderers (optimized)
 void drawBackground() {
 	//Start drawing
 	glBindTexture(GL_TEXTURE_2D, bg_texture_GL[0]);
@@ -124,13 +125,29 @@ void drawBackground() {
 }
 
 void drawLayer3Background() {
-	if (RAM[0x3F1B] & 2) {glBlendFunc(GL_ONE, GL_ONE);}
-	if (RAM[0x3F1B] & 4) {glBlendFunc(GL_DST_COLOR, GL_ZERO);}
-	int formula_x = -int(double(CameraX) * (double(RAM[0x3F1C]) / 16.0) + getRamValue(0x22, 2));
-	int formula_y = int(double(CameraY) * (double(RAM[0x3F1D]) / 16.0) + getRamValue(0x24, 2));
-	DestR = { -formula_x,  -int((int_res_y - 224) + formula_y + 240), int(int_res_x), int(int_res_y) };
-	SrcR = { 0, 0, int(int_res_x), int(int_res_y) };
-	RenderCopyOpenGLEx(&DestR, &SrcR, bg_texture_GL[1], 512, 512);
+	//Blending
+	if (RAM[0x3F1B] & 2) { glBlendFunc(GL_ONE, GL_ONE); }
+	if (RAM[0x3F1B] & 4) { glBlendFunc(GL_DST_COLOR, GL_ZERO); }
+
+	//Assign 2nd
+	glBindTexture(GL_TEXTURE_2D, bg_texture_GL[1]);
+	glEnable(GL_TEXTURE_2D);
+	glColor4ub(255, 255, 255, 255);
+	glBegin(GL_QUADS);
+
+	float wx = float(int_res_x) / 512.f; float wy = float(int_res_y) / 512.f;
+	float xs = float(double(CameraX) * (double(RAM[0x3F1C]) / 16.0) + getRamValue(0x22, 2)) / 512.f;
+	float ys = float(double(CameraY) * (double(RAM[0x3F1D]) / 16.0) + getRamValue(0x24, 2) - 272) / -512.f;
+
+	glTexCoord2f(xs, ys); glVertex2i(0, 0);
+	glTexCoord2f(xs, ys + wy); glVertex2i(0, int_res_y);
+	glTexCoord2f(xs + wx, ys + wy); glVertex2i(int_res_x, int_res_y);
+	glTexCoord2f(xs + wx, ys); glVertex2i(int_res_x, 0);
+
+	//Turn off mode
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
