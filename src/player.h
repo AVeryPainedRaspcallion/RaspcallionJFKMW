@@ -1323,8 +1323,8 @@ public:
 				if (!(global_frame_counter & 0x7F) && WaterLevel == 0) {
 					createParticle(0x21, 0x00, 0x88, 7, x + 4 + to_scale * -6, y - 16.0, 0, 0, 0);
 				}
-				SLIDING = false;¿ jump_is_spin = false;
-				CAN_SPRINT = false;¿ CROUCH = false;
+				SLIDING = false; jump_is_spin = false;
+				CAN_SPRINT = false; CROUCH = false;
 
 				MOV = p_pad[button_left] || p_pad[button_right];
 				if (p_pad[button_left]) { WALKING_DIR = -1; }
