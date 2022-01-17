@@ -190,8 +190,7 @@ public:
 
 		//Initialize level names
 		ifstream LevelNames(Modpack + "/LevelNames.txt");
-		if (LevelNames.is_open())
-		{
+		if (LevelNames.is_open()) {
 			string line;
 			int i = 0;
 			while (getline(LevelNames, line)) {
@@ -215,12 +214,9 @@ public:
 	//Draw ow tile (Shitty)
 	void drawL1Tile(uint_fast8_t tile, int x, int y)
 	{
-		if (tile >= 0x66 && tile <= 0x6D)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				for (int e = 0; e < 2; e++)
-				{
+		if (tile >= 0x66 && tile <= 0x6D) {
+			for (int i = 0; i < 2; i++) {
+				for (int e = 0; e < 2; e++) {
 					draw8x8_tile_f(
 						x + i * 8,
 						y + e * 8,
@@ -232,12 +228,9 @@ public:
 			}
 		}
 
-		if (tile == 0x58)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				for (int e = 0; e < 2; e++)
-				{
+		if (tile == 0x58) {
+			for (int i = 0; i < 2; i++) {
+				for (int e = 0; e < 2; e++) {
 					draw8x8_tile(
 						x + i * 8,
 						y + e * 8,
@@ -249,12 +242,9 @@ public:
 		}
 
 
-		if (tile == 0x5B)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				for (int e = 0; e < 2; e++)
-				{
+		if (tile == 0x5B) {
+			for (int i = 0; i < 2; i++) {
+				for (int e = 0; e < 2; e++) {
 					draw8x8_tile(
 						x + i * 8,
 						y + e * 8,
@@ -269,7 +259,6 @@ public:
 	//Render override
 	void Render() {
 		if (OverworldPlayer == NULL) {
-			//Darken the screen globally
 			Ren_SetDrawColor(0, 0, 0, 255);
 			Ren_FillRect(nullptr);
 			return;
