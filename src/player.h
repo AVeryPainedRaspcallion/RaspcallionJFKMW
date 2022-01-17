@@ -80,7 +80,7 @@ public:
 	bool old_s = false;
 
 	bool in_pipe = false;
-	bool jump_is_spin = false; //If a jump is a spinjump
+	bool jump_is_spin = false;
 	bool climbing = false;
 
 	uint_fast8_t enemyjump_cooldown = 0;
@@ -119,19 +119,13 @@ public:
 		x = newX; server_position_sync_x = x;
 		y = newY; server_position_sync_y = y;
 		server_position_sync_s++;
-
-		CAMERA_X = x;
-		CAMERA_Y = y;
+		CAMERA_X = x; CAMERA_Y = y;
 	}
 
 	//Send a chat message.
 	void Chat(string new_c) {
-		if (new_c.length() > 0)
-		{
-			curr_chat_string = "<";
-			curr_chat_string += username;
-			curr_chat_string += "> " + new_c;
-			current_chat++;
+		if (new_c.length() > 0) {
+			curr_chat_string = "<" + username + "> " + new_c; current_chat++;
 		}
 	}
 
@@ -139,21 +133,15 @@ public:
 	void Die() {
 		if (PlayerControlled) {
 			if (!DEAD) {
-				X_SPEED = 0;
-				Y_SPEED = 0;
-				STATE = 0;
-				RAM[0x1DFC] = 100;
-				if (WO_counter != 255) {
-					WO_counter++;
-				}
-				
+				X_SPEED = 0; Y_SPEED = 0; STATE = 0;
+				if (WO_counter < 255) { WO_counter++; }
 				if (!((networking || local_multiplayer) || gamemode == GAMEMODE_TITLE)) {
 					RAM[0x9D] = 0;
 
 					//Retry incorporation
 					if (useRetry) {
 						retryPromptOpen = true;
-						RAM[0x1B88] = 3;
+						RAM[0x1DFC] = 100; RAM[0x1B88] = 3;
 					}
 					else {
 						RAM[0x1DFB] = 9;
@@ -1041,20 +1029,15 @@ public:
 		bool MOV = false;
 		bool SLIGHT_HIGH_SPEED = false;
 
-		uint_fast16_t check_x_1 = uint_fast16_t((x + 8) / 16.0);
-		uint_fast16_t check_y_1 = uint_fast16_t((y + height - 1) / 16.0);
-
 		//Water
-		IN_WT = RAM[0x85] != 0 || map16_handler.get_tile(check_x_1, check_y_1) < 4;
+		IN_WT = RAM[0x85] != 0 || map16_handler.get_tile(uint_fast16_t((x + 8) / 16.0), uint_fast16_t((y + height - 1) / 16.0)) < 4;
 		if (WaterLevel > 0 && y <= (WaterLevel - height)) { IN_WT = true; }
 
 		if (IN_WT != OLD_WT) {
 			OLD_WT = IN_WT;
+			//Has just begun swimming
 			if (IN_WT) {
-				Y_SPEED = 0;
-				X_SPEED = 0;
-				P_METER = 0;
-				//Smoke
+				X_SPEED = 0; Y_SPEED = 0; P_METER = 0;
 				createParticle(0x60, 0x11, 0x8, 10, x, y - (STATE == 0 || CROUCH)*16, 0.5, 1, Calculate_Speed(24));
 			}
 		}
@@ -1419,7 +1402,7 @@ public:
 		return 1;
 	}
 
-	//Camera Script Variables Local
+	//SMW Camera remake (not very accurate)
 	double camera_focus_y = 0;
 	double camera_snap_dist = -16;
 	double camera_distance_from_player = 0;
@@ -1432,7 +1415,6 @@ public:
 		camera_distance_from_player = 0;
 		camera_state = 0;
 	}
-
 	void SMWCameraX() {
 		if(X_SPEED != 0) {
 			WALKING_DIR_CAMERA = X_SPEED > 0 ? 1 : -1;
@@ -1441,10 +1423,7 @@ public:
 			WALKING_DIR_OLD = WALKING_DIR_CAMERA;
 			camera_state = 0; //Set Camera State to Wait For Move
 		}
-		if (abs(camera_distance_from_player) > 128) {
-			camera_state = 1;
-		}
-
+		if (abs(camera_distance_from_player) > 128) { camera_state = 1; }
 		if (camera_state == 0) {
 			double DISTANCE_FROM_CAMERA = x - CAMERA_X;
 			if (abs(DISTANCE_FROM_CAMERA) > 32) {
@@ -1453,19 +1432,13 @@ public:
 				camera_distance_from_player = x - (CAMERA_X + camera_snap_dist);
 			}
 		}
-
 		if (camera_state == 1) {
 			int camera_focus_speed = abs(camera_distance_from_player) > 128 ? 16 : 2;
-			if (camera_distance_from_player > 0) {
-				camera_distance_from_player = max(0.0, camera_distance_from_player - camera_focus_speed);
-			}
-			if (camera_distance_from_player < 0) {
-				camera_distance_from_player = min(0.0, camera_distance_from_player + camera_focus_speed);
-			}
+			if (camera_distance_from_player > 0) { camera_distance_from_player = max(0.0, camera_distance_from_player - camera_focus_speed); }
+			if (camera_distance_from_player < 0) { camera_distance_from_player = min(0.0, camera_distance_from_player + camera_focus_speed); }
 			CAMERA_X = x - camera_snap_dist - camera_distance_from_player;
 		}
 	}
-
 	void SMWCameraY() {
 		double new_focus = y + 16;
 		if (((ON_FL && Y_SPEED <= 0) || (new_focus > (camera_focus_y + 96) || IN_WT)) || ((P_METER >= P_METER_REQUIRED && Y_SPEED > 0) || climbing)) {
@@ -1670,21 +1643,17 @@ public:
 vector<MPlayer> Players;
 void AddNewPlayer() { Players.push_back(MPlayer(LevelManager.start_x, LevelManager.start_y)); }
 void RemovePlayer() { Players.pop_back(); }
-void CheckForPlayers() //Have to be careful when fucking with this. Or else memory might leak.
-{
+void CheckForPlayers() { //Have to be careful when fucking with this. Or else memory might leak.
 	while (Players.size() > PlayerAmount) { RemovePlayer(); }
 	while (Players.size() < PlayerAmount) { AddNewPlayer(); }
 }
-
-// Get Player
 MPlayer& GetPlayerByNumber(uint_fast8_t number) {
 	CheckForPlayers();
 	return number < Players.size() ? Players[number] : Players[0];
 }
 
 //player interaction with other players, for now it's just player combat
-void PlayerInteraction()
-{
+void PlayerInteraction() {
 	if (!pvp) {
 		return;
 	}
