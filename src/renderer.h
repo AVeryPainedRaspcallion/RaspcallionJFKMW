@@ -102,12 +102,11 @@ void drawBackground() {
 	GL_Texture L2BG = bg_texture_GL[0];
 	int formula_x = int(double(CameraX) * (double(RAM[0x3F06]) / 16.0) + getRamValue(0x1466, 2));
 	int formula_y = int(double(CameraY) * (double(RAM[0x3F07]) / 16.0) + getRamValue(0x1468, 2));
-	SrcR = { 0, 0, int(int_res_x), 1 };
-	DestR = { 0, 0, int(int_res_x), 1 };
+	SrcR = { 0, 0, int(int_res_x), 1 }; DestR = { 0, 0, int(int_res_x), 1 };
 	for (int i = 0; i < int(int_res_y); i++) {
-		int index = i - formula_y + (496 - int_res_y);
-		SrcR.y = hdmaLineData[index & 0x1FF][HDMA_L2_MODEY] + index;
-		SrcR.x = formula_x - hdmaLineData[index & 0x1FF][HDMA_L2_MODEX];
+		int scanline = i - formula_y + (496 - int_res_y);
+		SrcR.x = formula_x - hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEX];
+		SrcR.y = hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEY] + scanline;
 		RenderCopyOpenGLEx(&SrcR, &DestR, L2BG, 512, 512);
 		DestR.y++;
 	}
@@ -160,8 +159,7 @@ void handleRenderingForPlayer(int player)
 
 			totalDiv += 1;
 		}
-		CAM_X /= totalDiv;
-		CAM_Y /= totalDiv;
+		CAM_X /= totalDiv; CAM_Y /= totalDiv;
 	}
 
 	//Camera
@@ -264,12 +262,8 @@ void handleRenderingForPlayer(int player)
 		MosaicScreenSL1(mosaic_val);
 
 		//Rendermode
-		if (RAM[0x40] & 2) {
-			glBlendFunc(GL_ONE, GL_ONE);
-		}
-		if (RAM[0x40] & 4) {
-			glBlendFunc(GL_DST_COLOR, GL_ZERO);
-		}
+		if (RAM[0x40] & 2) { glBlendFunc(GL_ONE, GL_ONE); }
+		if (RAM[0x40] & 4) { glBlendFunc(GL_DST_COLOR, GL_ZERO); }
 		convertL1Tex();
 
 		if (hdmaModeEnabled[HDMA_L1_MODEX] || hdmaModeEnabled[HDMA_L1_MODEY]) {
@@ -496,19 +490,14 @@ void handleRenderingForPlayer(int player)
 
 		Chat_Prerender();
 
-		if (!(RAM[0x3F1F] & 2))
-		{
+		if (!(RAM[0x3F1F] & 2)) {
 			//Draw L3 player names
-			for (int i = 0; i < Players.size(); i++)
-			{
-				MPlayer& CurrentPlayer = Players[i];
-
+			for (int i = 0; i < Players.size(); i++) {
+				MPlayer& CurrentPlayer = Players[i]; 
 				int s_off_x = (int_res_x - 256) / 2;
 				int s_off_y = (int_res_y - 224) / 2;
-				if (!CurrentPlayer.PlayerControlled && CurrentPlayer.x > (CameraX - camBoundX) && CurrentPlayer.y > (CameraY - camBoundY) && CurrentPlayer.x < (CameraX + int_res_x + camBoundX) && CurrentPlayer.y < (CameraY + int_res_y + camBoundY))
-				{
-					for (int i = 0; i < 5; i++)
-					{
+				if (!CurrentPlayer.PlayerControlled && CurrentPlayer.x > (CameraX - camBoundX) && CurrentPlayer.y > (CameraY - camBoundY) && CurrentPlayer.x < (CameraX + int_res_x + camBoundX) && CurrentPlayer.y < (CameraY + int_res_y + camBoundY)) {
+					for (int i = 0; i < 5; i++) {
 						uint_fast8_t new_l = char_to_smw(CurrentPlayer.player_name_cut[i]);
 						draw8x8_tile_2bpp(-s_off_x + -12 + int(CurrentPlayer.x) - int(CameraX) + i * 8, s_off_y + 224 - int(CurrentPlayer.y + (CurrentPlayer.STATE ? 40 : 32)) + int(CameraY), new_l, 6);
 					}
@@ -535,10 +524,10 @@ void handleRenderingForPlayer(int player)
 			DestR = { 0, 0, int(int_res_x), 1 };
 			for (int i = 0; i < int(int_res_y); i++) {
 				if (RAM[0x3F1B] & (64 << window)) {
-					int_fast16_t x1 = min(hdmaLineData[i][HDMA_WIN1_R + window * 2], hdmaLineData[i][HDMA_WIN1_L + window * 2]);
-					int_fast16_t x2 = max(hdmaLineData[i][HDMA_WIN1_R + window * 2], hdmaLineData[i][HDMA_WIN1_L + window * 2]);
-					DestR.x = x1;
-					DestR.w = x2 - x1;
+					int scanline = (i + 256 - CameraY) & 0x1FF;
+					int_fast16_t x1 = min(hdmaLineData[scanline][HDMA_WIN1_R + window * 2], hdmaLineData[scanline][HDMA_WIN1_L + window * 2]) - CameraX;
+					int_fast16_t x2 = max(hdmaLineData[scanline][HDMA_WIN1_R + window * 2], hdmaLineData[scanline][HDMA_WIN1_L + window * 2]) - CameraX;
+					DestR.x = x1; DestR.w = x2 - x1;
 				}
 				if (DestR.w > 0) {
 					uint_fast8_t C_Index = hdmaModeEnabled[HDMA_FIXEDCOLORDATA] ? hdmaLineData[i][HDMA_FIXEDCOLORDATA] : 0x10 + (window << 4);
