@@ -99,17 +99,27 @@ void renderOamGroup(int priority) {
 }
 
 void drawBackground() {
-	GL_Texture L2BG = bg_texture_GL[0];
+	//Start le drawing
+	glBindTexture(GL_TEXTURE_2D, bg_texture_GL[0]);
+	glEnable(GL_TEXTURE_2D);
+	glColor4ub(255, 255, 255, 255);
 	int formula_x = int(double(CameraX) * (double(RAM[0x3F06]) / 16.0) + getRamValue(0x1466, 2));
-	int formula_y = int(double(CameraY) * (double(RAM[0x3F07]) / 16.0) + getRamValue(0x1468, 2));
-	SrcR = { 0, 0, int(int_res_x), 1 }; DestR = { 0, 0, int(int_res_x), 1 };
+	int formula_y = int(double(CameraY) * (double(RAM[0x3F07]) / 16.0) + getRamValue(0x1468, 2)) - 496;
+	float wx = float((int(int_res_x) * RAM[0x38]) >> 5) / 512.f;
+	float wy = 1.f / 512.f;
 	for (int i = 0; i < int(int_res_y); i++) {
-		int scanline = i - formula_y + (496 - int_res_y);
-		SrcR.x = formula_x - hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEX];
-		SrcR.y = hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEY] + scanline;
-		RenderCopyOpenGLEx(&SrcR, &DestR, L2BG, 512, 512);
-		DestR.y++;
+		int scanline = ((i * RAM[0x39]) >> 5) - int_res_y - formula_y;
+		float xs = float(formula_x - hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEX]) / 512.f;
+		float ys = float(hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEY] + scanline) / 512.f;
+		glBegin(GL_QUADS);
+		glTexCoord2f(xs, ys); glVertex2i(0, i);
+		glTexCoord2f(xs, ys + wy); glVertex2i(0, i+1);
+		glTexCoord2f(xs + wx, ys + wy); glVertex2i(int_res_x, i+1);
+		glTexCoord2f(xs + wx, ys); glVertex2i(int_res_x, i);
+		glEnd();
 	}
+	//Turn off mode
+	glDisable(GL_TEXTURE_2D);
 }
 
 void drawLayer3Background() {
