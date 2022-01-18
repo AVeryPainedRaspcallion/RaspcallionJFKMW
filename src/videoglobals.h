@@ -91,8 +91,11 @@ int_fast16_t CameraX, CameraY;
 int sp_offset_x = 0;
 int sp_offset_y = 0;
 double scale = 1.0;
-uint_fast16_t int_res_x, int_res_y;
-uint_fast16_t sur_res_x;
+
+#define INTERNAL_RESOLUTION_X 256
+#define INTERNAL_RESOLUTION_Y 224
+#define INTERNAL_RESOLUTION_X_P16 272
+#define INTERNAL_RESOLUTION_Y_P16 240
 
 //GL Variables
 uint_fast8_t opengl_r, opengl_g, opengl_b, opengl_a;
@@ -155,7 +158,7 @@ void InitializeOpenGLViewport() {
         cout << red << "[GLEW] GLEW Init error!" << endl; exit(1); return;
     }
 
-    glOrtho(0, int_res_x, int_res_y, 0, -1, 1);
+    glOrtho(0, INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y, 0, -1, 1);
     glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glGenTextures(1, &screen_t_l1GL);
@@ -172,14 +175,14 @@ void InitializeOpenGLViewport() {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glGenRenderbuffers(1, &framebuffero);
     glBindRenderbuffer(GL_RENDERBUFFER, framebuffero);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, int_res_x, int_res_y);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, framebuffero);
 }
 
 void OpenGLClear() {
     //Start FBO
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glViewport(0, 0, int_res_x, int_res_y);
+    glViewport(0, 0, INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -187,7 +190,7 @@ void OpenGLClear() {
 void OpenGLRedraw() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, int_res_x, int_res_y, sp_offset_x, sp_offset_y, int(sp_offset_x + int_res_x * scale), int(sp_offset_y + int_res_y * scale),
+    glBlitFramebuffer(0, 0, INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y, sp_offset_x, sp_offset_y, int(sp_offset_x + INTERNAL_RESOLUTION_X * scale), int(sp_offset_y + INTERNAL_RESOLUTION_Y * scale),
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     SDL_GL_SwapWindow(win);
@@ -195,7 +198,7 @@ void OpenGLRedraw() {
 
 void OpenGLFillRect(SDL_Rect* Rect) {
     if (Rect == nullptr) {
-        DestR = { 0, 0, int(int_res_x), int(int_res_y) }; Rect = &DestR;
+        DestR = { 0, 0, INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y }; Rect = &DestR;
     }
     int XS = Rect->x; int XE = Rect->x + Rect->w;
     int YS = Rect->y; int YE = Rect->y + Rect->h;
@@ -275,8 +278,8 @@ void RenderCopyOpenGLEx(SDL_Rect* SourceRect, SDL_Rect* Rect, GL_Texture Tex, in
 
 void MosaicScreenSL1(uint_fast8_t mosaic_val) {
     if (mosaic_val > 0) {
-        int xx = (int_res_x + 16) / mosaic_val;
-        int yy = (int_res_y + 16) / mosaic_val;
+        int xx = INTERNAL_RESOLUTION_X_P16 / mosaic_val;
+        int yy = INTERNAL_RESOLUTION_Y_P16 / mosaic_val;
         DestR = { 0, 0, xx , yy };
 
         SDL_LowerBlitScaled(screen_s_l1,

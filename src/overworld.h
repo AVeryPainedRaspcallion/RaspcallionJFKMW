@@ -330,16 +330,14 @@ public:
 
 		convertL1Tex();
 
-		DestR.x = ((int_res_x - 256) / 2) - (int(OverworldPlayer->CAMERA_X) & 0xF);
-		DestR.y = ((int_res_y - 224) / 2) - (int(OverworldPlayer->CAMERA_Y) & 0xF);
-		DestR.w = int_res_x + 16;
-		DestR.h = int_res_y + 16;
+		DestR.x = -(int(OverworldPlayer->CAMERA_X) & 0xF);
+		DestR.y = -(int(OverworldPlayer->CAMERA_Y) & 0xF);
+		DestR.w = INTERNAL_RESOLUTION_X_P16; DestR.h = INTERNAL_RESOLUTION_Y_P16;
 		SrcR.x = 0;
 		SrcR.y = 0;
-		SrcR.w = int_res_x + 16;
-		SrcR.h = int_res_y + 16;
+		SrcR.w = INTERNAL_RESOLUTION_X_P16; SrcR.h = INTERNAL_RESOLUTION_Y_P16;
 
-		RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
+		RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, INTERNAL_RESOLUTION_X_P16, INTERNAL_RESOLUTION_Y_P16);
 
 		//Render all of em
 		for (int i = 0; i < Players.size(); i++) {
@@ -356,8 +354,8 @@ public:
 
 			//Walking player on the OW border
 			CreateSpriteCrop("Sprites/player/Skin" + to_string(Players[i].skin) + ".png",
-				((int_res_x - 256) / 2) + 16 + int(Players[i].x - OverworldPlayer->CAMERA_X),
-				((int_res_y - 224) / 2) + (Players[i].IN_WT ? 33 : 27) + int(Players[i].y - OverworldPlayer->CAMERA_Y),
+				16 + int(Players[i].x - OverworldPlayer->CAMERA_X),
+				(Players[i].IN_WT ? 33 : 27) + int(Players[i].y - OverworldPlayer->CAMERA_Y),
 				16, (Players[i].IN_WT ? 18 : 24),
 				(((ingame_frame_counter >> 3) & 3) << 4) + (SPR << 6), 192, 512, 256, 0);
 
@@ -370,24 +368,12 @@ public:
 		//Draw border and HUD
 		if (hudMode < 2) {
 			//The border
-			CreateSprite("Sprites/ui/OWBorder.png",
-				((int_res_x - 256) / 2),
-				((int_res_y - 224) / 2),
-				256,
-				224);
+			CreateSprite("Sprites/ui/OWBorder.png", 0, 0, 256, 224);
 			if (FreeCam && (ingame_frame_counter & 0x1F) < 0x18 && !ResetCam) {
-				CreateSprite("Sprites/ui/OWBorderArrows.png",
-					((int_res_x - 256) / 2),
-					((int_res_y - 224) / 2),
-					256,
-					224);
+				CreateSprite("Sprites/ui/OWBorderArrows.png", 0, 0, 256, 224);
 			}
 			//Walking player on the OW border
-			CreateSpriteCrop("Sprites/player/Skin" + to_string(my_skin) + ".png",
-				((int_res_x - 256) / 2) + 24,
-				((int_res_y - 224) / 2) + 6,
-				32, 32,
-				(1 + ((ingame_frame_counter >> 3) % 3)) << 5, 64, 512, 256, 0);
+			CreateSpriteCrop("Sprites/player/Skin" + to_string(my_skin) + ".png", 24, 6, 32, 32, (1 + ((ingame_frame_counter >> 3) % 3)) << 5, 64, 512, 256, 0);
 
 			//Text
 			if (OverworldPlayer->ow_level_name != "") {

@@ -15,8 +15,6 @@ void load_configuration() {
 			if (name == "default_modpack") { LoadPack(value); }
 			if (name == "resolution_x") { resolution_x = stoi(value); }
 			if (name == "resolution_y") { resolution_y = stoi(value); }
-			if (name == "internal_res_x") { int_res_x = stoi(value) * 16; }
-			if (name == "internal_res_y") { int_res_y = stoi(value) * 16; }
 			if (name == "fullscreen") { fullscreen = value == "true"; }
 			if (name == "borderless_fullscreen") { borderless_fullscreen = value == "true" ? !fullscreen : false; }
 			if (name == "network_update_rate") { network_update_rate = max(16, stoi(value)); network_update_rate_c = network_update_rate; }

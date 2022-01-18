@@ -116,28 +116,24 @@ void RenderTitlescreen() {
 	//Windows
 	DestR.w = 256;
 	DestR.h = 112;
-	DestR.x = ((int_res_x - 256) / 2);
-	DestR.y = ((int_res_y - 224) / 2) - circle_size;
+	DestR.x = 0;
+	DestR.y = -circle_size;
 	Ren_FillRect(&DestR);
 
-	DestR.y = ((int_res_y - 224) / 2) + 112 + circle_size;
+	DestR.y = 112 + circle_size;
 	Ren_FillRect(&DestR);
 
 	DestR.w = 128;
 	DestR.h = 224;
-	DestR.y = ((int_res_y - 224) / 2);
-	DestR.x = ((int_res_x - 256) / 2) - circle_size;
+	DestR.y = 0;
+	DestR.x = -circle_size;
 	Ren_FillRect(&DestR);
 
-	DestR.x = ((int_res_x - 256) / 2) + 128 + circle_size;
+	DestR.x = 128 + circle_size;
 	Ren_FillRect(&DestR);
 
 	//Circle
-	CreateSprite("Sprites/ui/window.png",
-		((int_res_x - 256) / 2) + 128 - circle_size,
-		((int_res_y - 224) / 2) + 112 - circle_size,
-		circle_size * 2,
-		circle_size * 2);
+	CreateSprite("Sprites/ui/window.png", 128 - circle_size, 112 - circle_size, circle_size * 2, circle_size * 2);
 
 	DrawTitlestring("JFKMW " + GAME_VERSION + " (" + Modpack + ")", 224 - 32, 128);
 
@@ -174,10 +170,7 @@ void RenderTitlescreen() {
 		DrawTitlestring(last_status, 160);
 		DrawTitlestring(latest_error, 168);
 	}
-	CreateSprite(Modpack + "/title.png",
-		((int_res_x - 256) / 2),
-		((int_res_y - 224) / 2),
-		256, 224);
+	CreateSprite(Modpack + "/title.png", 0, 0, 256, 224);
 	Ren_SetDrawColor(0, 0, 0, (max(0, 255 - max(0, int(global_frame_counter) - 45) * 4) >> 3) << 3);
 	Ren_FillRect(NULL);
 }

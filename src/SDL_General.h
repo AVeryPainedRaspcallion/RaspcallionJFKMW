@@ -85,11 +85,10 @@ void screen(int width, int height)
 
 	cout << cyan << "[SDL] Initialized window of " << dec << width << "x" << height << " resolution." << endl;
 	cout << cyan << "[SDL] Current video card : " << SDL_GetCurrentVideoDriver() << endl;
-	screen_s_l1 = SDL_CreateRGBSurface(0, int_res_x + 16, int_res_y + 16, 32, rmask, gmask, bmask, amask);
-	screen_s_l1_temp = SDL_CreateRGBSurface(0, int_res_x + 16, int_res_y + 16, 32, rmask, gmask, bmask, amask);
+	screen_s_l1 = SDL_CreateRGBSurface(0, INTERNAL_RESOLUTION_X_P16, INTERNAL_RESOLUTION_Y_P16, 32, rmask, gmask, bmask, amask);
+	screen_s_l1_temp = SDL_CreateRGBSurface(0, INTERNAL_RESOLUTION_X_P16, INTERNAL_RESOLUTION_Y_P16, 32, rmask, gmask, bmask, amask);
 	SDL_SetSurfaceBlendMode(screen_s_l1, SDL_BLENDMODE_NONE);
 	SDL_SetSurfaceBlendMode(screen_s_l1_temp, SDL_BLENDMODE_NONE);
-	sur_res_x = int_res_x + 16;
 
 #ifdef _WIN32
 	//Enable WinAPI Events Processing
@@ -110,10 +109,10 @@ void PrepareRendering() {
 	
 	//Automatically set scale of game.
 	if (!forced_scale) {
-		scale = integer_scaling ? max(1, int(resolution_y / int_res_y)) : max(1.0, double(resolution_y) / double(int_res_y));
+		scale = integer_scaling ? max(1, int(resolution_y / INTERNAL_RESOLUTION_Y)) : max(1.0, double(resolution_y) / double(INTERNAL_RESOLUTION_Y));
 	}
-	sp_offset_x = (w / 2) - int(double(int_res_x / 2) * scale);
-	sp_offset_y = (h / 2) - int(double(int_res_y / 2) * scale);
+	sp_offset_x = (w / 2) - int(double(INTERNAL_RESOLUTION_X / 2) * scale);
+	sp_offset_y = (h / 2) - int(double(INTERNAL_RESOLUTION_Y / 2) * scale);
 
 }
 
@@ -215,7 +214,7 @@ void draw8x8_tile(int_fast16_t x, int_fast16_t y, uint_fast16_t tile, uint_fast8
 				(((graphics_array[17 + index] >> i) & 1) << 3);
 
 			if (color1 != 0) {
-				*((Uint32*)screen_s_l1->pixels + (x + y * sur_res_x)) = palette_array[color1 + palette];
+				*((Uint32*)screen_s_l1->pixels + (x + y * INTERNAL_RESOLUTION_X_P16)) = palette_array[color1 + palette];
 			}
 			x--;
 		}
@@ -236,7 +235,7 @@ void draw8x8_tile_f(int_fast16_t x, int_fast16_t y, uint_fast16_t tile, uint_fas
 				(((graphics_array[17 + index] >> i) & 1) << 3);
 
 			if (color1 != 0) {
-				*((Uint32*)screen_s_l1->pixels + (x + y * sur_res_x)) = palette_array[color1 + palette];
+				*((Uint32*)screen_s_l1->pixels + (x + y * INTERNAL_RESOLUTION_X_P16)) = palette_array[color1 + palette];
 			}
 			if (flipx) { x++; }
 			else { x--; }
@@ -251,8 +250,8 @@ void draw8x8_tile_2bpp(int_fast16_t x, int_fast16_t y, uint_fast8_t tile, uint_f
 	if (tile > 0x7f) {
 		return;
 	}
-	DestR.x = x + (int_res_x - 256) / 2;
-	DestR.y = y + (show_full_screen ? (int_res_y - 224) / 2 : 0);
+	DestR.x = x;
+	DestR.y = y;
 	DestR.w = 8;
 	DestR.h = 8;
 
@@ -268,7 +267,7 @@ void draw_tile_custom(int_fast16_t x, int_fast16_t y, uint_fast8_t size, uint_fa
 	uint_fast8_t size_y = (size >> 4) + 1;
 	DestR.x = x; DestR.y = y;
 	DestR.w = size_x << 3; DestR.h = size_y << 3;
-	if (DestR.x > -DestR.w && DestR.x < int(int_res_x) && DestR.y > -DestR.h && DestR.y < int(int_res_y)) {
+	if (DestR.x > -DestR.w && DestR.x < INTERNAL_RESOLUTION_X && DestR.y > -DestR.h && DestR.y < INTERNAL_RESOLUTION_Y) {
 		SrcR.x = (tile << 3) & 0x7F;
 		SrcR.y = (tile >> 4) << 3;
 		SrcR.w = DestR.w;

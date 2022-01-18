@@ -80,8 +80,8 @@ void check_input() {
 		mouse_x = int(double(mouse_x) / scale);
 		mouse_y = int(double(mouse_y) / scale);
 
-		mouse_x = min(int(int_res_x), max(0, mouse_x));
-		mouse_y = min(int(int_res_y), max(0, mouse_y));
+		mouse_x = min(INTERNAL_RESOLUTION_X, max(0, mouse_x));
+		mouse_y = min(INTERNAL_RESOLUTION_Y, max(0, mouse_y));
 
 		uint_fast32_t m_state = SDL_GetMouseState(NULL, NULL);
 		mouse_down = m_state & SDL_BUTTON(SDL_BUTTON_LEFT);
@@ -94,8 +94,8 @@ void check_input() {
 		controller_mouse_x += double(abs(AxisX) > 4096 ? AxisX : 0) / 6000.0;
 		controller_mouse_y += double(abs(AxisY) > 4096 ? AxisY : 0) / 6000.0;
 
-		controller_mouse_x = min(double(int_res_x), max(0.0, controller_mouse_x));
-		controller_mouse_y = min(double(int_res_y), max(0.0, controller_mouse_y));
+		controller_mouse_x = min(INTERNAL_RESOLUTION_X, max(0.0, controller_mouse_x));
+		controller_mouse_y = min(INTERNAL_RESOLUTION_Y, max(0.0, controller_mouse_y));
 
 		mouse_down = SDL_GameControllerGetAxis(gGameController[0], SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 24576;
 		mouse_down_r = SDL_GameControllerGetAxis(gGameController[0], SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 24576;

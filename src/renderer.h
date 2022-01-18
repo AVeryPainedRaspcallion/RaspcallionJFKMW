@@ -12,7 +12,7 @@ if (tile != 0) {\
 	int_fast16_t x_position = int_fast16_t(double(CurrentPlayer.x + ((CurrentPlayer.climbing || CurrentPlayer.SKIDDING != 0) ? 0 : (CurrentPlayer.to_scale * -12.0))));\
 	int_fast16_t y_position = int_fast16_t(double(CurrentPlayer.y - 1 - (CurrentPlayer.STATE > 0 ? 13.0 : 16.0) - (CurrentPlayer.CROUCH ? 2 : 0) * (CurrentPlayer.STATE > 0)));\
 	uint_fast8_t pal = RAM[0x2E80 + CurrentPlayer.GRABBED_SPRITE] & 0xF;\
-	draw_tile_custom(x_position - CameraX, int_res_y - 32 - y_position + CameraY, size, 0, tile, pal);\
+	draw_tile_custom(x_position - CameraX, INTERNAL_RESOLUTION_Y - 32 - y_position + CameraY, size, 0, tile, pal);\
 }
 
 
@@ -37,7 +37,7 @@ void renderPlayers(bool D) {
 					if (CurrentPlayer.STATE == 2) {
 						CreateSpriteCrop("Sprites/player/Power.png",
 							(CurrentPlayer.to_scale * 8) + int(CurrentPlayer.x) - int(CameraX),
-							int_res_y - 32 + ((CurrentPlayer.CROUCH && CurrentPlayer.CAPE_ST == -1) * 5) - int(CurrentPlayer.y - 1) + int(CameraY),
+							INTERNAL_RESOLUTION_Y - 32 + ((CurrentPlayer.CROUCH && CurrentPlayer.CAPE_ST == -1) * 5) - int(CurrentPlayer.y - 1) + int(CameraY),
 							CurrentPlayer.to_scale * -16, 32, (CurrentPlayer.CAPE_FRAME & 3) << 4, (CurrentPlayer.CAPE_ST + 1) << 5, 64, 128);
 					}
 				}
@@ -51,7 +51,7 @@ void renderPlayers(bool D) {
 				if (!CurrentPlayer.invisible) {
 					CreateSpriteCrop("Sprites/player/Skin" + to_string(CurrentPlayer.skin) + ".png",
 						-8 + int(CurrentPlayer.x) - int(CameraX),
-						int_res_y - 32 - int(CurrentPlayer.y - 1) + int(CameraY),
+						INTERNAL_RESOLUTION_Y - 32 - int(CurrentPlayer.y - 1) + int(CameraY),
 						int(CurrentPlayer.to_scale * (CurrentPlayer.SKIDDING != 0 ? -1 : 1)) * 32, 32,
 						(CurrentPlayer.pose & 0xF) << 5, ((CurrentPlayer.pose >> 4) << 5) + CurrentPlayer.state_str() * 64, 512, 256, CurrentPlayer.INVINCIBILITY_FRAMES_STAR);
 				}
@@ -67,12 +67,12 @@ void renderPlayers(bool D) {
 				for (int e = 0; e < OAMGroupSorted[5].size(); e++) {
 					OAMTile& T = OAM_Tiles[OAMGroupSorted[5][e]];
 					if (T.rotation == i) {
-						draw_tile_custom(T.pos_x + x_position - CameraX, -y_position - T.pos_y + CameraY + int_res_y, T.bsize, 0, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
+						draw_tile_custom(T.pos_x + x_position - CameraX, -y_position - T.pos_y + CameraY + INTERNAL_RESOLUTION_Y, T.bsize, 0, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
 					}
 				}
 
 				if (CurrentPlayer.powerup_anim && (CurrentPlayer.powerup_anim >> 6) == 1) {
-					draw_tile_custom(x_position - CameraX, int_res_y - y_position + CameraY, 0x11, 0, PlayerCapeSmokeFrames[(31 - (CurrentPlayer.powerup_anim & 0x3F)) / 7], 8);
+					draw_tile_custom(x_position - CameraX, INTERNAL_RESOLUTION_Y - y_position + CameraY, 0x11, 0, PlayerCapeSmokeFrames[(31 - (CurrentPlayer.powerup_anim & 0x3F)) / 7], 8);
 				}
 			}
 		}
@@ -93,7 +93,7 @@ void renderOamGroup(int priority) {
 	if (drawSprites) {
 		for (int i = 0; i < OAMGroupSorted[priority].size(); i++) {
 			OAMTile& T = OAM_Tiles[OAMGroupSorted[priority][i]];
-			draw_tile_custom(T.pos_x - CameraX, int_fast16_t(int_res_y) - T.pos_y - 32 + CameraY, T.bsize, T.rotation, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
+			draw_tile_custom(T.pos_x - CameraX, int_fast16_t(INTERNAL_RESOLUTION_Y) - T.pos_y - 32 + CameraY, T.bsize, T.rotation, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
 		}
 	}
 }
@@ -108,16 +108,16 @@ void drawBackground() {
 	//Render all scanlines
 	int formula_x = int(double(CameraX) * (double(RAM[0x3F06]) / 16.0) + getRamValue(0x1466, 2));
 	int formula_y = int(double(CameraY) * (double(RAM[0x3F07]) / 16.0) + getRamValue(0x1468, 2)) - 496;
-	float wx = float((int(int_res_x) * RAM[0x38]) >> 5) / 512.f;
+	float wx = float((INTERNAL_RESOLUTION_X * RAM[0x38]) >> 5) / 512.f;
 	float wy = 1.f / 512.f;
-	for (int i = 0; i < int(int_res_y); i++) {
-		int scanline = ((i * RAM[0x39]) >> 5) - int_res_y - formula_y;
+	for (int i = 0; i < INTERNAL_RESOLUTION_Y; i++) {
+		int scanline = ((i * RAM[0x39]) >> 5) - INTERNAL_RESOLUTION_Y - formula_y;
 		float xs = float(formula_x - hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEX]) / 512.f;
 		float ys = float(hdmaLineData[scanline & 0x1FF][HDMA_L2_MODEY] + scanline) / 512.f;
 		glTexCoord2f(xs, ys); glVertex2i(0, i);
 		glTexCoord2f(xs, ys + wy); glVertex2i(0, i+1);
-		glTexCoord2f(xs + wx, ys + wy); glVertex2i(int_res_x, i+1);
-		glTexCoord2f(xs + wx, ys); glVertex2i(int_res_x, i);
+		glTexCoord2f(xs + wx, ys + wy); glVertex2i(INTERNAL_RESOLUTION_X, i+1);
+		glTexCoord2f(xs + wx, ys); glVertex2i(INTERNAL_RESOLUTION_X, i);
 	}
 	//Turn off mode
 	glEnd();
@@ -135,14 +135,14 @@ void drawLayer3Background() {
 	glColor4ub(255, 255, 255, 255);
 	glBegin(GL_QUADS);
 
-	float wx = float(int_res_x) / 512.f; float wy = float(int_res_y) / 512.f;
+	float wx = float(INTERNAL_RESOLUTION_X) / 512.f; float wy = float(INTERNAL_RESOLUTION_Y) / 512.f;
 	float xs = float(double(CameraX) * (double(RAM[0x3F1C]) / 16.0) + getRamValue(0x22, 2)) / 512.f;
 	float ys = float(double(CameraY) * (double(RAM[0x3F1D]) / 16.0) + getRamValue(0x24, 2) - 272) / -512.f;
 
 	glTexCoord2f(xs, ys); glVertex2i(0, 0);
-	glTexCoord2f(xs, ys + wy); glVertex2i(0, int_res_y);
-	glTexCoord2f(xs + wx, ys + wy); glVertex2i(int_res_x, int_res_y);
-	glTexCoord2f(xs + wx, ys); glVertex2i(int_res_x, 0);
+	glTexCoord2f(xs, ys + wy); glVertex2i(0, INTERNAL_RESOLUTION_Y);
+	glTexCoord2f(xs + wx, ys + wy); glVertex2i(INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y);
+	glTexCoord2f(xs + wx, ys); glVertex2i(INTERNAL_RESOLUTION_X, 0);
 
 	//Turn off mode
 	glEnd();
@@ -191,17 +191,14 @@ void handleRenderingForPlayer(int player)
 	}
 
 	//Camera
-	CameraX = int_fast16_t(CAM_X - (int_fast16_t(int_res_x >> 1) - 8));
-	CameraY = int_fast16_t(CAM_Y - int_fast16_t(int_res_y >> 1));
-
-	if (CameraX < 0) { CameraX = 0; }
-	if (CameraY < 0) { CameraY = 0; }
-	if (CameraX > (-int_fast16_t(int_res_x) + int_fast16_t(mapWidth) * 16)) {
-		CameraX = (-int_fast16_t(int_res_x) + int_fast16_t(mapWidth) * 16);
-	}
-	if (CameraY > (-int_fast16_t(int_res_y) + int_fast16_t(mapHeight) * 16)) {
-		CameraY = (-int_fast16_t(int_res_y) + int_fast16_t(mapHeight) * 16);
-	}
+	CameraX = max(0, min(
+		int_fast16_t(CAM_X - (int_fast16_t(INTERNAL_RESOLUTION_X >> 1) - 8)),
+		-int_fast16_t(INTERNAL_RESOLUTION_X) + int_fast16_t(mapWidth) * 16
+	));
+	CameraY = max(0, min(
+		-int_fast16_t(INTERNAL_RESOLUTION_Y) + int_fast16_t(mapHeight) * 16,
+		int_fast16_t(CAM_Y - int_fast16_t(INTERNAL_RESOLUTION_Y >> 1))
+	));
 
 	if (RAM[0x1887] > 0) {
 		CameraY += (((global_frame_counter >> 1) & 1) ? 2 : -2) * (global_frame_counter & 1);
@@ -239,8 +236,8 @@ void handleRenderingForPlayer(int player)
 		SDL_memset(screen_s_l1->pixels, 0, screen_s_l1->h * screen_s_l1->pitch);
 
 		//Draw scenery
-		uint_fast8_t int_b_x = uint_fast8_t(int_res_x >> 4) + 1;
-		uint_fast8_t int_b_y = uint_fast8_t(int_res_y >> 4) + 1;
+		uint_fast8_t int_b_x = uint_fast8_t(INTERNAL_RESOLUTION_X >> 4) + 1;
+		uint_fast8_t int_b_y = uint_fast8_t(INTERNAL_RESOLUTION_Y >> 4) + 1;
 		uint_fast8_t block_palette;
 		uint_fast16_t tile; uint_fast16_t entry; uint_fast16_t block_index; uint_fast8_t index; uint_fast8_t flip;
 		for (uint_fast8_t x = 0; x < int_b_x; x++) {
@@ -264,7 +261,7 @@ void handleRenderingForPlayer(int player)
 							if (flip) {
 								draw8x8_tile_f(
 									((i << 3) & 0xF) + (x << 4),
-									int_res_y + ((i >> 1) << 3) - (y << 4),
+									INTERNAL_RESOLUTION_Y + ((i >> 1) << 3) - (y << 4),
 									block_index, block_palette,
 									flip & 1, flip & 2
 								);
@@ -272,7 +269,7 @@ void handleRenderingForPlayer(int player)
 							else {
 								draw8x8_tile(
 									((i << 3) & 0xF) + (x << 4),
-									int_res_y + ((i >> 1) << 3) - (y << 4),
+									INTERNAL_RESOLUTION_Y + ((i >> 1) << 3) - (y << 4),
 									block_index, block_palette
 								);
 							}
@@ -296,30 +293,30 @@ void handleRenderingForPlayer(int player)
 
 		if (hdmaModeEnabled[HDMA_L1_MODEX] || hdmaModeEnabled[HDMA_L1_MODEY]) {
 			SrcR.x = 0;
-			SrcR.w = int_res_x + 16;
+			SrcR.w = INTERNAL_RESOLUTION_X_P16;
 			SrcR.h = 1;
-			DestR.w = int_res_x + 16;
+			DestR.w = INTERNAL_RESOLUTION_X_P16;
 			DestR.h = 1;
-			for (int i = 0; i < int(int_res_y + 16); i++) {
+			for (int i = 0; i < int(INTERNAL_RESOLUTION_Y_P16); i++) {
 				int hdma_scan = (256 - CameraY + i + offsetYPixel) & 0x1FF;
 				SrcR.y = (i + (hdmaLineData[hdma_scan][HDMA_L1_MODEY]));
 
 				DestR.y = ((i + -16 + offsetYPixel));
 				DestR.x = (-offsetXPixel + hdmaLineData[hdma_scan][HDMA_L1_MODEX]);
-				RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
+				RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, INTERNAL_RESOLUTION_X_P16, INTERNAL_RESOLUTION_Y_P16);
 			}
 		}
 		else {
 			SrcR.x = 0;
 			SrcR.y = 0;
-			SrcR.w = int_res_x + 16;
-			SrcR.h = int_res_y + 16;
+			SrcR.w = INTERNAL_RESOLUTION_X_P16;
+			SrcR.h = INTERNAL_RESOLUTION_Y_P16;
 
 			DestR.x = -offsetXPixel;
 			DestR.y = -16 + offsetYPixel;
-			DestR.w = int_res_x + 16;
-			DestR.h = int_res_y + 16;
-			RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, int_res_x + 16, int_res_y + 16);
+			DestR.w = INTERNAL_RESOLUTION_X_P16;
+			DestR.h = INTERNAL_RESOLUTION_Y_P16;
+			RenderCopyOpenGLEx(&SrcR, &DestR, screen_t_l1GL, INTERNAL_RESOLUTION_X_P16, INTERNAL_RESOLUTION_Y_P16);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -354,7 +351,7 @@ void handleRenderingForPlayer(int player)
 	//Water
 	if (WaterLevel > 0) {
 		CreateSprite("Sprites/backgrounds/BackgroundWater.png",
-			-int((global_frame_counter + CameraX) & 0xF), int_res_y - (int(WaterLevel) - CameraY),
+			-int((global_frame_counter + CameraX) & 0xF), INTERNAL_RESOLUTION_Y - (int(WaterLevel) - CameraY),
 			512, 512);
 	}
 
@@ -522,12 +519,10 @@ void handleRenderingForPlayer(int player)
 			//Draw L3 player names
 			for (int i = 0; i < Players.size(); i++) {
 				MPlayer& CurrentPlayer = Players[i]; 
-				int s_off_x = (int_res_x - 256) / 2;
-				int s_off_y = (int_res_y - 224) / 2;
-				if (!CurrentPlayer.PlayerControlled && CurrentPlayer.x > (CameraX - camBoundX) && CurrentPlayer.y > (CameraY - camBoundY) && CurrentPlayer.x < (CameraX + int_res_x + camBoundX) && CurrentPlayer.y < (CameraY + int_res_y + camBoundY)) {
+				if (!CurrentPlayer.PlayerControlled && CurrentPlayer.x > (CameraX - camBoundX) && CurrentPlayer.y > (CameraY - camBoundY) && CurrentPlayer.x < (CameraX + INTERNAL_RESOLUTION_X + camBoundX) && CurrentPlayer.y < (CameraY + INTERNAL_RESOLUTION_Y + camBoundY)) {
 					for (int i = 0; i < 5; i++) {
 						uint_fast8_t new_l = char_to_smw(CurrentPlayer.player_name_cut[i]);
-						draw8x8_tile_2bpp(-s_off_x + -12 + int(CurrentPlayer.x) - int(CameraX) + i * 8, s_off_y + 224 - int(CurrentPlayer.y + (CurrentPlayer.STATE ? 40 : 32)) + int(CameraY), new_l, 6);
+						draw8x8_tile_2bpp(-12 + int(CurrentPlayer.x) - int(CameraX) + i * 8, 224 - int(CurrentPlayer.y + (CurrentPlayer.STATE ? 40 : 32)) + int(CameraY), new_l, 6);
 					}
 				}
 			}
@@ -549,8 +544,8 @@ void handleRenderingForPlayer(int player)
 		//Window is enabled
 		if (RAM[0x3F1B] & (16 << window)) {
 			//Window uses HDMA
-			DestR = { 0, 0, int(int_res_x), 1 };
-			for (int i = 0; i < int(int_res_y); i++) {
+			DestR = { 0, 0, INTERNAL_RESOLUTION_X, 1 };
+			for (int i = 0; i < INTERNAL_RESOLUTION_Y; i++) {
 				if (RAM[0x3F1B] & (64 << window)) {
 					int scanline = (i + 256 - CameraY) & 0x1FF;
 					int_fast16_t x1 = min(hdmaLineData[scanline][HDMA_WIN1_R + window * 2], hdmaLineData[scanline][HDMA_WIN1_L + window * 2]) - CameraX;
@@ -584,7 +579,7 @@ void handleRenderingForPlayer(int player)
 		Window_Size_X = Window_Size_X * ((1.0 + double(RAM[0x1B89])) / 256.0);
 		Window_Size_Y = Window_Size_Y * ((1.0 + double(RAM[0x1B89])) / 256.0);
 
-		DestR.x = ((int_res_x - 256) / 2) + DestinationX - int(Window_Size_X / 2.0);
+		DestR.x = DestinationX - int(Window_Size_X / 2.0);
 		DestR.y = DestinationY - int(Window_Size_Y / 2.0);
 		DestR.w = int(Window_Size_X);
 		DestR.h = int(Window_Size_Y);
@@ -596,7 +591,7 @@ void handleRenderingForPlayer(int player)
 	if (drawSprites) {
 		for (int i = 0; i < OAMGroupSorted[4].size(); i++) {
 			OAMTile& T = OAM_Tiles[OAMGroupSorted[4][i]];
-			draw_tile_custom(T.pos_x + (int_res_x - 256) / 2, T.pos_y, T.bsize, T.rotation, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
+			draw_tile_custom(T.pos_x, T.pos_y, T.bsize, T.rotation, T.tile + ((T.props & 192) << 2), T.props, T.scale_x, T.scale_y);
 		}
 	}
 
@@ -614,7 +609,7 @@ void handleRenderingForPlayer(int player)
 		if (LocalPlayer.reserve_item != 0) {
 			uint_fast8_t gfx_t = reserve_graphics_tile[(LocalPlayer.reserve_item - 1) * 2];
 			uint_fast8_t gfx_p = reserve_graphics_tile[1 + (LocalPlayer.reserve_item - 1) * 2];
-			draw_tile_custom((int_res_x / 2) - 8, 16, 0x11, 0, gfx_t, gfx_p);
+			draw_tile_custom((INTERNAL_RESOLUTION_X / 2) - 8, 16, 0x11, 0, gfx_t, gfx_p);
 		}
 		
 	}
