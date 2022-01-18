@@ -358,8 +358,10 @@ uint_fast8_t player_netcommand[256];
 //Game Data Pack
 string Modpack;
 void LoadPack(string NewPack) {
-	if (fs::is_directory("Packs/" + NewPack)) { Modpack = "Packs/" + NewPack;  }
-	else { Modpack = "Packs/default"; }
+	if (gamemode != GAMEMODE_TITLE) { cout << red << "[JFKMW] Cannot load pack while in game." << endl; return; }
+	if (fs::is_directory("packs/" + NewPack)) { Modpack = "packs/" + NewPack;  }
+	else { Modpack = "packs/default"; }
+	transform(Modpack.begin(), Modpack.end(), Modpack.begin(), [](unsigned char c) { return tolower(c); });
 	cout << yellow << "[JFKMW] Modpack switched to " << Modpack << endl;
 	ow_has_been_loaded = false;
 }
