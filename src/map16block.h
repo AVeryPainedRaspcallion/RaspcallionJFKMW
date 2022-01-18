@@ -11,7 +11,7 @@
 #define collision 11
 #define BOUNCE_TIME 6
 
-uint_fast8_t spawned_grabbable = 0xFF;
+//Initialize map16 from file.
 void initialize_map16(string file) {
 	ifstream input(file, ios::binary);
 	if (!input.good()) {
@@ -34,6 +34,7 @@ void initialize_map16(string file) {
 //Macros
 #define DRAW_SPARKLES_BLOCK(D) createParticle(0x7D, 0x00, 0x8, 2, x * 16, -20 + D + y * 16, 0, 0, 0, 0); createParticle(0x7D, 0x00, 0x8, 2, 4 + x * 16, -28 + D + y * 16, 0, 0, 0, -4); createParticle(0x7D, 0x00, 0x8, 2, 8 + x * 16, -20 + D + y * 16, 0, 0, 0, -8); createParticle(0x7D, 0x00, 0x8, 2, 4 + x * 16, -12 + D + y * 16, 0, 0, 0, -12);
 
+//Bounce sprite handler, or just a block updater.
 class block_timer
 {
 public:
@@ -60,17 +61,17 @@ public:
 		Create_OAMTile(spr_tile, 0x11, s_x, s_y, pal_props, 0);
 	}
 };
+
 vector<block_timer> blocks_processing;
 
 
-class map16blockhandler //Map16 loaded block
-{
+class map16blockhandler { //Map16 loaded block
 public:
 	uint_fast16_t tile;
 	bool logic[8];
 
-	void get_map_16_details()
-	{
+	//Get the map16 details of a tile.
+	void get_map_16_details() {
 		uint_fast8_t integer = RAM[MAP16_LOCATION + (tile << 4) + collision];
 		logic[0] = integer & 0b10000000;
 		logic[1] = integer & 0b01000000;
@@ -92,27 +93,20 @@ public:
 		}
 	}
 
-	/*
-		Update Map Tile
-	*/
-	void update_map_tile(uint_fast16_t x, uint_fast16_t y)
-	{
+	//Update Map Tile
+	void update_map_tile(uint_fast16_t x, uint_fast16_t y) {
 		if (x >= mapWidth || y >= mapHeight) {
 			tile = 0x25;
 		}
-		else
-		{
+		else {
 			uint_fast16_t index = x + y * mapWidth;
 			tile = (RAM[ram_level_low + index] + (RAM[ram_level_high + index] << 8)) & 0x3FF;
 		}
 		get_map_16_details();
 	}
 
-	/*
-		Replace Map tile with anything
-	*/
-	void replace_map_tile(uint16_t tile, uint_fast16_t x, uint_fast16_t y)
-	{
+	//Replace a map tile with anything using x/y coordinates.
+	void replace_map_tile(uint16_t tile, uint_fast16_t x, uint_fast16_t y) {
 		if (x >= mapWidth || y >= mapHeight) {
 			return;
 		}
@@ -122,58 +116,49 @@ public:
 		RAM_decay_time_level[index] = level_ram_decay_time * PlayerAmount;
 	}
 
-	/*
-		Get ground
-	*/
-	double ground_y(double x_relative)
-	{
-		if (tile == 0x1AA || tile == 0x1AB) //45* slope Right
-		{
+	//Get ground height.
+	double ground_y(double x_relative) {
+		if (tile == 0x1AA || tile == 0x1AB) { //45* slope Right
 			if (x_relative < 0 || x_relative > 16) { return -9999; }
 			return x_relative;
 		}
-		if (tile == 0x1AF || tile == 0x1B0) //45* slope Left
-		{
+		if (tile == 0x1AF || tile == 0x1B0) { //45* slope Left
 			if (x_relative < 0 || x_relative > 16) { return -9999; }
 			return 16.0 - x_relative;
 		}
-		if (tile == 0x196) //23* slope Right P1
-		{
+		if (tile == 0x196) { //23* slope Right P1
 			if (x_relative < 0 || x_relative > 16) { return -9999; }
 			return x_relative / 2;
 		}
-		if (tile == 0x19B) //23* slope Right P2
-		{
+		if (tile == 0x19B) { //23* slope Right P2
 			if (x_relative < 0 || x_relative > 16) { return -9999; }
 			return 8.0 + x_relative / 2;
 		}
-		if (tile == 0x1A0) //23* slope Left P1
-		{
+		if (tile == 0x1A0) { //23* slope Left P1
 			if (x_relative < 0 || x_relative > 16) { return -9999; }
 			return 16.0 - x_relative / 2;
 		}
-		if (tile == 0x1A5) //23* slope Left P2
-		{
+		if (tile == 0x1A5) { //23* slope Left P2
 			if (x_relative < 0 || x_relative > 16) { return -9999; }
 			return 8.0 - x_relative / 2;
 		}
 		return 16.0;
 	}
 
-	bool check_solid(uint_fast16_t x, uint_fast16_t y)
-	{
+	//Check if a block is solid.
+	bool check_solid(uint_fast16_t x, uint_fast16_t y) {
 		update_map_tile(x, y);
 		return (logic[0] || logic[1]) || (logic[2] || logic[3]);
 	}
 
-	bool check_climbable(uint_fast16_t x, uint_fast16_t y)
-	{
+	//Check if a block is climbable.
+	bool check_climbable(uint_fast16_t x, uint_fast16_t y) {
 		uint_fast16_t tile = get_tile(x, y);
 		return tile >= 6 && tile <= 0xF;
 	}
 
-	double ground_s()
-	{
+	//Ground collision height checks.
+	double ground_s() {
 		if ((tile == 0x1AA || tile == 0x1AB) || (tile == 0x1AF || tile == 0x1B0)) { //45* slope Right/Left
 			return 16.0;
 		}
@@ -182,44 +167,35 @@ public:
 		}
 		return 15.0;
 	}
-	/*
-		Check if a tile is sloped
-	*/
-	uint_fast8_t get_slope()
-	{
+	
+	//Check if a tile is a slope.
+	uint_fast8_t get_slope() {
 		//45
 		if (tile == 0x1AA || tile == 0x1AB) { return 1; }
 		if (tile == 0x1AF || tile == 0x1B0) { return 2; }
 		//23
 		if (tile == 0x196) { return 3; }
 		if (tile == 0x19B) { return 4; }
-
+		//87? Needs clarifying
 		if (tile == 0x1A0) { return 5; }
 		if (tile == 0x1A5) { return 6; }
 		return 0;
 	}
 
-	/*
-		Process block hit.
-	*/
-	void process_block(uint_fast16_t x, uint_fast16_t y, uint8_t side, bool pressing_y = false, bool shatter = false, uint_fast8_t state = 0)
-	{
+	//Block hit process
+	void process_block(uint_fast16_t x, uint_fast16_t y, uint8_t side, bool pressing_y = false, bool shatter = false, uint_fast8_t state = 0) {
 		if (x >= mapWidth || y >= mapHeight) {
 			return;
 		}
-		if (!isClient)
-		{
+		if (!isClient) {
 			uint_fast16_t index = x + y * mapWidth;
 			uint_fast16_t t = RAM[ram_level_low + index] + (RAM[ram_level_high + index] << 8);
-			if (t == 0x11E && side == bottom)
-			{
+			if (t == 0x11E && side == bottom) {
 				blocks_processing.push_back(block_timer{ 0x48, x, y, BOUNCE_TIME, true, 0x40, 0x8, double(x * 16), double(y * 16) - 17.0, 0.0, 4.0 });
 				blocks_processing.push_back(block_timer{ 0x11E, x, y, 0x100+4 });
 				replace_map_tile(0xFF, x, y);
 			}
-
-			if (t == 0x11E && shatter)
-			{
+			if (t == 0x11E && shatter) {
 				replace_map_tile(0x25, x, y);
 				RAM[0x1DFC] = 7;
 				for (int x_p = 0; x_p < 2; x_p++) {
@@ -228,23 +204,18 @@ public:
 					}
 				}
 			}
-
-
-			if (t == 0x0124 && side == bottom)
-			{
+			if (t == 0x0124 && side == bottom) {
 				replace_map_tile(0xFF, x, y);
 			}
-			if (t >= 0x011F && t <= 0x121 && side == bottom)
-			{
+			if (t >= 0x011F && t <= 0x121 && side == bottom) {
 				replace_map_tile(0xFF, x, y);
 				uint_fast8_t powerup = t == 0x121 ? 0x76 : (state == 0 ? 0x74 : (0x75 + (t - 0x11F) * 2));
 				uint_fast8_t spr = spawnSpriteObj(powerup, 5, x * 16, 2 + y * 16, 1);
 				RAM[0x2A00 + spr] = 2;
 				RAM[0x1DFC] = 2;
 			}
-
-			if ((t >= 0x11F && t <= 0x128) && side == bottom) //With bounce sprites
-			{
+			//With bounce sprites
+			if ((t >= 0x11F && t <= 0x128) && side == bottom) {
 				blocks_processing.push_back(block_timer{ 0x132, x, y, BOUNCE_TIME, true, 0x2A, 0x8, double(x * 16), double(y * 16)-17.0, 0.0, 4.0});
 			}
 			if (t == 0x0112 && side == bottom) {
@@ -254,7 +225,6 @@ public:
 				blocks_processing.push_back(block_timer{ 0x112, x, y, BOUNCE_TIME, true, 0xCE, 0xB, double(x * 16), double(y * 16) - 17.0, 0.0, 4.0 });
 				replace_map_tile(0xFF, x, y);
 			}
-
 			//Midway
 			if (t == 0x0038) {
 				replace_map_tile(0x0025, x, y);
@@ -300,45 +270,33 @@ public:
 
 	}
 
-	/*
-		Get tile on map.
-	*/
-	uint_fast16_t get_tile(uint_fast16_t x, uint_fast16_t y)
-	{
+	//Get a tile on the map using x/y coordinates.
+	uint_fast16_t get_tile(uint_fast16_t x, uint_fast16_t y) {
 		if (x >= mapWidth || y >= mapHeight) { return 0x25; }
 		uint_fast16_t index = x + y * mapWidth;
 		return RAM[ram_level_low + index] + (RAM[ram_level_high + index] << 8);
 	}
 
-	/*
-		process all global
-	*/
-
-	void process_global()
-	{
-		for (int i = 0; i < blocks_processing.size(); i++)
-		{
+	//Process bounce sprites/blocks.
+	void process_global() {
+		for (int i = 0; i < blocks_processing.size(); i++) {
 			block_timer& b = blocks_processing[i];
-			if (b.has_spr)
-			{
+			if (b.has_spr) {
 				b.draw();
 			}
 			b.time--;
-			if (b.time == 0)
-			{
+			if (b.time == 0) {
 				replace_map_tile(b.set_to, b.x, b.y);
 				blocks_processing.erase(blocks_processing.begin() + i);
 				i--;
 			}
 		}
 	}
-
-
 };
+
 map16blockhandler map16_handler;
 
-void reset_map()
-{
+void reset_map() {
 	memset(&RAM[0x5000], 0, 0x400);
 	memset(&RAM[ram_level_low], 0x25, LEVEL_SIZE);
 	memset(&RAM[ram_level_high], 0x00, LEVEL_SIZE);

@@ -50,13 +50,18 @@ string midi_patchset = "NONE";
 #define MAP16_LOCATION 0xC000
 #define LEVEL_SIZE 0x8000
 
+//Clocks for perfomance checking
+chrono::high_resolution_clock::time_point START_CHECK;
+chrono::high_resolution_clock::time_point CURRENT_CHECK;
+chrono::duration<double> total_time_ticks;
+
 //useful macros for when doing_write or doing_read are modified, or just for data safety when transferring things between net thread and main game thread.
 #ifdef DISABLE_NETWORK
 #define DATA_SAFETY_WAIT Sleep(1);
 #else
 #define DATA_SAFETY_WAIT sf::sleep(sf::milliseconds(1));
 #endif
-#define WAIT_READ_COMPLETE chrono::high_resolution_clock::time_point START_CHECK = chrono::high_resolution_clock::now(); chrono::high_resolution_clock::time_point CURRENT_CHECK; bool hung_check = false; \
+#define WAIT_READ_COMPLETE START_CHECK = chrono::high_resolution_clock::now(); bool hung_check = false; \
 while (doing_write || doing_read) { \
 	DATA_SAFETY_WAIT \
 	CURRENT_CHECK = chrono::high_resolution_clock::now(); \
@@ -146,7 +151,6 @@ uint_fast8_t my_skin = 0;
 uint_fast32_t global_frame_counter = 0; //Like 0x13
 uint_fast32_t ingame_frame_counter = 0; //Like 0x14
 
-chrono::duration<double> total_time_ticks;
 int latest_server_response;
 
 unsigned int network_update_rate = 16;
@@ -355,6 +359,9 @@ uint_fast8_t SelfPlayerNumber = 0;
 uint_fast8_t PlayerAmount = 0;
 uint_fast8_t player_netcommand[256];
 
+//This is used when a map16 block spawns a grabbable item.
+uint_fast8_t spawned_grabbable = 0xFF;
+
 //Game Data Pack
 string Modpack;
 void LoadPack(string NewPack) {
@@ -522,7 +529,7 @@ void ConvertPalette() {
 
 //Sprite Caching
 void PreloadSPR() {
-	chrono::high_resolution_clock::time_point START_CHECK = chrono::high_resolution_clock::now();
+	START_CHECK = chrono::high_resolution_clock::now();
 	//This makes palette
 	ConvertPalette();
 
@@ -553,7 +560,7 @@ void PreloadSPR() {
 		ConvertSDLSurfaceToOpenGL(cached_spr_tilesGL[e >> 4], cached_spr_surf);
 	}
 	SDL_FreeSurface(cached_spr_surf);
-	chrono::high_resolution_clock::time_point CURRENT_CHECK = chrono::high_resolution_clock::now();
+	CURRENT_CHECK = chrono::high_resolution_clock::now();
 	cout << yellow << "[Sprite Caching] Took " << int(chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK).count() * 1000) << "ms." << endl;
 }
 

@@ -56,10 +56,10 @@ void server_code() {
 		doing_write = true;
 		
 		//Stats
-		chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
+		START_CHECK = chrono::high_resolution_clock::now();
 		game_loop_code(); SoundLoop();
-		chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
-		total_time_ticks = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
+		CURRENT_CHECK = chrono::high_resolution_clock::now();
+		total_time_ticks = chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK);
 		
 		//Network stats
 		if (!(global_frame_counter % 60) && clients.size() > 0) {

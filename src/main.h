@@ -77,16 +77,13 @@ void player_code() {
 
 		//Title
 		if (gamemode == GAMEMODE_TITLE) {
-			InitTitlescreen();
-			LevelManager.LoadLevel(0xFFFF);
+			InitTitlescreen(); LevelManager.LoadLevel(0xFFFF);
 		}
 		
 		//OW
 		if (gamemode == GAMEMODE_OVERWORLD) {
 			last_status = "";
-			if (!networking) {
-				overworld.Initialize();
-			}
+			if (!networking) { overworld.Initialize(); }
 		}
 
 #ifndef DISABLE_NETWORK
@@ -94,29 +91,29 @@ void player_code() {
 		if (networking) {
 			thread = new sf::Thread(&NetWorkLoop); thread->launch();
 			gamemode = GAMEMODE_MAIN;
+
+			//Player Init Wait
+			cout << yellow << "[JFKMW] Waiting for player..." << endl;
+			while (Players.size() == 0) {
+				DATA_SAFETY_WAIT
+			}
 		}
 #endif
-		//Player Init Wait
-		cout << yellow << "[JFKMW] Waiting for player..." << endl;
-		while (Players.size() == 0) {
-			DATA_SAFETY_WAIT
-		}
 
 		//Main Loop
 		while (!done()) {
 			WAIT_READ_COMPLETE
 			doing_write = true;
 			cls();
-			chrono::high_resolution_clock::time_point t1 = chrono::high_resolution_clock::now();
+			START_CHECK = chrono::high_resolution_clock::now();
 			if (!gGameController) {
 				check_input();
 			}
 			game_loop_code(); SoundLoop();
 			render();
 			doing_write = false;
-
-			chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
-			total_time_ticks = chrono::duration_cast<chrono::duration<double>>(t2 - t1);
+			CURRENT_CHECK = chrono::high_resolution_clock::now();
+			total_time_ticks = chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK);
 			redraw();
 
 			if (disconnected) {
