@@ -66,7 +66,7 @@ void vibrate_controller(double intensity, int time) {
 void check_input() {
 	state = SDL_GetKeyboardState(NULL);
 
-	if (state[SDL_SCANCODE_ESCAPE] && gamemode == GAMEMODE_MAIN) {
+	if (state[SDL_SCANCODE_ESCAPE] && (gamemode == GAMEMODE_MAIN || gamemode == GAMEMODE_OVERWORLD)) {
 		if (!networking) {
 			quit = true;
 		}
