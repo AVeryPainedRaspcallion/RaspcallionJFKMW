@@ -24,11 +24,12 @@ If you know how to code, submit fixes. If you like to test stuff, make levels an
 Releases won't be seen until a proper starter pack can be made for the game with 100% original content. You are supposed to supply the game the assets it requires, more shall be documented later.
 
 # Documentation
-Pack format: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Pack%20Format.html
-Lua Documentation: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Lua%20Documentation.html
-Sprite Programming: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Sprite%20Programming.html
-RAM Map: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/RAM%20Map.html
-Solar Energy (Level Editor): http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Solar%20Energy%20And%20Level%20content%20Creation.html
+See documentation folder.
+* Pack format: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Pack%20Format.html
+* Lua Documentation: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Lua%20Documentation.html
+* Sprite Programming: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Sprite%20Programming.html
+* RAM Map: http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/RAM%20Map.html
+* Solar Energy (Level Editor): http://htmlpreview.github.io/?https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/blob/main/documentation/Solar%20Energy%20And%20Level%20content%20Creation.html
 
 # Requirements / Dependencies / Compiling
 You can use the premake script included to build the game, if you want to build manually, here are the required dependencies:
