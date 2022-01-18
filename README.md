@@ -21,7 +21,7 @@ While the game has received a lot of maintenance over the months, it hasn't seen
 If you know how to code, submit fixes. If you like to test stuff, make levels and test the craziest stuff you can think of and try to find bugs, then report them in issues. Everything helps! We especially need help on making the game physics accurate. Also if a multiplayer server is up, help us test the netcode by just playing the game.
 
 # About releases
-Releases won't be seen until a proper starter pack can be made for the game with 100% original content. You are supposed to supply the game the assets it requires, more shall be documented later.
+You're supposed to build the game yourself, but you can use one of the actions builds (see https://github.com/AVeryPainedRaspcallion/RaspcallionJFKMW/actions) and use the assets folder to supply assets for the game. You will have to supply your own dll's with it too if you are on a Windows platform.
 
 # Documentation
 See documentation folder.
