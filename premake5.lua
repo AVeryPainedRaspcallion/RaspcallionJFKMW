@@ -46,3 +46,13 @@ project "JFKMW"
 	libdirs { "libs" }
 
 	files { "src/**.hpp", "src/**.h", "src/**.cpp", "src/**.c", "libs/lz4/lib/lz4.c" }
+
+project "JFKMWLVEditor"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+	targetdir "bin/%{cfg.buildcfg}"
+	includedirs { "libs", "libs/SDL/include", "libs/SDL_image" }
+	libdirs { "libs" }
+
+	files { "editor/**.hpp", "editor/**.h", "editor/**.cpp", "editor/**.c" }
