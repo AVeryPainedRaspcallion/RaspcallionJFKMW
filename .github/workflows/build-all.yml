@@ -76,8 +76,6 @@ jobs:
       run: |
         msbuild /m /p:Configuration=Release JFKMW.sln
         msbuild /m /p:Configuration=Debug JFKMW.sln
-        msbuild /m /p:Configuration=Release JFKMWLVEditor.sln
-        msbuild /m /p:Configuration=Debug JFKMWLVEditor.sln
       
     - name: Upload release
       uses: actions/upload-artifact@v2.2.4
