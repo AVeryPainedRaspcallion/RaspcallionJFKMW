@@ -16,6 +16,9 @@ void loadSpriteGroup(string path) {
 
 void preloadSpriteCache() {
 	for (int i = 0; i < 256; i++) { SPR_CODE[i] = ""; }
+	if (Modpack != "Packs/default") {
+		loadSpriteGroup("Packs/default/lua/");
+	}
 	loadSpriteGroup(Modpack + "/lua/");
 }
 
