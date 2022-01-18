@@ -1,0 +1,191 @@
+<head>
+
+    <title>JFK Mario World Modpack Documentation</title>
+	<!-- edited 19/10/2021 -->
+	<!-- style, cleanup -->
+
+</head>
+
+<link rel="stylesheet" href="highlighter/dark.css">
+<script src="highlighter/highlighter.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<style>
+body {
+	background-color: #111;
+	color: #FFF;
+	font-family: helvetica, sans-serif;
+	letter-spacing: 0.3px;
+}
+
+pre {
+	background-color: #222;
+	border-radius: 3px;
+	margin: 8px;
+	border: solid 1px #ffffff1a;
+}
+
+font {
+	font-family: monospace;
+}
+</style>
+<!-- start -->
+<center><h1>JFK Mario World Modpack-related documentation</h1></center>
+<h1>Modpack creation tutorial</h1>
+To create a new modpack, you just have to create a folder in the Packs folder of the game, and name it whatever you want.<br>
+<img src="ss/step1.png"><br><br>
+For reference, i'll be creating a new pack with the name "mytestpack". Once we go in the folder, we have to create a "levels" folder. You will also need to put these files/folders in the folder:<br>
+<b>"music" - Copy it from any other pack. Used for music.<br>
+"lua" (optional) - Used for objects (enemies, etc). See other packs for reference, By default, all sprites from the Default pack are loaded.<br>
+"graphics" - Copy it from any other pack. Used for global graphics.<br>
+"title.png" - Feel free to reuse one, or make your own. Has to be 256x224. Used for the titlescreen (and it's border)<br>
+"global.jfkmap16" - Copy it from any other pack. Used for tile definitions.</b><br><br>
+<img src="ss/step2.png"><br><br>
+<b>(Note: The music folder has to have the music files in it, you can copypaste the ones from the Default pack if you want to.)</b><br>
+When you're done creating a new pack, you can use <b><a href="Solar Energy And Level content Creation.html">Solar Energy</a></b> to make a new level for it, like so. You have to specify that you want this level to be in the pack.<br><br>
+<img src="ss/step3.png"><br><br>
+For reference, I'll be creating level 1, sized 256x32, using the grass template (1). I'll just create a basic level, then save it.<br><br>
+<img src="ss/step4.png"><br><br>
+Once you are done with that, you can test the pack out in the game by doing these steps:<br><br>
+<img src="ss/step5.png"><br><br>
+If it worked, then great. You just made your own JFKMW modpack. Feel free to make your own things.<br><br>
+
+
+<h1>JFK Mario World Overworld/Config Format</h1>
+Overworlds are a very unfinished feature, and not 100% stable. However, you can still create them. I suggest using a configuration file with forced_level for a modpack though. See below.<br>
+Right now, there is no current way to edit overworlds yet, and it's still being worked on, however, you can do some very basic configuration of the overworld/game using the file OverworldConfig.txt<br><br>
+<img src="ss/config.png"><br><br>
+OverworldConfig.txt reference:<br>
+<pre><code class="c++">//JFKMW Overworld Config, all values must be in hex.
+//These values determine your starting position in the overworld.
+start_x = A0
+start_y = 240
+//This determines the default level that the game will start on. If this is higher than 0, or added to the config file, then the game will be forced to go to that level on start, and also removes the Overworld.
+forced_level = C0
+</code></pre><br>
+The game uses the following files for the overworld:<br>
+- OW_GFX00.bin to OW_GFX07.bin - Main graphics <b>(Some can be omitted, mostly for Layer 2)</b><br>
+- OW_GFX08.bin - Animated graphics page<br>
+- Map0.mw3 to Map6.mw3 - Map palettes <b>(Can be dumped using Lunar Magic.)</b><br>
+- MainOW_Levels.bin - Layer 1 parameters (level ids, etc) <b>(Can view/edit on hex editors by setting bytes per row to 32 bytes.)</b><br>
+- MainOW_L1.bin - Layer 1 tiles (paths, tiles) <b>(Can view/edit on hex editors by setting bytes per row to 32 bytes.)</b><br>
+- MainOW_L2.bin - Layer 2 (decoration) tiles <b>(Can be dumped by dumping $7F4000 using an emulator on the original game, exactly 16384 bytes.)</b><br>
+Overworlds use music tracks F0-F6 for all of the maps/submaps.
+
+
+<h1>JFK Mario World Level Format</h1>
+<h2>Advice</h2>
+This probably won't be helpful to the normal user. It's more helpful for tool creators who want to make level editors for the game, or make their levels more advanced/have custom code/music/etc. Solar energy is the only current working level editor.<br><br><br>
+<h2>For Starters</h2>
+Level folders are made of the following:<br>
+level_data.txt<br>
+level_palette.mw3<br>
+level_lua.lua (optional, see <a href="Lua Documentation.html">Lua Documentation</a>)<br><br><br>
+<h2>Special Files</h2>
+You can replace the games sprites on your own by using Per-Level sprites. If you make a sprite{SLOT}.lua file in the level folder, you can use that to replace a sprite.<br>
+For example, sprite0B.lua in level 02 would replace Sprite 0B from Code/Sprites if that level was loaded, replacing that sprite.<br><br>
+You can have per-level backgrounds (which are sent through net), this is extremely limited and you can only use slots F0 to FF, name them Background{F0-FF}.png. They will use their respective slots.<br><br>
+You can have per-level custom sounds, this is pretty limited though (also only .ogg files. no other format), and you can only use E0 to FF, name them sound{E0-FF}.ogg. These affect all slots. (1DF9/1DFC/1DFA). It also has it's own dedicated port, 1DFD.<br><br>
+You can also have per-level music, if you want to include .ogg/.spc/.mid music in your stage, you can include it by naming it music{TRACK}.format, for example musicD1.spc, music34.ogg, etc. <b>Note: There's some unusual behaviour, if you have a sublevel on your level that uses the same song as the main level, but doesn't use the same file, this won't work. (music will just stay the same) Make sure they're named differently. like musicC0.ogg (for the main level) and musicC1.ogg (for the sublevel)</b><br><br>
+You can also use per-level GFX too. The following files are valid and detected by the game:<br>
+gfx_1.bin<br>
+gfx_2.bin<br>
+gfx_3.bin<br>
+gfx_4.bin<br>
+gfx_5.bin<br>
+gfx_6.bin<br>
+gfx_7.bin<br>
+gfx_8.bin<br>
+sp_1.bin<br>
+sp_2.bin<br>
+sp_3.bin<br>
+sp_4.bin<br>
+sp_5.bin<br>
+sp_6.bin<br>
+sp_7.bin<br>
+sp_8.bin<br>
+<b>Note: It is recommended to use these if you are making a custom level that will use custom gfx, sprites, music, etc and you want to distribute it later, that will make your stages more drag and drop to install.</b>
+<h2>Example Level Folder Structure</h2>
+60/<br>
+-  level_data.txt<br>
+-  level_lua.lua<br>
+-  level_palette.mw3<br>
+-  sprite04.lua<br>
+-  spriteC9.lua<br>
+-  sp_3.bin<br>
+-  musicD0.ogg<br>
+-  soundE5.ogg<br>
+-  soundF1.ogg<br>
+-  soundF2.ogg<br>
+<h2>Sample level_data.txt</h2>
+<pre><code class="c++">//Author : idk
+//time  date
+[level_config]
+music = 1
+size_x = 256
+size_y = 64
+background = 0
+vertical = 0
+time_limit = 300
+gfx_1 = 0
+gfx_2 = 1
+gfx_3 = 3
+gfx_4 = 3
+gfx_5 = 5
+gfx_6 = 6
+gfx_7 = 0
+gfx_8 = 1
+sp_1 = 5
+sp_2 = 6
+sp_3 = 19
+sp_4 = 20
+sp_5 = 0
+sp_6 = 0
+sp_7 = 0
+sp_8 = 0
+start_x = 1
+start_y = 1
+
+//GFX_7 and GFX_8 are optional
+
+[scripts]
+level_lua.lua = main
+
+[sprite_data]
+
+[level_data]
+100,0,0,255,0
+
+
+//This should be a flat level. The format for tiles are..
+//Map16Tile,StartX,StartY,EndX,EndY
+//Sprites:
+//sprite,positionx,positiony,direction
+</code></pre>
+<h1>Map16 Format</h1>
+<pre><code class="c++">16 bytes per row (set this on HXD)
+REP TILE01 TILE02 TILE03 TILE04 PAL1,2 PAL3,4 FLIP COLLISION ACTAS
+
+REP (2 bytes, 00-01) - tile to replace on the map16
+TILE01, TILE02, TILE03, TILE04 (8 bytes, 02-09) - GFX tiles
+PAL1,2 - PAL3,4 (2 bytes, 4 bit) - index of every palette, example : 4032 would mean tile 1 uses palette 4, tile 2 uses palette 0, you get it
+FLIP (1 byte) - Flip Bits
+YXYXYXYX
+
+The first 2 bits are for TILE01, The second are for TILE02, and so on.
+
+COLLISION (1 byte) - Collision bytes
+TBRLHD--
+T = Solid On Top
+B = Solid On Bottom
+R = Solid On Right
+L = Solid On Left
+H = Hurt player on touch
+D = Kill player on touch
+
+ACTAS (2 bytes) - obvious.
+
+ingame 16x16 block
+TILE1 TILE2
+TILE3 TILE4
+</code></pre>

@@ -1,0 +1,390 @@
+<head>
+
+    <title>JFK Mario World RAM Map</title>
+	<!-- edited 19/10/2021 -->
+	<!-- style, cleanup -->
+
+</head>
+
+<link rel="stylesheet" href="highlighter/dark.css">
+<script src="highlighter/highlighter.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<style>
+body {
+	background-color: #111;
+	color: #FFF;
+	font-family: helvetica, sans-serif;
+	letter-spacing: 0.3px;
+}
+
+pre {
+	background-color: #222;
+	border-radius: 3px;
+	margin: 8px;
+	border: solid 1px #ffffff1a;
+}
+
+font {
+	font-family: monospace;
+}
+</style>
+<!-- start -->
+<h1>JFK Mario World RAM Map</h1>
+Docs: <a href="Lua Documentation.html">Lua Documentation</a> - ASM not available (unimplemented rn)<br><br>
+Why the game was made using the old SMW ram map technology:<br>
+This is so we can easily convert resources made for the original SMW (sprites, levelasm, etc) to JFKMW by just remapping addresses and making it aware of the new rules.<br><br>
+Some addresses can be 2 bytes, 3 bytes, 4 bytes, which means they are 16-bit/24-bit/32-bit signed/unsigned integers.<br>
+If the bytes are not specified, it's just a 1 byte address (8-bit unsigned).<br><br>
+These addresses are mostly for the server and are replicated to all clients. Banks 0x7E0000-0x7FFFFF are covered, and 0x800000-0x80FFFF exists in the form of VRAM. In Lua, subtract 0x7E0000 from these values.<br>
+<pre><code class="lua">--Free--
+0x7000-0xAFFF 16kb reserved for usage in scripts. Feel free to use this space for storing variables.
+
+--Reserved--
+0xB000-0xBFFF Reserved For Expansion
+0x3000-0x3EFF Reserved For Expansion
+
+--Overworld
+0x6000-0x9FFF L2 data
+0xA000-0xAFFF L1 Data
+
+--Map16 (ingame)--
+0xC000-0xFFFF Map16 Pages 0, 1, 2, 3
+0x10000 to 0x17FFF Block data, low byte.
+0x18000 to 0x1FFFF Block data, high byte.
+
+The formula for getting a block in the level is
+blockIndex = xPosition + (yPosition * mapWidth)
+
+--Logic--
+0x7B Add to player X speed (this applies to all players)
+0x7C Level gravity, by default 96. anything higher will make gravity higher. Anything less and ull jump higher
+0x7D Add to player Y speed (this applies to all players)
+0x85 Water status. 0 = Not water 1 = Water (Applies to all players)
+0x9D Pause game flag. Most things wont run when this is set to 0.
+0x0F31 (2 bytes) Level Time, 40 = 1 second, so 300 * 40 would equal 300 in Time.
+0x14AD Blue PSwitch Timer
+0x010B (2 bytes) Current Level 
+0x1493 Level clear timer, if it hits 00, the level in 0x3F08 will be loaded.
+0x14AF On/OFF Switch status
+
+--SRAM
+0x1D00-0x1FFF - Persists between sessions. This is free to be used by levels or Overworld Lua.
+
+--Messageboxes/Windowing--
+0x1426 Message box trigger. 0 = None, 1 = Message 1, 2 = Message 2, and so on. Only up to 15 messages per level.
+0x1B88 Black window mode ----BBBM
+0x1B89 Black window size
+
+Mode:
+M = 1 for expanding, 0 for closing.
+B = Type, 0 is messagebox, 1 is retry prompt.
+
+--Video--
+0x0036 Mode7 rotation
+0x0038 Scale X ($20 = Default)
+0x0039 Scale Y ($20 = Default)
+0x0040 Layer 1 Blending/Priority Flags, -----RAP
+R: Subtract, A: Addition, P: BG Drawn Over Layer 1
+
+--HDMA/DMA--
+--Count : 57344
+0x4207 	H-Count Timer (Upper 8 Bits)
+0x4208 	H-Count Timer MSB (Bit 0)
+0x4209 	V-Count Timer (Upper 8 Bits)
+0x420A 	V-Count Timer MSB (Bit 0)
+
+0x4281  Dest Addr A ($2181, 3 bytes)
+
+--DMA does not work as of the moment, but here's the mapping.
+0x420B 	DMA Channel Enable 	  abcdefgh a = Channel 7...h = Channel 0: 1 = Enable 0 = Disable
+0x420C 	HDMA Channel Enable   abcdefgh a = Channel 7...h = Channel 0: 1 = Enable 0 = Disable 
+
+x = Channel. There are 8 channels in total. 0-7, for example 0x4340, 0x4365, etc.
+0x43x0 	Parameters for DMA Transfer 	ab0cdeee a = Direction b = Type c = Inc/Dec d = Auto/Fixed e = Word Size Select
+0x43x1 	B Address
+0x43x2 	A Address (Low Byte)
+0x43x3 	A Address (High Byte)
+0x43x4 	A Address Bank
+0x43x5 	Number Bytes to Transfer (Low Byte) (DMA)
+0x43x6 	Number Bytes to Transfer (High Byte) (DMA)
+0x43x7 	Data Bank (H-DMA)
+0x43x8 	A2 Table Address (Low Byte)
+0x43x9 	A2 Table Address (High Byte)
+0x43xA 	Number of Lines to Transfer (H-DMA) 
+
+B Address Modes:
+0x0D - Layer1 Line Shift X
+0x0E - Layer1 Line Shift Y
+0x0F - Layer2 Line Shift X
+0x10 - Layer2 Line Shift Y
+0x26 - Window 1 Left Position Designation
+0x27 - Window 1 Right Position Designation
+0x28 - Window 2 Left Position Designation
+0x29 - Window 2 Right Position Designation 
+0x32 - Fixed Color Data (palete index)
+
+--Sound--
+0x1DF9 Sound I/O Port 1, Writing to this will play a sound effect from the sounds/1df9 folder
+0x1DFA Sound I/O Port 2, Writing to this will play a sound effect from the sounds/1dfa folder
+0x1DFB Sound I/O Port 3, Current Playing Music, writing to this will play a spc/ogg from the music folder
+0x1DFC Sound I/O Port 4, Writing to this will play a sound effect from the sounds/1dfc folder
+0x1DFD Sound I/O Port 5, Only plays per-level sounds and can use up to 32 channels.
+0x0DDA Back-up of the music register.
+
+--OAM--
+NOTE: USE THE BUILT IN LUA FUNCTION. WRITING TO 0x200-0x5FF WONT DO ANYTHING ANYMORE.
+Format :
+Tile, Size, XPos, YPos, Flags, Rotation
+
+Flags format (FSRRYXCPPPP)
+PPPP = Palette (0 to F, all rows)
+C = Use next page of graphics (SP3/SP4)
+X = X Flip
+Y = Y Flip
+RR = Priority Bits:
+00 - Below mario
+01 - Above mario
+10 - Below layer 1, below 11 (use this for background objects, lowest layer)
+11 - Below layer 1, above 10
+S = Screen relative (wont move)
+F = Follow Player (Rotation byte will be used to determine player number)
+
+--Positions--
+--camera lock value entries : 0 for locked, any else for unlocked.
+0x1411 Screen locked in X axis, if this is locked, players camera will be locked at 0x1462 (Layer 1 X Position)
+0x1412 Screen locked in Y axis, if this is locked, players camera will be locked at 0x1464 (Layer 1 Y Position)
+
+For layer 3: Offset if Layer 3 bg is enabled in 3F1F, if not this controls the layer 3 water level (only Y)
+0x22 (2 bytes) Layer 3 X Position
+0x24 (2 bytes) Layer 3 Y Position (Water height if L3 background is disabled)
+0x1462 (2 bytes) Layer 1 X Position
+0x1464 (2 bytes) Layer 1 Y Position
+0x1466 (2 bytes) Layer 2 X Offset Position
+0x1468 (2 bytes) Layer 2 Y Offset Position
+
+--Palettes--
+Sprites are cached, so if you try to change these, sprites wont change their color, its only for rendering. this might change in the future obviously
+some palette indexes (usually transparent on 4bpp graphics) have special features.
+
+Palette format is 0BBBBBGGGGGRRRRR
+to convert a RGB color to a palette
+(R value / 8) + ((G value / 8) * 32) + ((B value / 8) * 1024) then store the result
+make sure the R, G, and B values dont go over 248 or else that wont work.
+
+0x3D00-0x3DFF Palette, low b
+0x3E00-0x3EFF Palette, high b
+
+Special palette indexes:
+0x00 - Backdrop color, set this to set the backdrop color
+0x10 - Window 1 color (ignored if HDMA on 0x32)
+0x20 - Window 2 color (ignored if HDMA on 0x32)
+0x30 - Unused (transparency on 4bpp)
+0x40 - Unused (transparency on 4bpp)
+0x50 - Unused (transparency on 4bpp)
+0x60 - Unused (transparency on 4bpp)
+0x70 - Unused (transparency on 4bpp)
+0x80 - Unused (transparency on 4bpp)
+0x90 - Unused (transparency on 4bpp)
+0xA0 - Unused (transparency on 4bpp)
+0xB0 - Unused (transparency on 4bpp)
+0xC0 - Unused (transparency on 4bpp)
+0xD0 - Unused (transparency on 4bpp)
+0xE0 - Unused (transparency on 4bpp)
+0xF0 - Unused (transparency on 4bpp)
+
+--Level/Game--
+0x3F00 (2 bytes) Level Size X
+0x3F02 (2 bytes) Level Size Y
+0x3F05 Level Background
+0x3F06 Background X Divider
+0x3F07 Background Y Divider
+0x3F08 (2 bytes) Next level to load
+0x3F0A Is multiplayer flag (00 = not multiplayer (playing locally), 01 = multiplayer (hosted))
+0x3F0B (2 bytes) Start pos X
+0x3F0D (2 bytes) Start pos Y
+0x3F0F Player Amount
+0x3F10 MMMMBBBB Flags. Mosaic and Brightness
+0x3F11 Transition type
+0x3F12 DDDDWWWW Cover flags, D is where in the palette the effect goes, and W is the amount. You can use this to make the screen white if you set it to (0x10 + br) br being a value from 0 to 15 (0xF)
+0x3F13 (3 bytes) Score (24-bit)
+0x3F1B Special Flags 1 1234HRAP
+0x3F1C Background X Divider (Layer 3)
+0x3F1D Background Y Divider (Layer 3)
+0x3F1E Level Background (Layer 3)
+0x3F1F Special Flags 2 ---LCDS
+
+Special Flags 1:
+1 - Use HDMA channel for windowing w2 effect (0x26, 0x27)
+2 - Use HDMA channel for windowing w1 effect (0x28, 0x29)
+3 - Enable window 2
+4 - Enable window 1
+H - Windowing is additive.
+R - Use subtract blend for Layer 3.
+A - Use addition blend for Layer 3.
+P - Layer 3 is drawn over Layer 1.
+
+Special Flags 2:
+S - Disable Status Bar
+D - Disable Player Rendering
+C - Camera lock doesnt block players
+L - Layer 3 Water acts as background (use 0x3F1E)
+
+Transitions:
+0 - None operating
+1 - Fade out and mosaic to black
+2 - Fade in to level and disable mosaic
+3 - Fade out but dont mosaic (For level end)
+
+--Sprites (128 on level, or 0x7F, if you wanna make "find sprite loops" check through all 7f slots.)--
+0x2000 Sprite Status :
+0 - Non existant
+1 - Main
+2 - Grabbable (Not grabbed)
+3 - Grabbable (Grabbed by a player)
+4 - Kicked
+5 - Powerup (Mushroom)
+6 - Powerup (Cape)
+7 - Powerup (Flower)
+8 - Powerup (Star)
+9 - Rope (Climbable)
+
+0x2080 Sprite Number
+0x2100 Sprite X Position (L)
+0x2180 Sprite X Position (H)
+0x2200 Sprite X Position (F)
+0x2280 Sprite Y Position (L)
+0x2300 Sprite Y Position (H)
+0x2380 Sprite Y Position (F)
+0x2400 Sprite X Speed
+0x2480 Sprite Y Speed
+0x2500 Sprite Size X
+0x2580 Sprite Size Y
+0x2600 Sprite Flags HSGTUDLR
+0x2680 Sprite Direction
+0x2700 Collided flags of sprite --SCDULR
+0x2780 Sprite block flags -WDULRYX
+0x2800 Sprite Flags 2 ------gJ
+0x2880 Sprite Flags 3 fbjnlksS
+0x2980 Turn Timer, decrements every frame
+0x2A00 Spinjump death timer for sprites, otherwise unused
+0x2A80 Offscreen status and flags -----DoO
+0x2B00 Slide/Shell death trigger
+0x2B80 Free
+0x2C00 Free
+0x2C80 Free
+0x2D00 Free
+0x2D80 Free, used for holding sprite indexes on some sprites.
+0x2E00 Unused, used in the throwblock and grabbed sprites for a "how much frames til we can hurt mario" timer
+0x2E80 Unused, extra property for grabbed sprites, which props/palettes it uses
+0x2F00 Unused, extra property for grabbed sprites, which tile it uses
+0x2F80 Sprite Initialized
+
+Offscreen Flags (o is reset every frame):
+O - Process when off screen (0 is false, 1 is true)
+o - Sprite is on screen
+D - Destroy if off screen
+
+Collided Flags (for hit detection):
+R - From Right side
+L - From Left side
+U - From Up side
+D - From Down side
+C - Cape Collision
+S - Shelled
+
+Block flags:
+W - is in water
+D - hit a block on bottom side
+U - hit a block on top side
+L - hit a block on left side
+R - hit a block on right side
+Y - hit a block vertically (either bottom or top)
+X - hit a block horizontally (either left or right)
+
+Flags1:
+H = Hurts
+S = Solid
+G = Gravity
+T = Jumpable
+UDLR = Solid on up/down/left/right
+
+Flags2:
+J - Jumping on sprite will throw player in direction (like chucks, disco shells)
+g - Fireballs go through
+
+Flags3:
+S - Death By Spinjump
+s - Uses custom spinjump death
+k - Collision kills sprite
+l - Low grav
+n - Not solid with other sprites
+j - If spinjumped off player gets a speed boost
+b - When spinjumped behave as if it were a normal jump
+f - Fireballs dont give hit status. Use this to make a sprite invincible to fireballs
+
+--Players--
+Max 256, You can search for every entry by checking 3F0F. These cannot be written to, or they can, but no changes will show on any of the players. This is more for programming stuff for the game.
+0x5000 - X Position, low byte
+0x5100 - X Position, high byte
+0x5200 - Y Position, low byte
+0x5300 - Y Position, high byte
+0x5400 - X Speed
+0x5500 - Y Speed
+0x5600 - Player KOs
+0x5700 - Player WOs
+0x5800 - Player status
+0x5900 - Player is dead flag, 0 or 1.
+0x5A00 - Mouse State 1, low byte,  XXXXXXXX
+0x5B00 - Mouse State 1, high byte, LUXXXXXX
+0x5C00 - Mouse State 2, low byte,  YYYYYYYY
+0x5D00 - Mouse State 2, high byte, RDYYYYYY
+0x5E00 - Flags 1: Cdurlayb
+0x5F00 - Flags 2: -------P
+
+Flags1:
+C - Crouching
+d - holding down button
+u - holding up button
+r - holding right button
+l - holding left button
+a - holding a button
+y - holding y button
+b - holding b button
+
+Flags2:
+P - in pipe
+
+To fetch mouse data,
+local mouse_x = asmRead(0x5A00 + player, 1) + (asmRead(0x5B00 + player, 1) % 64)*256
+local mouse_y = asmRead(0x5C00 + player, 1) + (asmRead(0x5D00 + player, 1) % 64)*256
+local mouse_l = asmCheckBit(0x5B00 + player, 7)
+local mouse_r = asmCheckBit(0x5D00 + player, 7)
+local mouse_u = asmCheckBit(0x5B00 + player, 6)
+local mouse_d = asmCheckBit(0x5D00 + player, 6)
+
+--VRAM
+0x0000 - FG1 (4kb 4bpp conv)
+0x1000 - FG2 (4kb 4bpp conv)
+0x2000 - FG3 (4kb 4bpp conv)
+0x3000 - FG4 (4kb 4bpp conv)
+0x4000 - FG5 (4kb 4bpp conv)
+0x5000 - FG6 (4kb 4bpp conv)
+0x6000 - FG7 (4kb 4bpp conv)
+0x7000 - FG8 (4kb 4bpp conv)
+0x8000 - exanimation (12kb 4bpp)
+0xB000 - GFX for layer 3 (2kb 2bpp)
+0xB800 - T3 (2kb), formatted like Tile, Pal, to figure out an address, (x + (y * 32))*2
+0xC000 - SP1 (4kb 4bpp conv)
+0xD000 - SP2 (4kb 4bpp conv)
+0xE000 - SP3 (4kb 4bpp conv)
+0xF000 - SP4 (4kb 4bpp conv)
+0x10000 - SP5 (4kb 4bpp conv)
+0x11000 - SP6 (4kb 4bpp conv)
+0x12000 - SP7 (4kb 4bpp conv)
+0x13000 - SP8 (4kb 4bpp conv)
+
+--ARAM
+--ARAM in jfkmw is still limited to 64kb, but the echo buffer has it's own dedicated ram area so it doesn't conflict and corrupt things. (limitless, remember)
+0x0000 to 0xFFFF - Data
+0x10000 to 0x1FFFF - Echo buffer</code></pre>

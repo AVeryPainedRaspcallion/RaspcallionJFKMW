@@ -1,0 +1,416 @@
+<head>
+
+    <title>JFK Mario World Lua Documentation</title>
+	<!-- edited 19/10/2021 -->
+	<!-- style, cleanup -->
+
+</head>
+
+
+<style>
+body {
+	background-color: #111;
+	color: #FFF;
+	font-family: helvetica, sans-serif;
+	letter-spacing: 0.3px;
+}
+
+pre {
+	background-color: #222;
+	border-radius: 3px;
+	margin: 8px;
+	border: solid 1px #ffffff1a;
+}
+
+.comment {
+	color: #3cb9f5;
+}
+
+font {
+	font-family: monospace;
+}
+</style>
+
+
+<center><h1>JFK Mario World Lua Documentation</h1></center>
+<h2>Links</h2>
+<a href="Pack Format.html">Pack/Content format</a><br>
+<a href="Sprite Programming.html">Sprite Programming</a><br>
+<a href="RAM Map.html">JFKMW RAM Map</a><br>
+<a href="https://www.tutorialspoint.com/lua/lua_overview.htm">Lua Overview</a><br>
+<h2>Documentation</h2>
+<h3>Definitions</h3>
+S-RAM : Server RAM.<br>
+pointer : pointer to RAM, for example 0x0000<br>
+size : amount of bytes to transfer/read. read uint8, uint16, uint32 and etc. basically if you set it to 1 you have a range of 0-255 (0xFF), if 2, you have 0-65535 (0xFFFF), and so on.<br>
+<h2>Setup</h2>
+For levels, these are the functions that can be called.<br>
+
+<font color=#7F7FFF>function</font> <font color=#7FFF7F>Init</font>() - Called once on level load<br>
+<font color=#3F3FFF>end</font><br>
+<br>
+<font color=#7F7FFF>function</font> <font color=#7FFF7F>Main</font>() - Called every frame and once after Init()<br>
+<font color=#3F3FFF>end</font><br>
+<br>
+<font color=#7F7FFF>function</font> <font color=#7FFF7F>OnChatted</font>(message, player) - Called when a player chats something<br>
+<font color=#3F3FFF>end</font><br>
+<br>
+
+<br><br>
+For sprites, the default setup is like this<br><br>
+<font color=#7F7FFF>function</font> <font color=#7FFF7F>Init</font>(spr_number)<br>
+<font color=#3F3FFF>end</font><br>
+<br>
+<font color=#7F7FFF>function</font> <font color=#7FFF7F>Main</font>(spr_number)<br>
+<font color=#3F3FFF>end</font><br>
+<br>
+
+<h1>API</h1>
+<h1>General</h1>
+<!--print-->
+<h2><b>
+<font color=#7F7FFF>jfkmwPrint</font>
+(</b><font color=#7FFF7F>text</font><b>)
+
+</b><br></h2>
+Shows text on the console. Replacement for print().<br><br>
+
+<!--write-->
+<h2><b>
+
+<font color=#7F7FFF>asmWrite</font>
+(</b><font color=#7FFF7F>value, pointer, size</font><b>)
+
+</b><br></h2>
+
+
+Writes to S-RAM.<br><br>
+
+Example :<br>
+<b>
+<font color=#7F7FFF>asmWrite</font>
+(</b><font color=#7FFF7F>0, 0x19, 1</font><b>)</b><br><br>
+
+<!--OSTIME-->
+<h2><b>
+
+<font color=#7F7FFF>jfkmwOSTime</font>()
+
+</b><br></h2>
+Returns the computer time as a number.<br><br>
+
+<!--read-->
+<h2><b>
+
+<font color=#7F7FFF>asmRead</font>
+(</b><font color=#7FFF7F>pointer, size</font><b>)
+
+</b><br></h2>
+Reads from S-RAM. Returns a number/uint32.<br><br>
+
+Example :<br>
+<b>
+<font color=#7F7FFF>asmRead</font>
+(</b><font color=#7FFF7F>0x1462, 2</font><b>)</b><br><br>
+
+<!--discordMessage-->
+<h2><b>
+
+<font color=#7F7FFF>discordMessage</font>
+(</b><font color=#7FFF7F>message</font><b>)
+
+</b><br></h2>
+Sends a message to the discord webhook in game_config.cfg, only works when hosting a server.<br><br>
+
+<!--username-->
+<h2><b>
+
+<font color=#7F7FFF>getPlayerUsername</font>
+(</b><font color=#7FFF7F>player</font><b>)
+
+</b><br></h2>
+Returns the username of a player.<br><br>
+
+Example :<br>
+<b>
+<font color=#7F7FFF>getPlayerUsername</font>
+(</b><font color=#7FFF7F>1</font><b>)</b><br><br>
+
+
+<!--username-->
+<h2><b>
+
+<font color=#7F7FFF>addScore</font>
+(</b><font color=#7FFF7F>amount</font><b>)
+
+</b><br></h2>
+Adds specified amount to the score counter.<br><br>
+
+Example :<br>
+<b>
+<font color=#7F7FFF>addScore</font>
+(</b><font color=#7FFF7F>1000</font><b>)</b><br><br>
+		
+<h1>Mathematical</h1>
+<!--check bit-->
+<h2><b>
+
+<font color=#7F7FFF>asmCheckBit</font>
+(</b><font color=#7FFF7F>a, b</font><b>)
+
+</b><br></h2>
+Checks a bit of a RAM value.<br><br>
+
+<!--require-->
+<h2><b>
+
+<font color=#7F7FFF>require</font>
+(</b><font color=#7FFF7F>lib</font><b>)
+
+</b><br></h2>
+Loads a Library from the modpack's folder, in the "lualibs" (Packs/default/lualibs for example) folder. All of the functions in that library are combined with the state, which means you can use this to include functions.<br>
+Example: require("MyLibrary/Trigonometry.lua")<br>
+This loads Trigonometry.lua from the Packs/default/MyLibrary folder, and Trigonometry.lua has a function called CALCULATE_SIN_DEGREES(n),<br>
+We can call that function from anywhere in the Lua after including it, remember that require has to be outside of a function (at the start of a file)<br>
+
+<!--loadLevelAsset-->
+<h2><b>
+
+<font color=#7F7FFF>loadLevelAsset</font>
+(</b><font color=#7FFF7F>file, offset, isLibrary (optional)</font><b>)
+
+</b><br></h2>
+Loads a Level-specific asset into the specified RAM location in offset. Loading into 0x20000 and above equals the same as loading a file into VRAM. File has to be a number, like 0x00, 0x02, etc. Technically the same as a DMA from ROM->RAM in ASM.<br>
+Example: loadLevelAsset(0x08, 0x7000) would load asset08.bin from the level folder into 0x7000 in RAM.<br><br>
+isLibrary means it will load from the %modpack%/lualibs/ folder, in this way, you can do:<br>
+loadAssetRAM("MyLibrary/AnObject.bin", 0x7000, true)<br>
+If loadLibrary is not specified, it's defaulted to false (load from the level folder)
+
+<h1>Player Related</h1>
+<!--killPlayer-->
+<h2><b>
+
+<font color=#7F7FFF>killPlayer</font>
+(</b><font color=#7FFF7F>player</font><b>)
+
+</b><br></h2>
+Kill a player, for example to kill player 1, do killPlayer(1), That simple.<br><br>
+
+
+<!--damagePlayer-->
+<h2><b>
+
+<font color=#7F7FFF>damagePlayer</font>
+(</b><font color=#7FFF7F>player</font><b>)
+
+</b><br></h2>
+Damage a player, for example to damage player 1, do damagePlayer(1). If you damage a small player, they die.<br><br>
+
+<!--setPlayerState-->
+<h2><b>
+
+<font color=#7F7FFF>setPlayerState</font>
+(</b><font color=#7FFF7F>player, state</font><b>)
+
+</b><br></h2>
+Set a players powerup state.<br>
+0 - Small<br>
+1 - Big<br>
+2 - Cape<br>
+3 - Fire Flower<br>
+4 - Wings (Custom)<br>
+5 - IA guns (Custom)<br><br>
+
+<!--getPlayerX-->
+<h2><b>
+
+<font color=#7F7FFF>getPlayerX</font>
+(</b><font color=#7FFF7F>player</font><b>)
+
+</b><br></h2>
+Get a player's X position, decimal precision not included.<br><br>
+
+<!--getPlayerY-->
+<h2><b>
+
+<font color=#7F7FFF>getPlayerY</font>
+(</b><font color=#7FFF7F>player</font><b>)
+
+</b><br></h2>
+Get a player's Y position, decimal precision not included.<br><br>
+
+<h1>Sprite Related</h1>
+<!--spawnSprite-->
+<h2><b>
+
+<font color=#7F7FFF>spawnSprite</font>
+(</b><font color=#7FFF7F>new_sprite, state, x, y, direction</font><b>)
+
+</b><br></h2>
+Spawns a sprite<br><br>
+
+<!--getSpriteX-->
+<h2><b>
+
+<font color=#7F7FFF>getSpriteX</font>
+(</b><font color=#7FFF7F>spr_num</font><b>)
+
+</b><br></h2>
+Get a sprite's X position.<br><br>
+
+<!--getSpriteY-->
+<h2><b>
+
+<font color=#7F7FFF>getSpriteY</font>
+(</b><font color=#7FFF7F>spr_num</font><b>)
+
+</b><br></h2>
+Get a sprite's Y position.<br><br>
+
+<!--setSpriteX-->
+<h2><b>
+
+<font color=#7F7FFF>setSpriteX</font>
+(</b><font color=#7FFF7F>spr_num, new_x</font><b>)
+
+</b><br></h2>
+Set a sprite's X position.<br><br>
+
+<!--setSpriteY-->
+<h2><b>
+
+<font color=#7F7FFF>setSpriteY</font>
+(</b><font color=#7FFF7F>spr_num, new_y</font><b>)
+
+</b><br></h2>
+Set a sprite's Y position.<br><br>
+
+<h1>Particle Related</h1>
+
+
+<br><br>
+
+<h1>Video Related</h1>
+
+<!--drawOam-->
+<h2><b>
+
+<font color=#7F7FFF>pushOAM</font>
+(</b><font color=#7FFF7F>nil or sprite_index, offset_x, offset_y, tile, size, properties,</font> <font color=#3F7F3F>angle, scalex, scaley</font><b>)
+
+</b><br></h2>
+Puts a sprite on the OAM table, to draw.<br>
+sprite_index/nil - To make this OAM sprite follow a sprite, set this to the sprite_index, set it to nil to do a more direct mode (for drawing things using exact X/Y coordinates.) When using a sprite, offset_x and offset_y will be treated as offsets from the sprite's position.<br><br>
+offset_x/offset_y (signed, 2 bytes) - position<br><br>
+tile (1 byte), an hex number pointing to the sprite in VRAM, like 0x20, 0xA6, etc.<br><br>
+size (1 byte), YYYYXXXX (0x11 would be a 16x16 sprite)<br><br>
+properties (2 bytes), --MAFSRR CCYXPPPP<br>
+PPPP = Palette (0x0-0xF)<br>
+YX = Y/X Flipping<br>
+CC = Graphics Page:<br>
+00 - Use SP1/2<br>
+01 - Use SP3/4<br>
+10 - Use SP5/6<br>
+11 - Use SP7/8<br><br>
+F = Follow Player (uses rotation byte for player number)<br>
+S = Screen-Relative (can be used for HUD objects)<br>
+A = Use Additive Blending<br>
+M = Allow Scaling/Resizing<br><br>
+RR = Priority Bits:<br>
+00 - Below mario<br>
+01 - Above mario<br>
+10 - Below layer 1, below 11 (use this for background objects, lowest layer)<br>
+11 - Below layer 1, above 10<br><br>
+angle (optional, 1 byte) 0-255, 90* = 64, 180* = 128, 270* = 192, 360* = 0<br><br>
+scale (optional, both x/y, only if M is active in props), 0x20 default, 0x10 would be 2x size, 0x40 would be 0.5x size<br>
+
+<!--pushParticle-->
+<h2><b>
+
+<font color=#7F7FFF>pushParticle</font>
+(</b><font color=#7FFF7F>tile, size, prop, anim_type, x, y, sx, sy, grav,</font> <font color=#3F7F3F>start_time, delete_time</font><b>)
+
+</b><br></h2>
+This adds a particle to the list of particles to be drawn.<br><br>Arguments explained as follows:<br>
+tile = Particle tile (if anim_type is not 0 then it wont use this)<br>
+size = Size of particle (0x00 is a 8x8 particle, 0x11 is a 16x16 particle, 0x12 is a 16x24 particle, so on)<br>
+prop = Works the same as properties in pushOAM, check that<br>
+anim_type = Use preset animation (set to 0 if you just want to make the particle's tile and properties static)<br>
+x = X position of particle<br>
+y = Y position of particle<br>
+sx = X Speed of particle (added every frame)<br>
+sy = Y Speed of particle<br>
+grav = Added every frame to Y, usually 96/256 or 48/256<br>
+start_time (optional) = Usually 0, use to offset a animations timer.<br>
+delete_time (optional) = Time to delete the particle, in frames.
+
+<!--drawToHud-->
+<h2><b>
+
+<font color=#7F7FFF>drawToHud</font>
+(</b><font color=#7FFF7F>tile, prop, x, y</font><b>)
+
+</b><br></h2>
+Draws a tile to the HUD. All changes done here are replicated to all clients.<br><br>
+
+<!--charToSmw-->
+<h2><b>
+
+<font color=#7F7FFF>charToSmw</font>
+(</b><font color=#7FFF7F>char</font><b>)
+
+</b><br></h2>
+
+Converts a number to a SMW character for usage with drawToHud. Make sure you do string.byte on the letter before calling this<br><br>
+
+<!--loadNewGFX-->
+<h2><b>
+
+<font color=#7F7FFF>loadNewGFX</font>
+(</b><font color=#7FFF7F>file, offset</font><b>)
+
+</b><br></h2>
+Uploads a GFX file to the VRAM location in offset. Read RAM map to see what each location is. File has to be a number, like 0x00, 0x02, etc. For example 0x02, will load GFX02.bin<br>
+Since this function loads the GFX files from disk, only call it once or the game will slow down in multiplayer matches.<br><br>
+
+<!--clearStatusBar-->
+<h2><b>
+
+<font color=#7F7FFF>clearStatusBar</font>
+()
+
+</b><br></h2>
+Clears the entire status bar ram area. Clearing out anything that was written to it, except the game's status bar.<br><br>
+
+<h1>Deprecated</h1>
+<h2><font color="#FF0000">Do not use these functions. They are not supported.</font></h2>
+
+<!--drawOam-->
+<h2><b>
+
+<font color=#7F7FFF>drawOam</font>
+(</b><font color=#7FFF7F>sprite_index, tile, size, angle, offset_x, offset_y, pal</font><b>)</h2>
+
+<!--drawOamDirect-->
+<h2><b>
+
+<font color=#7F7FFF>drawOamDirect</font>
+(</b><font color=#7FFF7F>tile, size, angle, sprite_x_position, sprite_y_position, pal</font><b>)</h2>
+
+<!--deathBySlide-->
+<h2><b>
+
+<font color=#7F7FFF>deathBySlide</font>
+(</b><font color=#7FFF7F>spr_num, tile, flags, offset_x, offset_y</font><b>)</h2>
+
+<!--deathByJump-->
+<h2><b>
+
+<font color=#7F7FFF>deathByJump</font>
+(</b><font color=#7FFF7F>spr_num, tile, flags, size, offset_x, offset_y</font><b>)</h2>
+
+<!--createParticle-->
+<h2><b>
+
+<font color=#7F7FFF>createParticle</font>
+(</b><font color=#7FFF7F>tile, size, prop, anim_type, x, y, sx, sy, grav, start_time, delete_time</font><b>)</h2>

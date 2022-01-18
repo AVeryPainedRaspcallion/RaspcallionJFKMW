@@ -1,0 +1,103 @@
+<head>
+
+    <title>JFK Mario World Sprite Programming Guide</title>
+	<!-- edited 19/10/2021 -->
+	<!-- style, cleanup -->
+	
+</head>
+
+<link rel="stylesheet" href="highlighter/dark.css">
+<script src="highlighter/highlighter.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<style>
+body {
+	background-color: #111;
+	color: #FFF;
+	font-family: helvetica, sans-serif;
+	letter-spacing: 0.3px;
+}
+
+pre {
+	background-color: #222;
+	border-radius: 3px;
+	margin: 8px;
+	border: solid 1px #ffffff1a;
+}
+
+.comment {
+	color: #3cb9f5;
+}
+
+font {
+	font-family: monospace;
+}
+</style>
+<!-- start -->
+
+
+<center><h1>JFK Mario World Sprite programming</h1></center>
+<h2>Lua Reference for starters</h2>
+Please read the <a href="Lua Documentation.html">Lua Documentation</a> first if you're gonna code a sprite, so you know what everything does.<br>
+The basic setup for a sprite is<br><br>
+<pre><code class="lua">function Init(spr_num)
+--Code that runs when the sprite first spawns...
+end
+
+function Main(spr_num)
+--Code that runs every frame here..
+end
+</code></pre>
+So in this case we're going to be coding a basic sprite that just moves back and forth and when you hit it it just dies.<br><br>
+This is very simple to do, and shouldn't require much lines.<br>
+<pre><code class="lua">function Init(spr_num)
+	--We won't have anything here for now
+end
+	
+--actual
+
+function Main(spr_num)
+	--If this sprite has collided horizontally.. (with a wall on the left, right side)
+	if asmCheckBit(0x2780 + spr_num, 0) then
+		--Let's flip the direction. We do this by multiplying what's in 0x2680 + spr_num by -1.
+		asmWrite(asmRead(0x2680 + spr_num, 1) * -1, 0x2680 + spr_num, 1)
+	end
+
+	--Calculate the sprite's speed according to their direction.
+	--In this case, the direction is multiplied by -8. Making it move 8 subpixels every frame, divide that by 16 and it'll move 0.5 pixels every frame.
+	asmWrite(asmRead(0x2680 + spr_num, 1)*-8, 0x2400 + spr_num, 1)
+	
+	--Set sprite flags, in this case it's 11110000
+	asmWrite(0xF0, 0x2600 + spr_num, 1) 
+
+	--Set the sprite's collision hitbox size (16x14)
+	asmWrite(16, 0x2500 + spr_num, 1)
+	asmWrite(14, 0x2580 + spr_num, 1)
+
+	--Make the sprite be drawn to OAM (This will later make it be drawn to the screen.)
+	drawOam(
+		spr_num, --Shouldn't change, it's the sprite number.
+		0x2, --Tile
+		0x11, --Size (16x16)
+		0, --Rotation
+		0,-16, --Offset (x, y)
+		0xF --Extra props (RYXCPPPP)
+	)
+
+	--If the sprite has collided vertically.. (with ground, ceiling)
+	if asmCheckBit(0x2780 + spr_num, 1) then
+		--Reset Y Speed
+		asmWrite(0, 0x2480 + spr_num, 1)
+	end
+
+
+	local collision = asmRead(0x2700 + spr_num, 1) --Let's get the collision status.
+	if collision ~= 0 then --The sprite has touched something, a player, shell, etc.
+		--Play hitsound.
+		asmWrite(3, 0x1DF9, 1)
+
+		--Destroy sprite
+		asmWrite(0, 0x2000 + spr_num, 1)
+	end
+end
+</code></pre>
