@@ -24,6 +24,9 @@ public:
 
 	uint_fast8_t current_map = 0;
 	uint_fast8_t old_map = 0xFF;
+	uint_fast8_t tile_moving_on = 0;
+	int tile_moving_on_x = 0;
+	int tile_moving_on_y = 0;
 
 	string level_strings[0x100];
 
@@ -64,15 +67,16 @@ public:
 		global_frame_counter = 0;
 	}
 
+	//Check if tile is a tile that the player can stop on (eg. level)
+	bool CheckTileIsLevel(uint_fast8_t tile) {
+		return (tile >= 0x58 && tile <= 0x6D);
+	}
 	
 	//Check if we are standing on a tile
 	bool StandingOnTile() {
 		int TilePosX = int(OverworldPlayer->x) >> 4;
 		int TilePosY = int(OverworldPlayer->y + 32) >> 4;
-
-		uint_fast8_t tile = Get_Tile(TilePosX, TilePosY);
-
-		return (tile >= 0x58 && tile <= 0x6D) && !(int(OverworldPlayer->x) & 0xF) && !(int(OverworldPlayer->y) & 0xF);
+		return CheckTileIsLevel(Get_Tile(TilePosX, TilePosY)) && !(int(OverworldPlayer->x) & 0xF) && !(int(OverworldPlayer->y) & 0xF);
 	}
 
 	//Get the tile at x,y
@@ -415,14 +419,14 @@ public:
 			}
 		}
 
-		//Darken the screen globally
-		Ren_SetDrawColor(0, 0, 0, bright_val == 0xF ? 255 : (bright_val << 4));
-		Ren_FillRect(nullptr);
+//Darken the screen globally
+Ren_SetDrawColor(0, 0, 0, bright_val == 0xF ? 255 : (bright_val << 4));
+Ren_FillRect(nullptr);
 
-		//Chat
-		Chat_Render();
+//Chat
+Chat_Render();
 	}
-	
+
 	//Process OW
 	void Process()
 	{
@@ -483,85 +487,98 @@ public:
 						OverworldPlayer->y = int(OverworldPlayer->y);
 						OverworldPlayer->X_SPEED = pad_p[button_right] - pad_p[button_left];
 						OverworldPlayer->Y_SPEED = pad_p[button_down] - pad_p[button_up];
-
-						if (OverworldPlayer->X_SPEED != 0 && Get_Tile(uint_fast8_t(TilePosX + OverworldPlayer->X_SPEED), TilePosY) == 0x0) {
-							OverworldPlayer->X_SPEED = 0;
+						tile_moving_on_x = TilePosX + OverworldPlayer->X_SPEED;
+						tile_moving_on_y = TilePosY + OverworldPlayer->Y_SPEED;
+						tile_moving_on = Get_Tile(tile_moving_on_x, tile_moving_on_y);
+						if (OverworldPlayer->X_SPEED != 0 && Get_Tile(tile_moving_on_x, TilePosY) == 0x0) {
+							OverworldPlayer->X_SPEED = 0; tile_moving_on = 0;
 						}
-						if (OverworldPlayer->Y_SPEED != 0 && Get_Tile(uint_fast8_t(TilePosX), uint_fast8_t(TilePosY + OverworldPlayer->Y_SPEED)) == 0x0) {
-							OverworldPlayer->Y_SPEED = 0;
+						if (OverworldPlayer->Y_SPEED != 0 && Get_Tile(TilePosX, tile_moving_on_y) == 0x0) {
+							OverworldPlayer->Y_SPEED = 0; tile_moving_on = 0;
 						}
 					}
 
 					//Special Movement
 					TilePosX = int(OverworldPlayer->x + 8) >> 4;
 					TilePosY = int(OverworldPlayer->y + 40) >> 4;
-					uint_fast8_t Tile = Get_Tile(uint_fast8_t(TilePosX), TilePosY);
 
-					//TO-DO clean this mess up
-					//Diagonal 22.5* Left Up
-					if (Tile == 0x16 || Tile == 0x15) {
-						OverworldPlayer->y += OverworldPlayer->X_SPEED / 4.0;
-					}
-					if ((Tile == 0x1F || Tile == 0x17) || Tile == 0x14) {
-						OverworldPlayer->y += OverworldPlayer->X_SPEED / 2.0;
+					//This checks that the current tile isn't a level.
+					if (!CheckTileIsLevel(Get_Tile(TilePosX, TilePosY))) {
+						tile_moving_on = Get_Tile(TilePosX, TilePosY);
+						tile_moving_on_x = TilePosX;
+						tile_moving_on_y = TilePosY;
 					}
 
-					//Diagonal 22.5* Right Up
-					if ((Tile == 0x3 || Tile == 0x2B) || Tile == 0x5) {
-						OverworldPlayer->y -= OverworldPlayer->X_SPEED / 4.0;
-					}
-					if ((Tile == 0x7 || Tile == 0x11) || Tile == 0x1) {
-						OverworldPlayer->y -= OverworldPlayer->X_SPEED / 2.0;
-					}
-
-					//45* 1.
-					if (Tile == 0x19 || Tile == 0x37) {
-						if (OverworldPlayer->X_SPEED < 0) {
-							OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = -1;
+					//22.5* R
+					if ((tile_moving_on == 0x5 || tile_moving_on == 0x3) || (tile_moving_on == 0x11 || tile_moving_on == 0x7)) {
+						if (tile_moving_on == 0x3) {
+							if (OverworldPlayer->x <= (tile_moving_on_x << 4)) { OverworldPlayer->y -= OverworldPlayer->X_SPEED / 2.0; }
 						}
-						if (OverworldPlayer->Y_SPEED > 0) {
-							OverworldPlayer->X_SPEED = 1; OverworldPlayer->Y_SPEED = 0;
+						else {
+							if (tile_moving_on != 0x5 || OverworldPlayer->x > (tile_moving_on_x << 4)) { OverworldPlayer->y -= OverworldPlayer->X_SPEED / 2.0; }
 						}
-						OverworldPlayer->x += OverworldPlayer->Y_SPEED / 2.0;
+					}
+					//L
+					if ((tile_moving_on == 0x16 || tile_moving_on == 0x15) || (tile_moving_on == 0x1F || tile_moving_on == 0x17)) {
+						if (tile_moving_on == 0x16) {
+							if (OverworldPlayer->x <= (tile_moving_on_x << 4)) { OverworldPlayer->y += OverworldPlayer->X_SPEED / 2.0; }
+						} else {
+							if (tile_moving_on != 0x15 || OverworldPlayer->x > (tile_moving_on_x << 4)) { OverworldPlayer->y += OverworldPlayer->X_SPEED / 2.0; }
+						}
+					}
+
+					//22.5* U
+					int bound_y = (tile_moving_on_y << 4) - (OverworldPlayer->Y_SPEED < 0 ? 30 : 34);
+					if ((tile_moving_on == 0xF || tile_moving_on == 0x12) || (tile_moving_on == 0xE || tile_moving_on == 0xD)) {
+						if (tile_moving_on == 0x12) {
+							if (OverworldPlayer->y <= bound_y) { OverworldPlayer->x -= OverworldPlayer->Y_SPEED / 2.0; }
+						} else {
+							if (tile_moving_on != 0xF || OverworldPlayer->y > bound_y) { OverworldPlayer->x -= OverworldPlayer->Y_SPEED / 2.0; }
+						}
+					}
+					//D
+					bound_y++;
+					if ((tile_moving_on == 0x1E || tile_moving_on == 0x20) || (tile_moving_on == 0x1D || tile_moving_on == 0x1C)) {
+						if (tile_moving_on == 0x20) {
+							if (OverworldPlayer->y <= bound_y) { OverworldPlayer->x += OverworldPlayer->Y_SPEED / 2.0; }
+						}
+						else {
+							if (tile_moving_on != 0x1E || OverworldPlayer->y > bound_y) { OverworldPlayer->x += OverworldPlayer->Y_SPEED / 2.0; }
+						}
+					}
+
+
+					//45* Tiles (These are weird to implement)
+					//UL
+					if (tile_moving_on == 0x9) {
+						if (OverworldPlayer->X_SPEED > 0) { OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = -1; }
+						if (OverworldPlayer->Y_SPEED > 0) { OverworldPlayer->X_SPEED = -1; OverworldPlayer->Y_SPEED = 0; }
+						OverworldPlayer->x -= OverworldPlayer->Y_SPEED;
+						OverworldPlayer->y -= OverworldPlayer->X_SPEED;
+					}
+					//UR
+					if (tile_moving_on == 0x19) {
+						if (OverworldPlayer->X_SPEED < 0) { OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = -1; }
+						if (OverworldPlayer->Y_SPEED > 0) { OverworldPlayer->X_SPEED = 1; OverworldPlayer->Y_SPEED = 0; }
+						OverworldPlayer->x += OverworldPlayer->Y_SPEED;
 						OverworldPlayer->y += OverworldPlayer->X_SPEED;
 					}
-
-					//45* 2.
-					if (Tile == 0xA || Tile == 0x2E) {
-						if (OverworldPlayer->X_SPEED < 0) {
-							OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = 1;
-						}
-						if (OverworldPlayer->Y_SPEED < 0) {
-							OverworldPlayer->X_SPEED = 1; OverworldPlayer->Y_SPEED = 0;
-						}
-						OverworldPlayer->x -= OverworldPlayer->Y_SPEED / 1.5;
-						OverworldPlayer->y -= OverworldPlayer->X_SPEED / 1.5;
+					//Dl
+					if (tile_moving_on == 0x1A) {
+						if (OverworldPlayer->X_SPEED > 0) { OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = 1; }
+						if (OverworldPlayer->Y_SPEED < 0) { OverworldPlayer->X_SPEED = -1; OverworldPlayer->Y_SPEED = 0; }
+						OverworldPlayer->x += OverworldPlayer->Y_SPEED;
+						OverworldPlayer->y += OverworldPlayer->X_SPEED;
+					}
+					//DR
+					if (tile_moving_on == 0xA) {
+						if (OverworldPlayer->X_SPEED < 0) { OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = 1; }
+						if (OverworldPlayer->Y_SPEED < 0) { OverworldPlayer->X_SPEED = 1; OverworldPlayer->Y_SPEED = 0; }
+						OverworldPlayer->x -= OverworldPlayer->Y_SPEED;
+						OverworldPlayer->y -= OverworldPlayer->X_SPEED;
 					}
 
-					//45* 3.
-					if (Tile == 0x9 || Tile == 0x2D) {
-						if (OverworldPlayer->X_SPEED > 0) {
-							OverworldPlayer->X_SPEED = 0; OverworldPlayer->Y_SPEED = -1;
-						}
-						if (OverworldPlayer->Y_SPEED > 0) {
-							OverworldPlayer->X_SPEED = -1; OverworldPlayer->Y_SPEED = 0;
-						}
-						OverworldPlayer->x -= OverworldPlayer->Y_SPEED / 1.25;
-						OverworldPlayer->y -= OverworldPlayer->X_SPEED / 1.25;
-					}
-
-					//22.5* Bottom-Left
-					if (Tile == 0x12 || Tile == 0x50 || Tile == 0xF) {
-						OverworldPlayer->x -= OverworldPlayer->Y_SPEED / 4.0;
-					}
-
-					//22.5* Bottom-Right
-					if (Tile == 0x1E || Tile == 0x20) {
-						OverworldPlayer->x += OverworldPlayer->Y_SPEED / 4.0;
-					}
-					if (Tile >= 0x1B && Tile <= 0x1D) {
-						OverworldPlayer->x += OverworldPlayer->Y_SPEED / 2.0;
-					}
+					//Normal move
 					if (!OverworldPlayer->climbing || (ingame_frame_counter & 1)) {
 						OverworldPlayer->x += OverworldPlayer->X_SPEED;
 						OverworldPlayer->y += OverworldPlayer->Y_SPEED;
