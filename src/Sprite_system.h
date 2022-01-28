@@ -85,7 +85,7 @@ public:
 							//Logic
 							if (RAM[0x2000 + entry] == 4 || (RAM[0x2000 + entry] == 2 && (abs(int_fast8_t(RAM[0x2400 + entry])) > 3 || abs(int_fast8_t(RAM[0x2480 + entry])) > 3)))
 							{
-								if (RAM[0x2000 + spr] != 3 && !(RAM[0x2600 + spr] & 0xF))
+								if (RAM[0x2000 + spr] != 3 && !(RAM[0x2600 + entry] & 0xF))
 								{
 									//2 handlers just incase
 									RAM[0x2B00 + spr] = 0x1;
