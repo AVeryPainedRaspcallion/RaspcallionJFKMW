@@ -615,17 +615,17 @@ void deleteAssetCache() {
 }
 
 void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useCache = false) {
-	if (doMultiply) {
-		offset = offset << 12;
-	}
+	//Prepare offsets
+	if (doMultiply) { offset <<= 12; }
+	offset += VRAM_Location;
 
 	//precached.
 	if (useCache) {
 		auto entry = cachedAssets.find(file);
 		if (entry != cachedAssets.end()) {
 			cachedAssetObject* En = entry->second;
-			memcpy(&RAM[VRAM_Location + offset], En->data, En->datasize);
-			TriggerRAMSync();
+			memcpy(&RAM[offset], En->data, En->datasize);
+			if (offset >= 0x20000) { TriggerRAMSync(); }
 			return;
 		}
 	}
@@ -638,13 +638,13 @@ void loadAssetRAM(string file, int offset = 0, bool doMultiply = true, bool useC
 			newD->datasize = fsize;
 			newD->data = new uint_fast8_t[fsize];
 			input.read((char*)newD->data, fsize);
-			memcpy(&RAM[VRAM_Location + offset], newD->data, fsize);
+			memcpy(&RAM[offset], newD->data, fsize);
 			cachedAssets.insert(make_pair(file, newD));
 		}
 		else { //Just put this into RAM normally.
-			input.read((char*)&RAM[VRAM_Location + offset], fsize);
+			input.read((char*)&RAM[offset], fsize);
 		}
-		TriggerRAMSync();
+		if (offset >= 0x20000) { TriggerRAMSync(); }
 	}
 	else {
 		if (debugging_enabled) {
