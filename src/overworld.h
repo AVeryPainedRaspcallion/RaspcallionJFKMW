@@ -69,7 +69,7 @@ public:
 
 	//Check if tile is a tile that the player can stop on (eg. level)
 	bool CheckTileIsLevel(uint_fast8_t tile) {
-		return (tile >= 0x58 && tile <= 0x6D);
+		return (tile >= 0x56 && tile <= 0x6D);
 	}
 	
 	//Check if we are standing on a tile

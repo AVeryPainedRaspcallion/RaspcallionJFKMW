@@ -153,8 +153,8 @@ public:
 		case 7:
 			spr_x += ((t >> 2) & 3) >= 2 ? -0.25 : 0.25;
 			spr_y += (((t >> 4) & 3) >= 3) ? 0 : 1;
-			if (t > 128)
-			{
+			spr_tile = 0x21;
+			if (t > 128) {
 				to_del = true;
 			}
 			break;
