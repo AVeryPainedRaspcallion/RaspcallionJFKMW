@@ -100,14 +100,20 @@ void player_code() {
 
 		//Main Loop
 		while (!GameLoopDone()) {
+			//Hung check
 			WAIT_READ_COMPLETE("loop wait")
+			if (hung_check) { quit = true; break; }
+
+			//Loop
 			doing_write = true;
 			cls();
 			START_CHECK = chrono::high_resolution_clock::now();
 			GameLoop(); SoundLoop(); render();
-			doing_write = false;
 			CURRENT_CHECK = chrono::high_resolution_clock::now();
 			total_time_ticks = chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK);
+			doing_write = false;
+
+			//Redraw
 			redraw();
 
 			if (disconnected) {

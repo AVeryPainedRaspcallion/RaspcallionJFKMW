@@ -318,12 +318,10 @@ public:
 				for (uint_fast16_t y = 0; y < 12; y++) {
 					uint_fast16_t px = x + (int(OverworldPlayer->CAMERA_X) >> 4);
 					uint_fast16_t py = 2 + y + (int(OverworldPlayer->CAMERA_Y) >> 4);
-					uint_fast16_t ind = px + (py << 5);
+					uint_fast16_t ind = (px + (py << 5)) & 0xFFF;
 
 					uint_fast8_t tile = RAM[0xA000 + ind];
-					if (tile != 0) {
-						drawL1Tile(tile, 16 + (x << 4), 40 + (y << 4));
-					}
+					if (tile != 0) { drawL1Tile(tile, 16 + (x << 4), 40 + (y << 4)); }
 				}
 			}
 		}

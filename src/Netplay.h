@@ -181,8 +181,7 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 		WAIT_READ_COMPLETE("packet receive 0x" + int_to_hex(CurrentPacket_header, true))
 		doing_read = true;
 		if (CurrentPacket_header == Header_MusicData) {
-			ReceiveMusic();
-			Sync_Server_RAM(false);
+			ReceiveMusic(); Sync_Server_RAM(false);
 		}
 
 		if (CurrentPacket_header == Header_GlobalUpdate) {
@@ -209,9 +208,7 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 			//Sync Variables
 			CurrentPacket >> recent_big_change;
 			Sync_Server_RAM(!recent_big_change);
-			if (recent_big_change && gamemode == GAMEMODE_MAIN) {
-				ReceiveBackgrounds();
-			}
+			if (recent_big_change && gamemode == GAMEMODE_MAIN) { ReceiveBackgrounds(); }
 
 			//Receive Last Chat String
 			CurrentPacket >> Curr_PChatString;
@@ -220,10 +217,8 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 		if (CurrentPacket_header == Header_ConnectData) {
 			CurrentPacket >> gamemode;
 			CurrentPacket >> PlayerAmount; //Update Plr Amount
-			CheckForPlayers(); 
-			Sync_Server_RAM(false);
-			ReceiveMusic();
-			ReceiveBackgrounds();
+			CheckForPlayers(); Sync_Server_RAM(false); ReceiveMusic();
+			if (gamemode == GAMEMODE_MAIN) { ReceiveBackgrounds(); }
 			validated_connection = true;
 			cout << blue << "[Client] Received connection data." << endl;
 		}
@@ -306,11 +301,9 @@ void PendingConnection() {
 			clients.push_back(client); selector.add(*client); GetAmountOfPlayers();
 
 			PreparePacket(Header_ConnectData);
-			CurrentPacket << gamemode;
-			CurrentPacket << PlayerAmount;
-			Push_Server_RAM(false);
-			SendMusic();
-			SendBackgrounds();
+			CurrentPacket << gamemode; CurrentPacket << PlayerAmount;
+			Push_Server_RAM(false); SendMusic();
+			if (gamemode == GAMEMODE_MAIN) { SendBackgrounds(); }
 			SendPacket(client);
 
 			//Send msg to discord

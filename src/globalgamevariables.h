@@ -56,9 +56,9 @@ while (doing_write || doing_read) { \
 	DATA_SAFETY_WAIT \
 	CURRENT_CHECK = chrono::high_resolution_clock::now(); \
 	if(chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK).count() > 1.0 && !hung_check) { \
-		hung_check = true; disconnected = true; \
+		hung_check = true; \
 		latest_error = "Loop crashed ("; latest_error += reason; latest_error += ")"; \
-		cout << red << "[Timer] Read/write frozen on " << reason << ". Game network might have crashed." << endl; \
+		cout << red << "[Timer] RW: " << doing_read << doing_write << " - frozen on " << reason << ". game network might have crashed." << endl; break; \
 	} \
 }
 
