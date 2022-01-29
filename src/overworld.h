@@ -54,12 +54,11 @@ public:
 	//Warp
 	void Warp() {
 		for (uint_fast8_t i = 0; i < Players.size(); i++) {
-			OverworldPlayer = &Players[i];
-			OverworldPlayer->x = WarpDestinationX;
-			OverworldPlayer->y = WarpDestinationY;
-			OverworldPlayer->server_position_sync_x = WarpDestinationX;
-			OverworldPlayer->server_position_sync_y = WarpDestinationY;
-			OverworldPlayer->server_position_sync_s++;
+			Players[i].x = WarpDestinationX;
+			Players[i].y = WarpDestinationY;
+			Players[i].server_position_sync_x = WarpDestinationX;
+			Players[i].server_position_sync_y = WarpDestinationY;
+			Players[i].server_position_sync_s++;
 		}
 		overworldSavedX = WarpDestinationX;
 		overworldSavedY = WarpDestinationY;
