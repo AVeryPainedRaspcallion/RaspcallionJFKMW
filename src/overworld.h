@@ -428,8 +428,10 @@ public:
 	}
 
 	//Process OW
-	void Process()
-	{
+	void Process() {
+		//Safety
+		OverworldPlayer = NULL;
+
 		//For player
 		RAM[0x1493] = 0;
 
