@@ -35,23 +35,6 @@ uint_fast8_t new_state_lookup[4] = {
     0xFF //Star
 };
 
-/*
-    Trigonometrical functions (they do the triangles)
-    has to do with angles and shit, radians (also do the triangles)
-*/
-float rad(float x) {
-    return x * 3.14159f / 180.f;
-}
-
-//automatically convert to radians so I can use 0* - 359* directly
-float sin_r(float x) {
-    return sinf(rad(x));
-}
-
-float cos_r(float x) {
-    return cosf(rad(x));
-}
-
 //Video
 bool integer_scaling = true;
 bool forced_scale = false;

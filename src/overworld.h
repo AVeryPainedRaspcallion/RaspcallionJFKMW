@@ -93,8 +93,7 @@ public:
 	}
 
 	//Calculate Submap
-	void CalculateSubmap(bool c)
-	{
+	void CalculateSubmap(bool c) {
 		if (OverworldPlayer->y < 512) {
 			current_map = 0;
 		}
@@ -108,7 +107,9 @@ public:
 		if (current_map != old_map && c) {
 			old_map = current_map;
 			LoadPaletteFile(Modpack + "/Map" + to_string(int(current_map)) + ".mw3");
+			TriggerRAMSync();
 		}
+		RAM[0x1DFB] = 0xF0 + current_map;
 	}
 
 	//Initialize overworld
@@ -167,6 +168,7 @@ public:
 		//Set to overworld
 		gamemode = GAMEMODE_OVERWORLD;
 		old_map = 0xFF;
+		old_1dfb = 0xFF;
 
 		//Load exanimation file, and clear out hud memory.
 		loadAssetRAM(Modpack + "/graphics/hud.bin", 11);
@@ -214,9 +216,6 @@ public:
 
 		//Loaded it
 		cout << yellow << "[JFKMW] Loaded overworld from modpack " << Modpack << endl;
-
-		//Trigger sync
-		TriggerRAMSync();
 	}
 
 	//Draw ow tile (Shitty)
@@ -694,9 +693,6 @@ public:
 					OverworldPlayer->ow_level_name = "";
 				}
 			}
-
-			//Music
-			RAM[0x1DFB] = 0xF0 + current_map;
 		}
 
 

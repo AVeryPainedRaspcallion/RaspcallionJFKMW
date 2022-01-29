@@ -66,8 +66,6 @@ uint_fast16_t sprite_f_send[spr_ent_net] =
 
 void Sync_Server_RAM(bool compressed = false)
 {
-	WAIT_READ_COMPLETE("ram sync")
-	doing_read = true;
 	if (!compressed) {
 		CurrentPacket >> latest_sync;
 		
@@ -234,8 +232,6 @@ void Sync_Server_RAM(bool compressed = false)
 		}
 
 	}
-	doing_read = false;
-	//cout << red << "received ram" << endl;
 }
 
 #define checkArea(i, x, y) (i >= x || i <= y)
@@ -269,10 +265,7 @@ bool checkRamDecay(uint_fast16_t i, bool dec) {
 }
 
 void Push_Server_RAM(bool compress = false) {
-	WAIT_READ_COMPLETE("ram push")
-	doing_read = true;
-	if (!compress)
-	{
+	if (!compress) {
 		CurrentPacket << latest_sync;
 
 		//LZ4 Compression
@@ -287,8 +280,7 @@ void Push_Server_RAM(bool compress = false) {
 		sendDMANet();
 		CompressOAM_Server();
 	}
-	else
-	{
+	else {
 		uint_fast16_t entries = 0;
 		for (uint_fast16_t i = 0; i < RAM_OLD_SIZE; i++) {
 			if (!checkRAMarea_net(i) && checkRamDecay(i, false)) {
@@ -449,6 +441,5 @@ void Push_Server_RAM(bool compress = false) {
 			}
 		}	
 	}
-	doing_read = false;
 }
 #endif

@@ -211,8 +211,6 @@ void InitializeAudio() {
 
 #ifndef DISABLE_NETWORK
 void SendMusic() {
-	WAIT_READ_COMPLETE("music send")
-	doing_read = true;
 	cout << green << "[Network] Packing sound data.." << endl;
 
 	uint_fast8_t musicTypeFlag = RAM[0x1DFB] == 0xFF ? 0xFF : music_type;
@@ -233,8 +231,6 @@ void SendMusic() {
 			SpecChunksLevel[i].SendNet();
 		}
 	}
-	doing_read = false;
-
 }
 
 void ReceiveMusic() {

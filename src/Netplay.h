@@ -178,6 +178,8 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 	else
 	//CLIENT BEHAVIOUR
 	{
+		WAIT_READ_COMPLETE("packet receive 0x" + int_to_hex(CurrentPacket_header, true))
+		doing_read = true;
 		if (CurrentPacket_header == Header_MusicData) {
 			ReceiveMusic();
 			Sync_Server_RAM(false);
@@ -235,7 +237,7 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 			validated_connection = false;
 			disconnected = true;
 		}
-
+		doing_read = false;
 	}
 }
 
@@ -334,18 +336,23 @@ void PendingConnection() {
 }
 
 //Natural Loop
+#define S_TO_CLIENT_STOP_CHECK if (clients.size() < 1 || last_network_status == sf::Socket::Error || last_network_status == sf::Socket::Disconnected) { break; }
 void Server_To_Clients() {
 	bool players_synced_new = true;
 	GetAmountOfPlayers();
-
 	if (clients.size() > 0) {
 		for (uint_fast8_t i = 0; i < clients.size(); i++) {
 			GNetSocket& client = *clients[i];
+
+			//Receive all packets from client. This halts the thread.
 			receive_all_packets(client);
-			
-			if (clients.size() < 1 || last_network_status == sf::Socket::Error || last_network_status == sf::Socket::Disconnected) {
-				break;
-			}
+
+			//Safety
+			S_TO_CLIENT_STOP_CHECK
+
+			//Start read. We're sending in stuff from the game, so we have to wait until the game thread is not doing anything.
+			WAIT_READ_COMPLETE("Server To Client Loop")
+			doing_read = true;
 
 			//Send basic response data
 			PreparePacket(Header_GlobalUpdate);
@@ -394,6 +401,9 @@ void Server_To_Clients() {
 			CurrentPacket << Curr_PChatString;
 			SendPacket(&client);
 
+			//Safety
+			S_TO_CLIENT_STOP_CHECK
+
 			//MUSIC SYNC
 			d_change = client.music_latest_sync_p != music_latest_sync;
 			if (d_change) {
@@ -424,23 +434,24 @@ void Server_To_Clients() {
 				SendMusic();
 				Push_Server_RAM(false);
 				SendPacket(&client);
+
+				//Safety
+				S_TO_CLIENT_STOP_CHECK
 			}
 
-			//Prevent crash when a player leaves a server
-			if (clients.size() < 1 || last_network_status == sf::Socket::Error || last_network_status == sf::Socket::Disconnected) {
-				break;
-			}
+			//By this point, our reads are complete.
+			doing_read = false;
 		}
 
 		//Reset
 		resetImportantVariables();
 		if (recent_big_change) {
 			recent_big_change = false;
-			cout << green << "[Network] Sent game RAM sync. Waiting for others to sync.." << endl;
+			cout << green << "[Network] Sent game RAM sync." << endl;
 		}
 	}
-
 	players_synced = players_synced_new;
+	doing_read = false;
 }
 
 //Network thread
@@ -454,19 +465,15 @@ void NetWorkLoop() {
 
 		// Endless loop that waits for new connections
 		while (!quit) {
+			if (clients.size() > 0) {
+				//Just run a normal loop.
+				network_update_rate = network_update_rate_c / (unsigned int)clients.size();
+				packet_wait_time = packet_wait_time_c / (unsigned int)clients.size();
+				Server_To_Clients();
+			}
 			if (selector.wait(sf::milliseconds(network_update_rate))) {
-				if (clients.size() > 0) {
-					network_update_rate = network_update_rate_c / (unsigned int)clients.size();
-					packet_wait_time = packet_wait_time_c / (unsigned int)clients.size();
-				}
-
-				// Test the listener
-				if (selector.isReady(listener)) {
-					PendingConnection();
-				}
-				else {
-					Server_To_Clients();
-				}
+				//Test listener for pending connection.
+				if (selector.isReady(listener)) { PendingConnection(); }
 			}
 		}
 	}
