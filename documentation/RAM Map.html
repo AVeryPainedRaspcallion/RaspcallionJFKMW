@@ -132,24 +132,6 @@ B Address Modes:
 0x1DFD Sound I/O Port 5, Only plays per-level sounds and can use up to 32 channels.
 0x0DDA Back-up of the music register.
 
---OAM--
-NOTE: USE THE BUILT IN LUA FUNCTION. WRITING TO 0x200-0x5FF WONT DO ANYTHING ANYMORE.
-Format :
-Tile, Size, XPos, YPos, Flags, Rotation
-
-Flags format (FSRRYXCPPPP)
-PPPP = Palette (0 to F, all rows)
-C = Use next page of graphics (SP3/SP4)
-X = X Flip
-Y = Y Flip
-RR = Priority Bits:
-00 - Below mario
-01 - Above mario
-10 - Below layer 1, below 11 (use this for background objects, lowest layer)
-11 - Below layer 1, above 10
-S = Screen relative (wont move)
-F = Follow Player (Rotation byte will be used to determine player number)
-
 --Positions--
 --camera lock value entries : 0 for locked, any else for unlocked.
 0x1411 Screen locked in X axis, if this is locked, players camera will be locked at 0x1462 (Layer 1 X Position)
