@@ -50,14 +50,14 @@ void server_code() {
 
 	while (true) {
 		Uint32 start_time = SDL_GetTicks();
-		WAIT_READ_COMPLETE
+		WAIT_READ_COMPLETE("server loop wait")
 
 		//Start
 		doing_write = true;
 		
 		//Stats
 		START_CHECK = chrono::high_resolution_clock::now();
-		game_loop_code(); SoundLoop();
+		GameLoop(); SoundLoop();
 		CURRENT_CHECK = chrono::high_resolution_clock::now();
 		total_time_ticks = chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK);
 		
@@ -72,8 +72,8 @@ void server_code() {
 			data_size_now = 0;
 		}
 
-		//Commands
 		processing_cmd_queue = true;
+		//Commands
 		for (int i = 0; i < command_queue.size(); i++) {
 			string command = command_queue[i];
 			vector<string> cmd_data = split(command, ' ');

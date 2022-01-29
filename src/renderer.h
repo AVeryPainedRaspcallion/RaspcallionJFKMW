@@ -151,10 +151,7 @@ void drawLayer3Background() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void handleRenderingForPlayer(int player)
-{
-	//Blocks
-	blocks_on_screen = 0;
+void handleRenderingForPlayer(int player) {
 	CheckForPlayers();
 	if (Players.size() < player) {
 		return;
@@ -257,7 +254,6 @@ void handleRenderingForPlayer(int player)
 							block_palette = index >> ((i & 1) << 2) & 0xF;
 						}
 						if (block_index != 0xF8) {
-							if (drawDiag) { blocks_on_screen++; }
 							if (flip) {
 								draw8x8_tile_f(
 									((i << 3) & 0xF) + (x << 4),

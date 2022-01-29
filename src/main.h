@@ -19,9 +19,9 @@ void player_code() {
 	}
 
 	//Load SDL part
-	screen(resolution_x, resolution_y);
-	init_input();
-	init_audio();
+	CreateScreen(resolution_x, resolution_y);
+	InitializeInput();
+	InitializeAudio();
 	PreloadAllTextures();
 
 	if (!testing_level.length()) {
@@ -94,23 +94,17 @@ void player_code() {
 
 			//Player Init Wait
 			cout << yellow << "[JFKMW] Waiting for player..." << endl;
-			while (Players.size() == 0) {
-				DATA_SAFETY_WAIT
-			}
+			while (!Players.size()) { DATA_SAFETY_WAIT }
 		}
 #endif
 
 		//Main Loop
-		while (!done()) {
-			WAIT_READ_COMPLETE
+		while (!GameLoopDone()) {
+			WAIT_READ_COMPLETE("loop wait")
 			doing_write = true;
 			cls();
 			START_CHECK = chrono::high_resolution_clock::now();
-			if (!gGameController) {
-				check_input();
-			}
-			game_loop_code(); SoundLoop();
-			render();
+			GameLoop(); SoundLoop(); render();
 			doing_write = false;
 			CURRENT_CHECK = chrono::high_resolution_clock::now();
 			total_time_ticks = chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK);

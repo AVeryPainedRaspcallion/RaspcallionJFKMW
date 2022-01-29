@@ -1,18 +1,13 @@
 #pragma once
 
-//This loop always runs at 60.
-void game_loop_code()
-{
-	/*
-		Get input I guess
-	*/
-	if ((!networking || isClient) && gGameController) {
-		check_input();
+//This handles the whole loop code for 1 frame of the game.
+void GameLoop() {
+	//Get input
+	if (!networking || isClient) {
+		CheckInput();
 	}
 
-	/*
-		Username storages
-	*/
+	//Username storages
 	if (!isClient) {
 		if (networking) {
 #ifndef DISABLE_NETWORK
@@ -33,19 +28,15 @@ void game_loop_code()
 	//DMA Start
 	DMAStartFrame();
 	uint_fast16_t count = uint_fast16_t(min(65535, int(total_time_ticks.count() * 3584.0)));
-	RAM[0x4207] = count & 0xFF;
-	RAM[0x4209] = count / 256;
-
+	RAM[0x4207] = count & 0xFF; RAM[0x4209] = count / 256;
 
 	//Check if we can process
 #ifndef DISABLE_NETWORK
 	if (networking) {
 		if (isClient && !(global_frame_counter % 60)) {
-			data_size_now = data_size_current;
-			data_size_current = 0;
+			data_size_now = data_size_current; data_size_current = 0;
 		}
-
-		if (clients.size() == 0 && !isClient) {
+		if (clients.size() == 0 && !isClient) { //Server is empty, no point in wasting time processing.
 			return;
 		}
 	}
@@ -78,8 +69,17 @@ void game_loop_code()
 				return;
 			}
 			overworld.Process();
-			processParticles();
-			handleTransitions();
+
+			if (!isClient) {
+				if (global_frame_counter <= 5) {
+					RAM[0x9D] = 0; RAM[0x3F10] = 0x0F; RAM[0x3F11] = 2;
+				}
+				else {
+					handleTransitions();
+				}
+			}
+
+			if (gamemode != GAMEMODE_OVERWORLD) { return; }
 		}
 
 		if (gamemode == GAMEMODE_MAIN || gamemode == GAMEMODE_TITLE) {
@@ -95,16 +95,12 @@ void game_loop_code()
 
 			if (!isClient) {
 				if (global_frame_counter <= 5) {
-					RAM[0x9D] = 0;
-					RAM[0x3F10] = 0xFF;
-					RAM[0x3F11] = 2;
+					RAM[0x9D] = 0; RAM[0x3F10] = 0xFF; RAM[0x3F11] = 2;
 				}
 				else {
 					handleTransitions();
 				}
-				if (gamemode == GAMEMODE_OVERWORLD) {
-					return;
-				}
+				if (gamemode == GAMEMODE_OVERWORLD) { return; }
 
 				//Level Clear
 				if (RAM[0x1493] > 0) {
@@ -118,9 +114,10 @@ void game_loop_code()
 				}
 			}
 
+			//Earthquake
 			if (RAM[0x1887] > 0) {
 				if (!isClient) { RAM[0x1887]--; }
-				if (!networking || isClient) { vibrate_controller(1.0, 32); }
+				if (!networking || isClient) { VibrateController(1.0, 32); }
 			}
 
 			//Music restore
@@ -178,23 +175,22 @@ void game_loop_code()
 					if (time > 0) {
 						time--;
 						if (time == 0) {
-							RAM[0x1DFB] = 9;
-							memset(&player_netcommand, 0xF, 256);
+							RAM[0x1DFB] = 9; memset(&player_netcommand, 0xF, 256);
 						}
 						writeToRam(0xF31, time, 2);
 					}
 				}
 			}
 
+			//Process all players
 			int camera_total_x = 0; int camera_total_y = 0;
-			for (uint_fast8_t i = 0; i < Players.size(); i++)
-			{
+			for (uint_fast8_t i = 0; i < Players.size(); i++) {
 				MPlayer& CurrPlayer = Players[i];
 				CurrPlayer.player_index = i;
 				if (CurrPlayer.PlayerControlled) {
 					CurrPlayer.mouse_x = mouse_x + CameraX;
 					CurrPlayer.mouse_y = (INTERNAL_RESOLUTION_Y - mouse_y) + CameraY;
-					CurrPlayer.mouse_state[0] = mouse_down;
+					CurrPlayer.mouse_state[0] = mouse_down_l;
 					CurrPlayer.mouse_state[1] = mouse_down_r;
 					CurrPlayer.mouse_state[2] = mouse_w_up;
 					CurrPlayer.mouse_state[3] = mouse_w_down;
@@ -268,26 +264,18 @@ void game_loop_code()
 				}
 			}
 
+			//Player amount for Lua
 			RAM[0x3F0F] = uint_fast8_t(Players.size());
 
 			PlayerInteraction();
 
-			camera_total_x /= int(Players.size());
-			camera_total_y /= int(Players.size());
-
 			if (!isClient) {
-				if (RAM[0x1411] != 0) {
-					writeToRam(0x1462, uint_fast32_t(camera_total_x), 2);
-				}
-				if (RAM[0x1412] != 0) {
-					writeToRam(0x1464, uint_fast32_t(camera_total_y), 2);
-				}
+				if (RAM[0x1411] != 0) { writeToRam(0x1462, uint_fast32_t(camera_total_x / int(Players.size())), 2); }
+				if (RAM[0x1412] != 0) { writeToRam(0x1464, uint_fast32_t(camera_total_y / int(Players.size())), 2); }
 
 				if (LAST_9D) {
 					Sprites.process_all_sprites(); //we're processing sprites. we're either the server or a player in local mode.
-					if (lua_loaded) {
-						lua_run_main();
-					}
+					if (lua_loaded) { lua_run_main(); }
 					map16_handler.process_global();
 					processParticles();
 				}
@@ -298,18 +286,11 @@ void game_loop_code()
 
 	ProcessGraphicAnimations();
 	ProcessChat();
-
-	RAM[0x13] = global_frame_counter & 0xFF;
-	RAM[0x14] = ingame_frame_counter & 0xFF;
-
 	ProcessHDMA();
 
-	//Finish OAM if we're the server or playing singleplayer.
-	if (!isClient || !networking) {
-		Finish_OAM();
-	}
+	RAM[0x13] = global_frame_counter & 0xFF; RAM[0x14] = ingame_frame_counter & 0xFF;
 
-	if (debugging_enabled) {
-		debugging_functions();
-	}
+	//Finish OAM if we're the server or playing singleplayer.
+	if (!isClient || !networking) { Finish_OAM(); }
+	if (debugging_enabled) { debugging_functions(); }
 }

@@ -66,7 +66,7 @@ uint_fast16_t sprite_f_send[spr_ent_net] =
 
 void Sync_Server_RAM(bool compressed = false)
 {
-	WAIT_READ_COMPLETE
+	WAIT_READ_COMPLETE("ram sync")
 	doing_read = true;
 	if (!compressed) {
 		CurrentPacket >> latest_sync;
@@ -269,7 +269,7 @@ bool checkRamDecay(uint_fast16_t i, bool dec) {
 }
 
 void Push_Server_RAM(bool compress = false) {
-	WAIT_READ_COMPLETE
+	WAIT_READ_COMPLETE("ram push")
 	doing_read = true;
 	if (!compress)
 	{

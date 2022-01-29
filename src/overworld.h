@@ -65,6 +65,9 @@ public:
 		overworldSavedY = WarpDestinationY;
 		ingame_frame_counter = 0;
 		global_frame_counter = 0;
+
+		//Trigger sync
+		TriggerRAMSync();
 	}
 
 	//Check if tile is a tile that the player can stop on (eg. level)
@@ -104,13 +107,12 @@ public:
 		//Load OW Palette
 		if (current_map != old_map && c) {
 			old_map = current_map;
-			read_from_palette(Modpack + "/Map" + to_string(int(current_map)) + ".mw3");
+			LoadPaletteFile(Modpack + "/Map" + to_string(int(current_map)) + ".mw3");
 		}
 	}
 
 	//Initialize overworld
-	void Initialize()
-	{
+	void Initialize() {
 		GameInitialize();
 
 		//Reset camera
@@ -158,8 +160,7 @@ public:
 		//Forced level config entry
 		if (get_config_entry("forced_level") != 0) {
 			//Set to overworld
-			writeToRam(0x3F08, get_config_entry("forced_level"), 2);
-			load_level3f08();
+			writeToRam(0x3F08, get_config_entry("forced_level"), 2); load_level3f08();
 			return;
 		}
 
@@ -213,6 +214,9 @@ public:
 
 		//Loaded it
 		cout << yellow << "[JFKMW] Loaded overworld from modpack " << Modpack << endl;
+
+		//Trigger sync
+		TriggerRAMSync();
 	}
 
 	//Draw ow tile (Shitty)
@@ -419,12 +423,12 @@ public:
 			}
 		}
 
-//Darken the screen globally
-Ren_SetDrawColor(0, 0, 0, bright_val == 0xF ? 255 : (bright_val << 4));
-Ren_FillRect(nullptr);
+		//Darken the screen globally
+		Ren_SetDrawColor(0, 0, 0, bright_val == 0xF ? 255 : (bright_val << 4));
+		Ren_FillRect(nullptr);
 
-//Chat
-Chat_Render();
+		//Chat
+		Chat_Render();
 	}
 
 	//Process OW
@@ -487,8 +491,8 @@ Chat_Render();
 						OverworldPlayer->y = int(OverworldPlayer->y);
 						OverworldPlayer->X_SPEED = pad_p[button_right] - pad_p[button_left];
 						OverworldPlayer->Y_SPEED = pad_p[button_down] - pad_p[button_up];
-						tile_moving_on_x = TilePosX + OverworldPlayer->X_SPEED;
-						tile_moving_on_y = TilePosY + OverworldPlayer->Y_SPEED;
+						tile_moving_on_x = int(TilePosX + OverworldPlayer->X_SPEED);
+						tile_moving_on_y = int(TilePosY + OverworldPlayer->Y_SPEED);
 						tile_moving_on = Get_Tile(tile_moving_on_x, tile_moving_on_y);
 						if (OverworldPlayer->X_SPEED != 0 && Get_Tile(tile_moving_on_x, TilePosY) == 0x0) {
 							OverworldPlayer->X_SPEED = 0; tile_moving_on = 0;
@@ -690,15 +694,11 @@ Chat_Render();
 					OverworldPlayer->ow_level_name = "";
 				}
 			}
+
+			//Music
+			RAM[0x1DFB] = 0xF0 + current_map;
 		}
 
-		//Music
-		RAM[0x1DFB] = 0xF0 + current_map;
-
-		if (global_frame_counter == 5) {
-			//Fade in
-			RAM[0x3F10] = 0x0F; RAM[0x3F11] = 2;
-		}
 
 		//Increease frmcounter
 		if (!RAM[0x3F11]) {

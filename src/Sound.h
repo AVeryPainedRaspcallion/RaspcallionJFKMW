@@ -96,8 +96,7 @@ public:
 };
 SpecialLevelSpecificSoundChunk SpecChunksLevel[32];
 
-string GetSongFile(uint_fast8_t ID)
-{
+string GetSongFile(uint_fast8_t ID) {
 	string file1;
 	if (gamemode == GAMEMODE_MAIN) {
 		for (uint_fast8_t i = 0; i < 3; i++) {
@@ -167,7 +166,7 @@ void audio_callback(void* user_data, Uint8* raw_buffer, int bytes) {
 }
 
 //Initialize Audio subsystem
-bool init_audio() {
+void InitializeAudio() {
 	//SF
 	midi_patchset = midi_patchset == "NONE" ? "SMW.sf2" : midi_patchset;
 	string soundfont = "Soundbanks/" + midi_patchset; Mix_SetSoundFonts(soundfont.c_str());
@@ -175,7 +174,7 @@ bool init_audio() {
 	//Initialize SDL_mixer
 	if (Mix_OpenAudio(ogg_sample_rate, MIX_DEFAULT_FORMAT, 2, 1024) == -1) {
 		cout << purple << "[Audio] Error : " << Mix_GetError() << endl;
-		return false;
+		return;
 	}
 	cout << purple << "[Audio] Initialized mixer audio port (" << dec << ogg_sample_rate << "hz)." << endl;
 
@@ -206,15 +205,13 @@ bool init_audio() {
 			}
 		}
 	}
-
 	cout << purple << "[Audio] Pre-loaded " << dec << snds << " sounds." << endl;
-	return true;
 }
 
 
 #ifndef DISABLE_NETWORK
 void SendMusic() {
-	WAIT_READ_COMPLETE
+	WAIT_READ_COMPLETE("music send")
 	doing_read = true;
 	cout << green << "[Network] Packing sound data.." << endl;
 

@@ -26,7 +26,7 @@ string GAME_VERSION = "4.2.3b";
 #define MAX_L3_TILES 0x80
 #define level_ram_decay_time 40 //Server ticks before level data RAM becomes invalid to send
 
-//Misc
+//Map Size
 uint_fast16_t mapWidth = 256;
 uint_fast16_t mapHeight = 32;
 
@@ -40,16 +40,6 @@ int music_volume = 128;
 bool multichannel_sounds = false;
 string midi_patchset = "NONE";
 
-//RAM sizes.
-#define RAM_Size 0x34000
-#define VRAM_Size 0x14000
-#define VRAM_Location 0x20000
-#define VRAM_Convert(x) VRAM_Location+x
-#define LEVEL_DECAY_SIZE 0x8000
-#define RAM_OLD_SIZE 0x7000
-#define MAP16_LOCATION 0xC000
-#define LEVEL_SIZE 0x8000
-
 //Clocks for perfomance checking
 chrono::high_resolution_clock::time_point START_CHECK;
 chrono::high_resolution_clock::time_point CURRENT_CHECK;
@@ -61,19 +51,29 @@ chrono::duration<double> total_time_ticks;
 #else
 #define DATA_SAFETY_WAIT sf::sleep(sf::milliseconds(1));
 #endif
-#define WAIT_READ_COMPLETE START_CHECK = chrono::high_resolution_clock::now(); bool hung_check = false; \
+#define WAIT_READ_COMPLETE(reason) START_CHECK = chrono::high_resolution_clock::now(); bool hung_check = false; \
 while (doing_write || doing_read) { \
 	DATA_SAFETY_WAIT \
 	CURRENT_CHECK = chrono::high_resolution_clock::now(); \
 	if(chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK).count() > 1.0 && !hung_check) { \
-		hung_check = true; \
-		cout << red << "[Timer] Read/write frozen. Game network might have crashed." << endl; \
+		hung_check = true; disconnected = true; \
+		latest_error = "Loop crashed ("; latest_error += reason; latest_error += ")"; \
+		cout << red << "[Timer] Read/write frozen on " << reason << ". Game network might have crashed." << endl; \
 	} \
 }
 
 //Debug
-bool special_input_disabled = false;
 bool debugging_enabled = false;
+
+//RAM sizes.
+#define RAM_Size 0x34000
+#define VRAM_Size 0x14000
+#define VRAM_Location 0x20000
+#define VRAM_Convert(x) VRAM_Location+x
+#define LEVEL_DECAY_SIZE 0x8000
+#define RAM_OLD_SIZE 0x7000
+#define MAP16_LOCATION 0xC000
+#define LEVEL_SIZE 0x8000
 
 //RAM
 uint_fast8_t RAM[RAM_Size];
@@ -86,7 +86,7 @@ uint_fast32_t palette_array[256]; //These are cached lol
 uint_fast8_t VRAM[VRAM_Size];
 uint_fast8_t pipe_colors[4] = { 3, 5, 6, 7 };
 
-//Some bitflags.
+//Some bitflags for block collision
 #define top 8
 #define bottom 4
 #define left 2
@@ -139,17 +139,18 @@ sf::Thread* thread_alt = 0;
 uint_fast8_t PlayerSpinFrames[4] = { POSE_FRONT, POSE_STAND, POSE_BACK, POSE_STAND };
 int_fast8_t PlayerSpinScale[4] = { 1, 1, -1, -1 };
 uint_fast8_t PlayerCapeSmokeFrames[5] = { 0x60,0x62,0x60,0x62,0x66 };
+uint_fast8_t my_skin = 0;
 
-//ASM
+//Game states
 #define GAMEMODE_TITLE 0
 #define GAMEMODE_OVERWORLD 1
 #define GAMEMODE_MAIN 2
 #define GAMEMODE_ATTEMPTCONNECTION 3
-
 uint_fast8_t gamemode = GAMEMODE_TITLE;
-uint_fast8_t my_skin = 0;
-uint_fast32_t global_frame_counter = 0; //Like 0x13
-uint_fast32_t ingame_frame_counter = 0; //Like 0x14
+
+//Counters
+uint_fast32_t global_frame_counter = 0;
+uint_fast32_t ingame_frame_counter = 0;
 
 int latest_server_response;
 
@@ -158,10 +159,8 @@ unsigned int packet_wait_time = 16;
 unsigned int network_update_rate_c = 16;
 unsigned int packet_wait_time_c = 16;
 int mouse_x, mouse_y;
-bool mouse_down;
-bool mouse_down_r;
-bool mouse_w_up;
-bool mouse_w_down;
+bool mouse_down_l; bool mouse_down_r;
+bool mouse_w_up; bool mouse_w_down;
 bool use_mouse = true;
 
 bool automatic_fps_cap = false;
@@ -188,8 +187,6 @@ bool drawDiag = false;
 bool drawBg = true;
 bool drawSprites = true;
 bool drawL1 = true;
-
-int blocks_on_screen = 0;
 
 //Statuses/Username
 string username = "No username";
@@ -231,41 +228,29 @@ string button_configurations[18] = {
 	"button_left", "button_right", "button_down", "button_up",
 	"button_select","button_start","button_chat",
 	"button_togglehud","button_togglediag","button_togglelayer1",
-	"button_togglebg","button_togglesprites","button_dumpram","button_dumplevel" };
-bool s_pad[total_inputs];
-bool pad_p[total_inputs];
-bool pad_s[total_inputs];
-
+	"button_togglebg","button_togglesprites","button_dumpram","button_dumplevel"
+};
+bool s_pad[total_inputs]; bool pad_p[total_inputs]; bool pad_s[total_inputs];
 bool BUTTONS_GAMEPAD[10];
-
 const Uint8* state = SDL_GetKeyboardState(NULL);
 SDL_GameController* gGameController[4];
 SDL_Haptic* haptic_device;
-
-double controller_mouse_x = 0.0;
-double controller_mouse_y = 0.0;
-
-bool left_st_pr = false;
-bool right_st_pr = false;
-
-bool esc_pr = false;
+double controller_mouse_x = 0.0; double controller_mouse_y = 0.0;
+bool left_st_pr = false; bool right_st_pr = false;
 
 //Some shared functions for files & strings.
 vector<string> split(const string &s, char delim) {
 	vector<string> result;
 	stringstream ss(s);
 	string item;
-
 	while (getline(ss, item, delim)) {
 		result.push_back(item);
 	}
-
 	return result;
 }
 
 void replaceAll(string& str, const string& from, const string& to) {
-	if (from.empty())
-		return;
+	if (from.empty()) { return; }
 	size_t start_pos = 0;
 	while ((start_pos = str.find(from, start_pos)) != string::npos) {
 		str.replace(start_pos, from.length(), to);
@@ -281,13 +266,9 @@ bool is_file_exist(const char* fileName) {
 string int2hexcache[16] = { "0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F" };
 string int_to_hex(int T, bool add_0 = false) {
 	string STR = "";
-	if (T < 16 && add_0) {
-		STR = "0" + int2hexcache[T & 0xF];
-	}
+	if (T < 16 && add_0) { STR = "0" + int2hexcache[T & 0xF]; }
 	else {
-		while (T > 0) {
-			STR = int2hexcache[T & 0xF] + STR; T >>= 4;
-		}
+		while (T > 0) { STR = int2hexcache[T & 0xF] + STR; T >>= 4; }
 	}
 	return STR;
 }
@@ -314,16 +295,13 @@ uint_fast8_t char_to_smw(char l) {
 }
 
 int safe_stoi(std::string str, int base) {
-	try {
-		return stoi(str, nullptr, base);
-	}
-	catch (...) {
-		return 0;
-	}
+	try { return stoi(str, nullptr, base); }
+	catch (...) { return 0; }
 }
 
+//Quit Game
 bool quit = false;
-bool actuallyquitgame = false;
+
 //NET
 bool doing_write = false;
 bool doing_read = false;
@@ -366,7 +344,7 @@ uint_fast8_t spawned_grabbable = 0xFF;
 string Modpack;
 void LoadPack(string NewPack) {
 	if (networking) {
-		if (isClient) { return;}
+		if (isClient) { return; }
 	}
 	else {
 		if (gamemode != GAMEMODE_TITLE) { cout << red << "[JFKMW] Cannot load pack while in game." << endl; return; }
@@ -387,8 +365,7 @@ string ip = "127.0.0.1"; int PORT = 0;
 vector<string> username_storage;
 
 #ifndef DISABLE_NETWORK
-class GNetSocket : public sf::TcpSocket
-{
+class GNetSocket : public sf::TcpSocket {
 public:
 	string username = "";
 
@@ -452,6 +429,18 @@ void TriggerRAMSync() {
 	void discord_message(string msg) {
 	}
 #endif
+
+//Load Palette File
+void LoadPaletteFile(string file) {
+	ifstream input(file, ios::binary);
+	vector<unsigned char> buffer(istreambuf_iterator<char>(input), {});
+	uint_fast16_t curr = 0x7A00;
+	for (auto& v : buffer) {
+		if (curr < 0x7C00) { RAM[(curr >> 1) + ((curr & 1) << 8)] = uint_fast8_t(v); }
+		curr++;
+	}
+	input.close();
+}
 
 //Palette array
 void ConvertPalette() {
@@ -672,13 +661,10 @@ vector<OAMTile> OAM_Tiles;
 void GameInitialize() {
 	loadAssetRAM(Modpack + "/graphics/exanimations.bin", 8);
 	loadAssetRAM(Modpack + "/graphics/hud.bin", 11);
-	memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800);
-
-	global_frame_counter = 0;
-	ingame_frame_counter = 0;
-
-	OAM_Tiles.clear();
-
+	memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800); //Clear VRAM used for statusbar
 	memset(&RAM[0x6000], 0, 0x4000); //Clear OW/Free part of RAM
+	global_frame_counter = 0; ingame_frame_counter = 0;
+	OAM_Tiles.clear();
+	deleteAssetCache();
 	TriggerRAMSync();
 }

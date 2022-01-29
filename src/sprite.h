@@ -15,9 +15,7 @@ void GammaSurface(SDL_Surface* loadedSurface) {
 			for (int y = 0; y < loadedSurface->h; y++) {
 				Uint8* p_screen = (Uint8*)loadedSurface->pixels;
 				p_screen += (y * loadedSurface->w + x) * loadedSurface->format->BytesPerPixel;
-				p_screen[0] = gammaRamp[p_screen[0] >> 3];
-				p_screen[1] = gammaRamp[p_screen[1] >> 3];
-				p_screen[2] = gammaRamp[p_screen[2] >> 3];
+				p_screen[0] = gammaRamp[p_screen[0] >> 3]; p_screen[1] = gammaRamp[p_screen[1] >> 3]; p_screen[2] = gammaRamp[p_screen[2] >> 3];
 			}
 		}
 	}
@@ -60,8 +58,7 @@ void PreloadAllTextures() {
 void CreateSprite(string sprite, int x, int y, int size_x, int size_y) {
 	DestR.x = x + (size_x < 0 ? abs(size_x) : 0);
 	DestR.y = y;
-	DestR.w = size_x;
-	DestR.h = size_y;
+	DestR.w = size_x; DestR.h = size_y;
 	RenderCopyOpenGL(&DestR, loadSDLTextureGL(sprite));
 }
 
@@ -117,13 +114,9 @@ public:
 	//Send this chunk through net
 	void SendNet() {
 		//yeah we wouldn't want to send a unfinished texture
-		while (databusy) {
-			DATA_SAFETY_WAIT
-		}
+		while (databusy) { DATA_SAFETY_WAIT }
 		CurrentPacket << png_data_size;
-		if (png_data_size > 0) {
-			CurrentPacket.append(png_data_raw, png_data_size);
-		}
+		if (png_data_size > 0) { CurrentPacket.append(png_data_raw, png_data_size); }
 	}
 #endif
 
