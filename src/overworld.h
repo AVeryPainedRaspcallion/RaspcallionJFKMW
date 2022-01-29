@@ -20,7 +20,7 @@ public:
 	bool initializedPosition = false;
 
 	//Yes, the overworld depends on the player. This is to be able to add MP support.
-	MPlayer* OverworldPlayer;
+	MPlayer* OverworldPlayer = NULL;
 
 	uint_fast8_t current_map = 0;
 	uint_fast8_t old_map = 0xFF;
