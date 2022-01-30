@@ -109,7 +109,7 @@ void MainProcess() {
 			else {
 				SelectedLevelPart = -1;
 				selectedMap16Tile = 0x25;
-				if (keyboardState[SDL_SCANCODE_DELETE]) {
+				if (keyboardState[SDL_SCANCODE_DELETE] || keyboardState[SDL_SCANCODE_BACKSPACE]) {
 					levelSData.erase(levelSData.begin() + SelectedSpriteObject);
 					SelectedSpriteObject = -1;
 				}
