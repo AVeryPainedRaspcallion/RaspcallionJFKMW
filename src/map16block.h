@@ -207,23 +207,42 @@ public:
 			if (t == 0x0124 && side == bottom) {
 				replace_map_tile(0xFF, x, y);
 			}
-			if (t >= 0x011F && t <= 0x121 && side == bottom) {
-				replace_map_tile(0xFF, x, y);
-				uint_fast8_t powerup = t == 0x121 ? 0x76 : (state == 0 ? 0x74 : (0x75 + (t - 0x11F) * 2));
-				uint_fast8_t spr = spawnSpriteObj(powerup, 5, x * 16, 2 + y * 16, 1);
-				RAM[0x2A00 + spr] = 2;
-				RAM[0x1DFC] = 2;
-			}
-			//With bounce sprites
-			if ((t >= 0x11F && t <= 0x128) && side == bottom) {
-				blocks_processing.push_back(block_timer{ 0x132, x, y, BOUNCE_TIME, true, 0x2A, 0x8, double(x * 16), double(y * 16)-17.0, 0.0, 4.0});
-			}
-			if (t == 0x0112 && side == bottom) {
-				RAM[0x14AF] = !RAM[0x14AF];
-				RAM[0x1DF9] = 0xB;
 
-				blocks_processing.push_back(block_timer{ 0x112, x, y, BOUNCE_TIME, true, 0xCE, 0xB, double(x * 16), double(y * 16) - 17.0, 0.0, 4.0 });
-				replace_map_tile(0xFF, x, y);
+			if (side == bottom) {
+				//Turn blocks
+				if (t >= 0x0117 && t <= 0x119) {
+					uint_fast8_t powerup = t == 0x119 ? 0x76 : (state == 0 ? 0x74 : (0x75 + (t - 0x117) * 2));
+					uint_fast8_t spr = spawnSpriteObj(powerup, 5, x * 16, 2 + y * 16, 1);
+					RAM[0x2A00 + spr] = 2; RAM[0x1DFC] = 2;
+				}
+				if (t == 0x11A) {
+					uint_fast8_t spr = spawnSpriteObj(0x79, 5, x * 16, 8 + y * 16, 1); RAM[0x1DFC] = 2;
+				}
+				if (t == 0x11D) {
+					uint_fast8_t spr = spawnSpriteObj(0x3E, 5, x * 16, 8 + y * 16, 1); RAM[0x2480 + spr] = 0x20; RAM[0x1DFC] = 2;
+				}
+				//Turn block handler
+				if (t >= 0x117 && t <= 0x11D) {
+					blocks_processing.push_back(block_timer{ 0x132, x, y, BOUNCE_TIME, true, 0x40, 0x8, double(x * 16), double(y * 16) - 17.0, 0.0, 4.0 });
+					replace_map_tile(0xFF, x, y);
+				}
+				//Question blocks
+				if (t >= 0x011F && t <= 0x121) {
+					uint_fast8_t powerup = t == 0x121 ? 0x76 : (state == 0 ? 0x74 : (0x75 + (t - 0x11F) * 2));
+					uint_fast8_t spr = spawnSpriteObj(powerup, 5, x * 16, 2 + y * 16, 1);
+					RAM[0x2A00 + spr] = 2; RAM[0x1DFC] = 2;
+				}
+				//Question block handler
+				if (t >= 0x11F && t <= 0x128) {
+					blocks_processing.push_back(block_timer{ 0x132, x, y, BOUNCE_TIME, true, 0x2A, 0x8, double(x * 16), double(y * 16) - 17.0, 0.0, 4.0 });
+					replace_map_tile(0xFF, x, y);
+				}
+				//ON/OFF handler
+				if (t == 0x0112) {
+					RAM[0x14AF] = !RAM[0x14AF]; RAM[0x1DF9] = 0xB;
+					blocks_processing.push_back(block_timer{ 0x112, x, y, BOUNCE_TIME, true, 0xCE, 0xB, double(x * 16), double(y * 16) - 17.0, 0.0, 4.0 });
+					replace_map_tile(0xFF, x, y);
+				}
 			}
 			//Midway
 			if (t == 0x0038) {

@@ -1,6 +1,6 @@
 #pragma once
 
-string GAME_VERSION = "4.2.3b t";
+string GAME_VERSION = "4.2.4b";
 
 //General
 #define Calculate_Speed(x) double(x) / 256.0
@@ -196,7 +196,7 @@ string latest_error = "";
 ///TO-DO: Make chat more secure and unspammable (For now you can't send similar messages, which is good.)
 #define chat_onscreen_timer 420
 string Curr_ChatString[6] = { "","","","","","" };
-char Number_Caps[10] = { '=','!',':', '#', '$', '%', '_', '/', '(', ')' };
+char Number_Caps[10] = { '=','!',':', '<', '>', '%', '_', '/', '(', ')' };
 string Curr_PChatString = "";
 string Old_ChatString = "";
 string Raw_PChatString = "";
@@ -280,6 +280,8 @@ uint_fast8_t char_to_smw(char l) {
 	if (l == '<') { return 0x2C; }
 	if (l == '>') { return 0x2D; }
 	if (l == '!') { return 0x28; }
+	if (l == '=') { return 0x2A; }
+	if (l == '%') { return 0x39; }
 	if (l == '.') { return 0x24; }
 	if (l == ',') { return 0x25; }
 	if (l == '-') { return 0x27; }

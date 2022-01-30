@@ -101,20 +101,23 @@ public:
 		LoadLevelFromString(LoadLevelData(FILENAME), num);
 	}
 	void LoadLevelFromString(string DLevel, uint_fast16_t num) {
+		cout << green << "[Level Manager] Processing level string.." << endl;
+
+		START_CHECK = chrono::high_resolution_clock::now();
+
+		//Reset a few things
+		reset_map();
 		chunks = 0;
 		lua_loaded = false;
-		reset_map();
-		cout << green << "[Level Manager] Processing level string.." << endl;
-		string status;
-		string line;
-		bool finished_message = false;
-		for (int msg = 0; msg < 16; msg++) {
-			Messages[msg] = "";
-		}
-		START_CHECK = chrono::high_resolution_clock::now();
-		stringstream str(DLevel); // string
 		LevelSprites.clear();
-		//int spr_index = 0;
+		level_data.clear();
+		string status, line;
+		bool finished_message = false;
+
+		//Clear messages
+		for (int msg = 0; msg < 16; msg++) { Messages[msg] = ""; }
+
+		stringstream str(DLevel); // string
 		while (getline(str, line)) {
 			if (line != "" || status.substr(0,7) == "message") {
 				string CHECK = line.substr(0, 2);
@@ -134,23 +137,22 @@ public:
 						auto value = line.substr(delimiterPos + 1);
 
 						if (name == "music") {
-							RAM[0x1DFB] = stoi(value, nullptr, 16); continue;
+							RAM[0x1DFB] = safe_stoi(value, 16); continue;
 						}
 						if (name == "background") {
-							RAM[0x3F05] = stoi(value, nullptr, 16); continue;
+							RAM[0x3F05] = safe_stoi(value, 16); continue;
 						}
+						int v_n = safe_stoi(value, 10);
 						if (name == "size_x") {
-							writeToRam(0x3F00, stoi(value), 2);
-							mapWidth = stoi(value);
+							writeToRam(0x3F00, v_n, 2); mapWidth = v_n;
 						}
 						if (name == "size_y") {
-							writeToRam(0x3F02, stoi(value), 2);
-							mapHeight = stoi(value);
+							writeToRam(0x3F02, v_n, 2); mapHeight = v_n;
 						}
 						if (name == "vertical") {
-							use_vertical_spawning = stoi(value);
+							use_vertical_spawning = v_n;
 						}
-						add_entry(name, stoi(value));
+						add_entry(name, v_n);
 					}
 					if (!finished_message) {
 						for (int msg = 1; msg <= 16; msg++) {
@@ -164,8 +166,7 @@ public:
 						}
 					}
 					if (status == "scripts") {
-						line.erase(remove_if(line.begin(), line.end(), ::isspace),
-							line.end());
+						line.erase(remove_if(line.begin(), line.end(), ::isspace), line.end());
 						auto delimiterPos = line.find("=");
 						auto name = line.substr(0, delimiterPos);
 						auto value = line.substr(delimiterPos + 1);
@@ -263,15 +264,17 @@ public:
 	}
 
 	void LoadLevel(uint_fast16_t num) {
-		GameInitialize();
-		level_data.clear();
-		writeToRam(0x010B, num, 2);
-		initialize_map16(Modpack + "/global.jfkmap16");
-		Initialize_Level();
 		cout << green << "[Level Manager] Loading level " << int_to_hex(num) << endl;
-		LoadPaletteFile(Modpack + "/levels/" + int_to_hex(num) + "/level_palette.mw3");
+		GameInitialize();
+		Initialize_Level();
+		writeToRam(0x010B, num, 2);
+		initialize_map16("packs/default/global.jfkmap16");
+		initialize_map16(Modpack + "/global.jfkmap16");
 		initialize_map16(Modpack + "/levels/" + int_to_hex(num) + "/level_map16.jfkmap16");
+		LoadPaletteFile(Modpack + "/levels/" + int_to_hex(num) + "/level_palette.mw3");
 		LoadLevelFromFile(Modpack + "/levels/" + int_to_hex(num) + "/level_data.txt", num);
+
+		//Load GFX
 		for (int i = 0; i < 16; i++) {
 			loadAssetRAM(Modpack + "/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
 			loadAssetRAM(Modpack + "/levels/" + int_to_hex(num) + "/" + GFX_Names[i] + ".bin", GFX_Locations[i]);
