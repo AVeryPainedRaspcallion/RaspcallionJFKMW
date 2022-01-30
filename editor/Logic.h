@@ -158,7 +158,7 @@ void MainProcess() {
 			else {
 				selectedSpriteSpawn = 0x100;
 				//Delete
-				if (keyboardState[SDL_SCANCODE_DELETE]) {
+				if (keyboardState[SDL_SCANCODE_DELETE] || keyboardState[SDL_SCANCODE_BACKSPACE]) {
 					levelLData.erase(levelLData.begin() + SelectedLevelPart);
 					SelectedLevelPart = -1;
 				}
