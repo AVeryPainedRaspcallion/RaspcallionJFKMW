@@ -151,7 +151,11 @@ void mainServerLoop() {
 		//Sleeping
 		doing_write = false;
 
+#if !defined(__linux__)
 		CAP_FPS60
+#else
+		sf::sleep(sf::milliseconds(16));
+#endif
 	}
 }
 
