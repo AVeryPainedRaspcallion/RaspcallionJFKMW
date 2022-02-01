@@ -263,7 +263,7 @@ void Push_Server_RAM(bool compress = false) {
 		CurrentPacket.append(RAM_compressed, index);
 
 		entries = 0; index = 0;
-		for (uint_fast16_t i = 0; i < LEVEL_DECAY_SIZE; i++) {
+		for (Uint16 i = 0; i < LEVEL_DECAY_SIZE; i++) {
 			if (RAM_decay_time_level[i]) {
 				RAM_decay_time_level[i]--;
 				*((Uint16*)&RAM_compressed[index]) = i;
