@@ -270,7 +270,7 @@ void PendingConnection() {
 		ReceiveAllPackets(*client, true, true);
 
 		//Wait a few moments
-		sf::sleep(sf::milliseconds(500));
+		sf::sleep(sf::milliseconds(1000));
 
 		//Validation might have succeeded by now
 		if (validated_connection) {
