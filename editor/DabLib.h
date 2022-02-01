@@ -19,7 +19,6 @@ string int_to_hex(int T, bool add_0 = false) {
 }
 
 //Path. For testing, i made this directly go to my folder path on debug builds
-
 string path = "";
 #if defined(_WIN32)
 void GetExecutableDirectory()
@@ -279,9 +278,14 @@ bool CheckMouseInBounds(SDL_Rect* Rect) {
 	return mouse_x >= Rect->x && mouse_y >= Rect->y && mouse_x <= (Rect->x + Rect->w) && mouse_y <= (Rect->y + Rect->h);
 }
 
-int safe_stringint(std::string str, int* p_value, int base = 10) {
-	// wrapping std::stoi because it may throw an exception
+//Safe 
+int safe_stoi(std::string str, int base = 10) {
+	try { return stoi(str, nullptr, base); }
+	catch (...) { return 0; }
+}
 
+// wrapping std::stoi because it may throw an exception
+int safe_stringint(std::string str, int* p_value, int base = 10) {
 	try {
 		*p_value = std::stoi(str, nullptr, base);
 		return 0;

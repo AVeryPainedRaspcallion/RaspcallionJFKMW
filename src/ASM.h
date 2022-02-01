@@ -245,20 +245,16 @@ bool checkRAMarea_net(uint_fast32_t i)
 }
 
 bool checkRamDecayLevel(uint_fast16_t i, bool dec) {
-	if (RAM_decay_time_level[i] > 0) {
-		if (dec) {
-			RAM_decay_time_level[i]--;
-		}
+	if (RAM_decay_time_level[i]) {
+		if (dec) { RAM_decay_time_level[i]--; }
 		return true;
 	}
 	return false;
 }
 
 bool checkRamDecay(uint_fast16_t i, bool dec) {
-	if (RAM_decay_time[i] > 0) {
-		if (dec) {
-			RAM_decay_time[i]--;
-		}
+	if (RAM_decay_time[i]) {
+		if (dec) { RAM_decay_time[i]--; }
 		return true;
 	}
 	return false;
@@ -281,6 +277,7 @@ void Push_Server_RAM(bool compress = false) {
 		CompressOAM_Server();
 	}
 	else {
+		//TO-DO: Optimize
 		uint_fast16_t entries = 0;
 		for (uint_fast16_t i = 0; i < RAM_OLD_SIZE; i++) {
 			if (!checkRAMarea_net(i) && checkRamDecay(i, false)) {

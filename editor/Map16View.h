@@ -17,7 +17,7 @@ void ProcessMap16View() {
 //Map16 Viewer Interact
 void InteractMap16View() {
 	if (mouse_x >= 2 && mouse_x <= 258 && mouse_y >= 2 && mouse_y <= (CurrentWindow->sy-2)) {
-		int T1 = (mouse_x - 2 >> 4) & 0xF;
+		int T1 = ((mouse_x - 2) >> 4) & 0xF;
 		int T2 = ((mouse_y - 2 + Map16_Scroll) >> 4) << 4;
 		selectedMap16Tile = T1 + T2;
 		selectedSpriteSpawn = 0x100;

@@ -262,12 +262,6 @@ void MainProcess() {
 			}
 		}
 	}
-
-	//Start pos
-	if (mouse_w_press) {
-		lManager.edit_level_entry("start_x", (mouse_x - MouseOffToWindowX + camOffsetX) / hudScale);
-		lManager.edit_level_entry("start_y", (h - 22 - mouse_y + MouseOffToWindowY + camOffsetY) / hudScale);
-	}
 }
 
 //WProcess

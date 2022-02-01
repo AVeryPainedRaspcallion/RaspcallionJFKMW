@@ -49,13 +49,10 @@ public:
 
 		istringstream str(DLevel); // std::string
 		while (getline(str, line)) {
-			if (line != "" || status.substr(0, 7) == "message")
-			{
-				if (line.substr(0, 1) == "[")
-				{
+			if (line != "" || status.substr(0, 7) == "message") {
+				if (line.substr(0, 1) == "[") {
 					status = line.substr(1, line.length() - 2);
-					if (status.substr(0, 7) == "message")
-					{
+					if (status.substr(0, 7) == "message") {
 						messages = messages + "[" + status + "]\n";
 					}
 					continue;
@@ -68,8 +65,7 @@ public:
 						scripts = scripts + line + "\n";
 					}
 					for (int i = 1; i <= 15; i++) {
-						if (status == ("message" + to_string(i)))
-						{
+						if (status == ("message" + to_string(i))) {
 							messages = messages + line + "\n";
 						}
 					}
@@ -77,10 +73,10 @@ public:
 						vector<string> v = split(line.c_str(), ',');
 						int offset = v.size() == 5 ? 1 : 0;
 						levelSData.push_back(SpriteObject{
-							stoi(v[offset + 1]),
-							stoi(v[offset + 2]),
-							int_fast8_t(stoi(v[offset + 3])),
-							uint_fast8_t(stoi(v[offset], nullptr, 16))
+							safe_stoi(v[offset + 1]),
+							safe_stoi(v[offset + 2]),
+							int_fast8_t(safe_stoi(v[offset + 3])),
+							uint_fast8_t(safe_stoi(v[offset], 16))
 							});
 					}
 					if (status == "level_config") {
@@ -91,23 +87,23 @@ public:
 						auto value = line.substr(delimiterPos + 1);
 
 						if (name == "music" || name == "background") {
-							add_entry(name, stoi(value, nullptr, 16));
+							add_entry(name, safe_stoi(value, 16));
 						}
 						else {
-							add_entry(name, stoi(value));
+							add_entry(name, safe_stoi(value));
 						}
 					}
 					if (status == "level_data" && line != status) {
 						vector<string> v = split(line.c_str(), ',');
 						if (v.size() == 5) {
-							int x = stoi(v[1]);
-							int y = stoi(v[2]);
-							int w = stoi(v[3]);
-							int h = stoi(v[4]);
-							levelLData.push_back(LevelObject{ x, h, w - x + 1, h - y + 1, uint_fast16_t(stoi(v[0], nullptr, 16)) });
+							int x = safe_stoi(v[1]);
+							int y = safe_stoi(v[2]);
+							int w = safe_stoi(v[3]);
+							int h = safe_stoi(v[4]);
+							levelLData.push_back(LevelObject{ x, h, w - x + 1, h - y + 1, uint_fast16_t(safe_stoi(v[0], 16)) });
 						}
 						if (v.size() == 3) {
-							levelLData.push_back(LevelObject{stoi(v[1]), stoi(v[2]), 1, 1, uint_fast16_t(stoi(v[0], nullptr, 16)) });
+							levelLData.push_back(LevelObject{ safe_stoi(v[1]), safe_stoi(v[2]), 1, 1, uint_fast16_t(safe_stoi(v[0], 16)) });
 						}
 					}
 				}
