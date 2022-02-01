@@ -85,8 +85,8 @@ void HandleDisconnection(GNetSocket* ToSend = nullptr) {
 }
 
 //Send packet to socket, direct.
-void sendPacketSocket(GNetSocket* ToSend = nullptr) {
-	ToSend->setBlocking(false);
+void sendPacketSocket(GNetSocket* ToSend = nullptr, bool blocking = false) {
+	ToSend->setBlocking(blocking);
 	if (ToSend->send(CurrentPacket) == sf::Socket::Disconnected) {
 		if (!isClient) {
 			HandleDisconnection(ToSend);
@@ -99,20 +99,20 @@ void sendPacketSocket(GNetSocket* ToSend = nullptr) {
 }
 
 //Send packet handler.
-void SendPacket(GNetSocket* ToSend = nullptr) {
+void SendPacket(GNetSocket* ToSend = nullptr, bool blocking = false) {
 	if (!isClient) {
 		data_size_now += int(CurrentPacket.getDataSize());
 		if (ToSend != nullptr) {
-			sendPacketSocket(ToSend);
+			sendPacketSocket(ToSend, blocking);
 		}
 		else {
 			for (int i = 0; i < clients.size(); ++i) {
-				sendPacketSocket(clients[i]);
+				sendPacketSocket(clients[i], blocking);
 			}
 		}
 	}
 	else {
-		sendPacketSocket(&socketG);
+		sendPacketSocket(&socketG, blocking);
 	}
 }
 
@@ -285,7 +285,10 @@ void PendingConnection() {
 			CurrentPacket << gamemode; CurrentPacket << PlayerAmount;
 			Push_Server_RAM(false); SendMusic();
 			if (gamemode == GAMEMODE_MAIN) { SendBackgrounds(); }
-			SendPacket(client);
+			SendPacket(client, true);
+
+			//Wait a few moments
+			sf::sleep(sf::milliseconds(1000));
 
 			//Send msg to discord
 			discord_message("**" + username + " has joined, There are " + to_string(clients.size()) + " players connected.**");
