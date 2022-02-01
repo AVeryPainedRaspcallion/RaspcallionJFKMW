@@ -153,7 +153,11 @@ int main(int argc, char* argv[]) {
 	load_configuration();
 
 #ifndef DISABLE_NETWORK
+#if !defined(__linux__)
 	bool hosting = false;
+#else
+	bool hosting = true;
+#endif
 	if (argc > 1) {
 		if (strcmp(argv[1], "-h") == 0) { hosting = true; }
 		if (strcmp(argv[1], "-c") == 0) { hosting = false; }
