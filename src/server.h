@@ -48,7 +48,7 @@ void server_code() {
 	thread = new sf::Thread(&NetWorkLoop); thread->launch();
 	thread_alt = new sf::Thread(&cinInput); thread_alt->launch();
 
-	while (true) {
+	while (!quit) {
 		WAIT_READ_COMPLETE("server loop wait")
 
 		//Start
@@ -105,6 +105,9 @@ void server_code() {
 				} else {
 					cout << green << "[Network] Enabled Network latest loop prints." << endl;
 				}
+			}
+			if (command == "close") {
+				quit = true;
 			}
 			if (command == "fullsync") {
 				cout << green << "[Network] Syncing music to other players.." << endl;

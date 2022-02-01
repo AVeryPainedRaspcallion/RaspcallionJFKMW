@@ -398,7 +398,7 @@ void TriggerRAMSync() {
 #endif
 
 //Discord webhook logging for servers, only works in WIN32
-#if !defined(DISABLE_NETWORK) && defined(_WIN32)
+#if !defined(DISABLE_NETWORK)
 	string discord_webhook;
 	void do_d_msg(string msg) {
 		replaceAll(msg, "@", ""); replaceAll(msg, "<", "**["); replaceAll(msg, ">", "]**");
@@ -422,10 +422,6 @@ void TriggerRAMSync() {
 			sf::Thread t1(do_d_msg, msg);
 			t1.launch();
 		}
-	}
-#else
-	string discord_webhook;
-	void discord_message(string msg) {
 	}
 #endif
 
