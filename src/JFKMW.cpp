@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 	load_configuration();
 
 #ifndef DISABLE_NETWORK
-	bool hosting = true;
+	bool hosting = false;
 	if (argc > 1) {
 		if (strcmp(argv[1], "-h") == 0) { hosting = true; }
 		if (strcmp(argv[1], "-c") == 0) { hosting = false; }
@@ -173,9 +173,6 @@ int main(int argc, char* argv[]) {
 		server_code();
 	}
 	else {
-		PORT = 25500;
-		networking = true;
-		gamemode = GAMEMODE_ATTEMPTCONNECTION;
 		player_code();
 	}
 #else
