@@ -376,7 +376,7 @@ void Server_To_Clients() {
 				SendBackgrounds();
 			}
 			CurrentPacket << Curr_PChatString;
-			SendPacket(&client);
+			SendPacket(&client, d_change);
 
 			//Safety
 			S_TO_CLIENT_STOP_CHECK
@@ -410,7 +410,7 @@ void Server_To_Clients() {
 				PreparePacket(Header_MusicData);
 				SendMusic();
 				Push_Server_RAM(false);
-				SendPacket(&client);
+				SendPacket(&client, true);
 
 				//Safety
 				S_TO_CLIENT_STOP_CHECK

@@ -171,6 +171,7 @@ void ProcessBG(uint_fast16_t R, uint_fast8_t I) {
 
 void loadBG() {
 	if (bg_load_called == 2) {
+		bg_load_called = 3;
 		for (uint_fast8_t i = 0; i < 16; i++) {
 			BGObject[i].LoadTexture();
 		}
@@ -189,7 +190,7 @@ void SendBackgrounds() {
 }
 
 void ReceiveBackgrounds() {
-	while (bg_load_called) {
+	while (bg_load_called & 1) {
 		DATA_SAFETY_WAIT
 	}
 	bg_load_called = 1;
