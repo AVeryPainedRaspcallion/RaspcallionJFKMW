@@ -1,6 +1,6 @@
 #pragma once
 
-string GAME_VERSION = "4.3.0b";
+string GAME_VERSION = "4.3.1b";
 
 //General
 #define Calculate_Speed(x) double(x) / 256.0
@@ -390,7 +390,7 @@ sf::Packet CurrentPacket;
 
 //Trigger major change
 void TriggerRAMSync() {
-	need_preload_sprites = true; recent_big_change = true; latest_sync++;
+	players_synced = false; need_preload_sprites = true; recent_big_change = true; latest_sync++;
 }
 #else
 void TriggerRAMSync() {
@@ -398,14 +398,14 @@ void TriggerRAMSync() {
 }
 #endif
 
-//Discord webhook logging for servers, only works in WIN32
+//Discord webhook logging for servers, requires curl.
 #if !defined(DISABLE_NETWORK)
 	string discord_webhook;
 	void do_d_msg(string msg) {
+		//Message replace
 		replaceAll(msg, "@", ""); replaceAll(msg, "<", "**["); replaceAll(msg, ">", "]**");
 #if !defined(__linux__)
-		time_t currentTime; struct tm localTime;
-		time(&currentTime);                   // Get the current time
+		time_t currentTime; struct tm localTime; time(&currentTime);
 		localtime_s(&localTime, &currentTime);  // Convert the current time to the local time
 		int Hour = localTime.tm_hour; int Min = localTime.tm_min; int Sec = localTime.tm_sec;
 		string H, M, S;
@@ -421,9 +421,8 @@ void TriggerRAMSync() {
 		return;
 	}
 	void discord_message(string msg) {
-		if (discord_webhook != "") {
-			sf::Thread t1(do_d_msg, msg);
-			t1.launch();
+		if (discord_webhook != "" && networking) {
+			sf::Thread t1(do_d_msg, msg); t1.launch();
 		}
 	}
 #endif
