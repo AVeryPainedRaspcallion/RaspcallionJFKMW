@@ -24,6 +24,7 @@ void load_configuration() {
 			if (name == "integer_scaling") { integer_scaling = value == "true"; }
 			if (name == "automatic_fps_cap") { automatic_fps_cap = value == "true"; }
 			if (name == "spc_buffer_size") { spc_buffer_size = stoi(value); }
+			if (name == "spc_interpolation") { spc_interpolation = uint_fast8_t(stoi(value)); }
 			if (name == "sample_rate") { ogg_sample_rate = stoi(value); }
 			if (name == "sfx_volume") { sfx_volume = max(0, min(MIX_MAX_VOLUME, stoi(value))); }
 			if (name == "music_volume") { music_volume = max(0, min(MIX_MAX_VOLUME, stoi(value))); }
