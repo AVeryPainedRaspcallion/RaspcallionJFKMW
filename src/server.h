@@ -11,13 +11,41 @@ BOOL WINAPI ConsoleHandler(DWORD CEvent) {
 
 //Commands
 bool processing_cmd_queue = false;
-vector<string> command_queue;
+void cinLoop() {
+	//Commands
+	std::string new_cmd;
+	while (!quit && getline(std::cin, new_cmd)) {
+		if (new_cmd != "") {
+			while (processing_cmd_queue) { DATA_SAFETY_WAIT }
+			server_command_queue.push_back(new_cmd);
+		}
+	}
+}
 
-//Server Loop
-void mainServerLoop() {
+void server_code() {
+#ifdef _WIN32
+	if(SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE) == FALSE) {
+		cout << red << "[JFKMW] Console hooks are not working." << endl;
+	}
+#endif
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
+	cout << yellow << "[JFKMW] Starting up a server." << endl;
+
+	//OW
+	overworld.Initialize();
+
+	//Network stuff
+	isClient = false;
+	networking = true;
+
+	//Data and threads
+	data_size_current = 0;
+	thread = new sf::Thread(&NetWorkLoop); thread->launch();
+	thread_alt = new sf::Thread(&cinLoop); thread_alt->launch();
+
 	//network print toggle
 	bool DisablePrints = false;
-	while (true) {
+	while (!quit) {
 		WAIT_READ_COMPLETE("server loop wait")
 
 		//Start
@@ -42,8 +70,8 @@ void mainServerLoop() {
 
 		processing_cmd_queue = true;
 		//Commands
-		for (int i = 0; i < command_queue.size(); i++) {
-			string command = command_queue[i];
+		for (int i = 0; i < server_command_queue.size(); i++) {
+			string command = server_command_queue[i];
 			vector<string> cmd_data = split(command, ' ');
 			if (command == "help") {
 				cout << yellow << "Server commands:\n";
@@ -89,6 +117,9 @@ void mainServerLoop() {
 				string msg = pvp ? "PVP is now enabled" : "PVP is now off";
 				cout << green << "[Network] " << msg << endl;
 				Send_Chat(msg); discord_message(msg);
+			}
+			if (command == "close") {
+				quit = true;
 			}
 			if (command == "dump") {
 				dump_ram();
@@ -145,56 +176,13 @@ void mainServerLoop() {
 				}
 			}
 		}
-		command_queue.clear();
+		server_command_queue.clear();
 		processing_cmd_queue = false;
 
 		//Sleeping
 		doing_write = false;
 
-#if !defined(__linux__)
 		CAP_FPS60
-#else
-		sf::sleep(sf::milliseconds(16));
-#endif
-	}
-}
-
-void server_code() {
-#ifdef _WIN32
-	if(SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE) == FALSE) {
-		cout << red << "[JFKMW] Console hooks are not working." << endl;
-	}
-#endif
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
-	cout << yellow << "[JFKMW] Starting up a server." << endl;
-
-#if !defined(__linux__)
-	overworld.Initialize();
-#else
-	//Prepare level
-	LevelManager.LoadLevel(0xF);
-	gamemode = GAMEMODE_MAIN;
-#endif
-
-	//Network stuff
-	isClient = false;
-	networking = true;
-
-	//Data and threads
-	data_size_current = 0;
-	thread = new sf::Thread(&NetWorkLoop); thread->launch();
-	thread_alt = new sf::Thread(&mainServerLoop); thread_alt->launch();
-
-	//Commands
-	std::string new_cmd;
-	while (!quit && getline(std::cin, new_cmd)) {
-		if (new_cmd == "close") {
-			break;
-		}
-		if (new_cmd != "") {
-			while (processing_cmd_queue) { DATA_SAFETY_WAIT }
-			command_queue.push_back(new_cmd);
-		}
 	}
 
 	//Finish
