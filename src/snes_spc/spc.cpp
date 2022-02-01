@@ -3,7 +3,6 @@
 #include "spc.h"
 
 #include "SNES_SPC.h"
-#include "SPC_Filter.h"
 
 /* Copyright (C) 2004-2007 Shay Green. This module is free software; you
 can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -64,10 +63,3 @@ void spc_init_header     ( void* spc_out )                              { SNES_S
 void spc_save_spc        ( SNES_SPC* s, void* spc_out )                 { s->save_spc( spc_out ); }
 int  spc_check_kon       ( SNES_SPC* s )                                { return s->check_kon(); }
 #endif
-
-SPC_Filter* spc_filter_new( void )                              { return new SPC_Filter; }
-void spc_filter_delete( SPC_Filter* f )                         { delete f; }
-void spc_filter_run( SPC_Filter* f, spc_sample_t* p, int s )    { f->run( p, s ); }
-void spc_filter_clear( SPC_Filter* f )                          { f->clear(); }
-void spc_filter_set_gain( SPC_Filter* f, int gain )             { f->set_gain( gain ); }
-void spc_filter_set_bass( SPC_Filter* f, int bass )             { f->set_bass( bass ); }

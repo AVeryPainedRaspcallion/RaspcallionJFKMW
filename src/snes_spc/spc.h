@@ -111,35 +111,6 @@ void spc_save_spc( SNES_SPC*, void* spc_out );
 trimming silence while saving an SPC. */
 int spc_check_kon( SNES_SPC* );
 
-
-/**** SPC_Filter ****/
-
-typedef struct SPC_Filter SPC_Filter;
-
-/* Creates new filter. NULL if out of memory. */
-SPC_Filter* spc_filter_new( void );
-
-/* Frees filter */
-void spc_filter_delete( SPC_Filter* );
-
-/* Filters count samples of stereo sound in place. Count must be a multiple of 2. */
-void spc_filter_run( SPC_Filter*, spc_sample_t* io, int count );
-
-/* Clears filter to silence */
-void spc_filter_clear( SPC_Filter* );
-
-/* Sets gain (volume), where spc_filter_gain_unit is normal. Gains greater than
-spc_filter_gain_unit are fine, since output is clamped to 16-bit sample range. */
-enum { spc_filter_gain_unit = 0x100 };
-void spc_filter_set_gain( SPC_Filter*, int gain );
-
-/* Sets amount of bass (logarithmic scale) */
-enum { spc_filter_bass_none =  0 };
-enum { spc_filter_bass_norm =  8 }; /* normal amount */
-enum { spc_filter_bass_max  = 31 };
-void spc_filter_set_bass( SPC_Filter*, int bass );
-
-
 #ifdef __cplusplus
 	}
 #endif
