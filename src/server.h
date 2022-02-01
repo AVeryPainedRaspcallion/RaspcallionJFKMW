@@ -12,54 +12,23 @@ BOOL WINAPI ConsoleHandler(DWORD CEvent) {
 //Commands
 bool processing_cmd_queue = false;
 vector<string> command_queue;
-void cinInput() {
-	while (true) {
-		std::string new_cmd;
-		while (getline(std::cin, new_cmd)) {
-			if (new_cmd != "") {
-				while (processing_cmd_queue) { DATA_SAFETY_WAIT }
-				command_queue.push_back(new_cmd);
-			}
-		}
-	}
-}
 
-void server_code() {
-#ifdef _WIN32
-	if(SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE) == FALSE) {
-		cout << red << "[JFKMW] Console hooks are not working." << endl;
-	}
-#endif
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
-	cout << yellow << "[JFKMW] Starting up a server." << endl;
-
-	//Prepare level
-	overworld.Initialize();
-
-	//Network stuff
-	isClient = false;
-	networking = true;
-
+//Server Loop
+void mainServerLoop() {
 	//network print toggle
 	bool DisablePrints = false;
-
-	//Data and threads
-	data_size_current = 0;
-	thread = new sf::Thread(&NetWorkLoop); thread->launch();
-	thread_alt = new sf::Thread(&cinInput); thread_alt->launch();
-
-	while (!quit) {
+	while (true) {
 		WAIT_READ_COMPLETE("server loop wait")
 
 		//Start
 		doing_write = true;
-		
+
 		//Stats
 		START_CHECK = chrono::high_resolution_clock::now();
 		GameLoop(); SoundLoop();
 		CURRENT_CHECK = chrono::high_resolution_clock::now();
 		total_time_ticks = chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK);
-		
+
 		//Network stats
 		if (!(global_frame_counter % 60) && clients.size() > 0) {
 			if (DisablePrints) {
@@ -89,6 +58,7 @@ void server_code() {
 				cout << "reload - reload Lua\n";
 				cout << "overworld - return to overworld\n";
 				cout << "list - see player list\n";
+				cout << "close - stop server\n";
 				cout << "kick/ban <PLAYER> - moderation features" << endl;
 			}
 			if (command == "sync") {
@@ -102,12 +72,10 @@ void server_code() {
 				DisablePrints = !DisablePrints;
 				if (!DisablePrints) {
 					cout << green << "[Network] Disabled Network latest loop prints." << endl;
-				} else {
+				}
+				else {
 					cout << green << "[Network] Enabled Network latest loop prints." << endl;
 				}
-			}
-			if (command == "close") {
-				quit = true;
 			}
 			if (command == "fullsync") {
 				cout << green << "[Network] Syncing music to other players.." << endl;
@@ -185,4 +153,42 @@ void server_code() {
 
 		CAP_FPS60
 	}
+}
+
+void server_code() {
+#ifdef _WIN32
+	if(SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE) == FALSE) {
+		cout << red << "[JFKMW] Console hooks are not working." << endl;
+	}
+#endif
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
+	cout << yellow << "[JFKMW] Starting up a server." << endl;
+
+	//Prepare level
+	overworld.Initialize();
+
+	//Network stuff
+	isClient = false;
+	networking = true;
+
+	//Data and threads
+	data_size_current = 0;
+	thread = new sf::Thread(&NetWorkLoop); thread->launch();
+	thread_alt = new sf::Thread(&mainServerLoop); thread_alt->launch();
+
+	//Commands
+	std::string new_cmd;
+	while (!quit && getline(std::cin, new_cmd)) {
+		if (new_cmd == "close") {
+			break;
+		}
+		if (new_cmd != "") {
+			while (processing_cmd_queue) { DATA_SAFETY_WAIT }
+			command_queue.push_back(new_cmd);
+		}
+	}
+
+	//Finish
+	thread->terminate();
+	thread_alt->terminate();
 }
