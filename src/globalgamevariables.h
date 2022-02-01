@@ -402,7 +402,7 @@ void TriggerRAMSync() {
 	string discord_webhook;
 	void do_d_msg(string msg) {
 		replaceAll(msg, "@", ""); replaceAll(msg, "<", "**["); replaceAll(msg, ">", "]**");
-
+#if !defined(__linux__)
 		time_t currentTime; struct tm localTime;
 		time(&currentTime);                   // Get the current time
 		localtime_s(&localTime, &currentTime);  // Convert the current time to the local time
@@ -411,9 +411,11 @@ void TriggerRAMSync() {
 		H = Hour < 10 ? ("0" + to_string(Hour)) : to_string(Hour);
 		M = Min < 10 ? ("0" + to_string(Min)) : to_string(Min);
 		S = Sec < 10 ? ("0" + to_string(Sec)) : to_string(Sec);
-
 		msg = "[" + H + ":" + M + ":" + S + "] " + msg;
 		string cmd = "start /b cmd /c curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
+#else
+		string cmd = "curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
+#endif
 		system(cmd.c_str());
 		return;
 	}
