@@ -237,7 +237,7 @@ double controller_mouse_x = 0.0; double controller_mouse_y = 0.0;
 bool left_st_pr = false; bool right_st_pr = false;
 
 //Some shared functions for files & strings.
-vector<string> split(const string &s, char delim) {
+vector<string> split(const string& s, char delim) {
 	vector<string> result;
 	stringstream ss(s);
 	string item;
@@ -349,7 +349,7 @@ void LoadPack(string NewPack) {
 	else {
 		if (gamemode != GAMEMODE_TITLE) { cout << red << "[JFKMW] Cannot load pack while in game." << endl; return; }
 	}
-	if (fs::is_directory("packs/" + NewPack)) { Modpack = "packs/" + NewPack;  }
+	if (fs::is_directory("packs/" + NewPack)) { Modpack = "packs/" + NewPack; }
 	else { Modpack = "packs/default"; }
 	transform(Modpack.begin(), Modpack.end(), Modpack.begin(), [](unsigned char c) { return tolower(c); });
 	cout << yellow << "[JFKMW] Modpack switched to " << Modpack << endl;
@@ -400,31 +400,31 @@ void TriggerRAMSync() {
 
 //Discord webhook logging for servers, requires curl.
 #if !defined(DISABLE_NETWORK)
-	string discord_webhook;
-	void do_d_msg(string msg) {
-		//Message replace
-		replaceAll(msg, "@", ""); replaceAll(msg, "<", "**["); replaceAll(msg, ">", "]**");
+string discord_webhook;
+void do_d_msg(string msg) {
+	//Message replace
+	replaceAll(msg, "@", ""); replaceAll(msg, "<", "**["); replaceAll(msg, ">", "]**");
 #if !defined(__linux__)
-		time_t currentTime; struct tm localTime; time(&currentTime);
-		localtime_s(&localTime, &currentTime);  // Convert the current time to the local time
-		int Hour = localTime.tm_hour; int Min = localTime.tm_min; int Sec = localTime.tm_sec;
-		string H, M, S;
-		H = Hour < 10 ? ("0" + to_string(Hour)) : to_string(Hour);
-		M = Min < 10 ? ("0" + to_string(Min)) : to_string(Min);
-		S = Sec < 10 ? ("0" + to_string(Sec)) : to_string(Sec);
-		msg = "[" + H + ":" + M + ":" + S + "] " + msg;
-		string cmd = "start /b cmd /c curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
+	time_t currentTime; struct tm localTime; time(&currentTime);
+	localtime_s(&localTime, &currentTime);  // Convert the current time to the local time
+	int Hour = localTime.tm_hour; int Min = localTime.tm_min; int Sec = localTime.tm_sec;
+	string H, M, S;
+	H = Hour < 10 ? ("0" + to_string(Hour)) : to_string(Hour);
+	M = Min < 10 ? ("0" + to_string(Min)) : to_string(Min);
+	S = Sec < 10 ? ("0" + to_string(Sec)) : to_string(Sec);
+	msg = "[" + H + ":" + M + ":" + S + "] " + msg;
+	string cmd = "start /b cmd /c curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
 #else
-		string cmd = "curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
+	string cmd = "curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
 #endif
-		system(cmd.c_str());
-		return;
+	system(cmd.c_str());
+	return;
+}
+void discord_message(string msg) {
+	if (discord_webhook != "" && networking) {
+		sf::Thread t1(do_d_msg, msg); t1.launch();
 	}
-	void discord_message(string msg) {
-		if (discord_webhook != "" && networking) {
-			sf::Thread t1(do_d_msg, msg); t1.launch();
-		}
-	}
+}
 #endif
 
 //Load Palette File
@@ -570,7 +570,7 @@ void PreloadL3() {
 	}
 	SDL_Surface* cached_l3_surf = SDL_CreateRGBSurface(0, 128, 64, 32,
 		rmask, gmask, bmask, amask);
-	for (uint_fast16_t e = 0; e < 32; e+=4) {
+	for (uint_fast16_t e = 0; e < 32; e += 4) {
 		SDL_memset(cached_l3_surf->pixels, 0, cached_l3_surf->h * cached_l3_surf->pitch);
 		for (px = 0; px < 8192; px++) {
 			if (temporaryPixelBuffer[px]) {
