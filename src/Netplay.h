@@ -3,7 +3,6 @@
 //Packet headers
 #define Header_UpdatePlayerData 0x80
 #define Header_GlobalUpdate 0x81
-#define Header_Connection 0x82
 #define Header_ConnectData 0x83
 #define Header_MusicData 0x84
 #define Header_FailedToConnect 0x85
@@ -19,6 +18,7 @@ sf::Socket::Status receiveWithTimeout(GNetSocket& socket, sf::Packet& packet, sf
 
 	sf::SocketSelector selector; selector.add(socket);
 	if (selector.wait(timeout)) {
+		socket.setBlocking(false);
 		last_network_status = socket.receive(packet);
 	}
 	return last_network_status;
@@ -233,19 +233,14 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 void ReceiveAllPackets(GNetSocket& socket, bool slower = false, bool for_validating = false) {
 	validated_connection = false;
 	while (receiveWithTimeout(socket, CurrentPacket, sf::milliseconds(slower ? 2000 : 1)) != sf::Socket::NotReady) {
+		//Failed
 		if (last_network_status == sf::Socket::Disconnected || last_network_status == sf::Socket::Error) {
-			if (!isClient) {
-				HandleDisconnection(&socket);
-			}
-			else {
-				disconnected = true;
-			}
+			if (!isClient) { HandleDisconnection(&socket); }
+			else { disconnected = true; }
 			return;
 		}
 		ReceivePacket(socket, for_validating);
-		if (validated_connection) {
-			return;
-		}
+		if (validated_connection) { return; }
 	}
 }
 
@@ -272,10 +267,7 @@ void PendingConnection() {
 
 		latest_error = "Invalid information sent";
 
-		//Send player response connection, and wait for their validation.
-		PreparePacket(Header_Connection); CurrentPacket << NewPlayerNumber; SendPacket(client);
-		sf::sleep(sf::milliseconds(500));
-
+		//Wait for the player to send in verification data
 		ReceiveAllPackets(*client, true, true);
 
 		//Validation might have succeeded by now
@@ -448,8 +440,10 @@ void NetWorkLoop() {
 			//Test listener for pending connection.
 			if (selector.wait(sf::milliseconds(4)) && selector.isReady(listener)) { PendingConnection(); }
 			//Server loop
-			if (clients.size() > 0) { Server_To_Clients(); }
-			sf::sleep(sf::milliseconds(max(1, 16 - int(clients.size()))));
+			if (clients.size() > 0) {
+				Server_To_Clients();
+				sf::sleep(sf::milliseconds(max(1, 15 - int(clients.size()))));
+			}
 		}
 	}
 	else {
@@ -468,14 +462,15 @@ void NetWorkLoop() {
 //Prepare & launch connection.
 bool ConnectClient(void) {
 	if (socketG.connect(ip, PORT) == sf::Socket::Done) {
+		cout << blue << "[Network] Found server.. sending punch packet" << endl;
+
 		//We send the punch packet, asking the server if we can join.
-		sf::sleep(sf::milliseconds(250));
 		PreparePacket(Header_AttemptJoin);
-		CurrentPacket << username;
-		CurrentPacket << GAME_VERSION;
+		CurrentPacket << username; CurrentPacket << GAME_VERSION;
 		SendPacket();
 
 		//Server might take a while to respond, so we wait a few seconds, then receive packets again.
+		cout << blue << "[Network] Waiting for connection data.." << endl;
 		ReceiveAllPackets(socketG, true);
 		if (!validated_connection) { return false; }
 		validated_connection = false;

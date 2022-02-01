@@ -52,7 +52,7 @@ void player_code() {
 				isClient = true;
 #ifndef DISABLE_NETWORK
 				if (!ConnectClient()) {
-					cout << red << "[Network] Failed to connect. Falling back to normal mode." << endl; last_status = "Failed to connect.";
+					cout << red << "[Network] Failed to connect. Falling back to normal mode. Error ID: " << last_network_status << endl; last_status = "Failed to connect.";
 					InitTitlescreen();
 					continue;
 				}
