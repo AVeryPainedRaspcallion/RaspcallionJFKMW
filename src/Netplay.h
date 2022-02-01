@@ -484,7 +484,6 @@ bool ConnectClient(void) {
 		return true;
 	}
 	else {
-		socketG.disconnect();
 		return false;
 	}
 }
