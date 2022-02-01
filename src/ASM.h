@@ -252,7 +252,7 @@ void Push_Server_RAM(bool compress = false) {
 		//TO-DO: Optimize
 		Uint16 entries = 0; int index = 0;
 		for (Uint16 i = 0; i < RAM_OLD_SIZE; i++) {
-			if (!((checkArea(i, 0x3000, 0x3CFF) || checkArea(i, 0, 0xFF)) || (checkArea(i, 0x5000, 0x5FFF) || checkArea(i, 0x2000, 0x2FFF))) && RAM_decay_time[i]) {
+			if (RAM_decay_time[i] && !((checkArea(i, 0x3000, 0x3CFF) || checkArea(i, 0, 0xFF)) || (checkArea(i, 0x5000, 0x5FFF) || checkArea(i, 0x2000, 0x2FFF)))) {
 				RAM_decay_time[i]--;
 				*((Uint16*)&RAM_compressed[index]) = i;
 				RAM_compressed[index + 2] = RAM[i];
