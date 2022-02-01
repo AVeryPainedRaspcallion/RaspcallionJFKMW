@@ -235,7 +235,7 @@ void SendMusic() {
 
 void ReceiveMusic() {
 	//Wait until an current music read is done.
-	while (reading_music) {
+	while (reading_music & 1) {
 		DATA_SAFETY_WAIT
 	}
 	reading_music = 1;
@@ -315,6 +315,7 @@ void SoundLoop()
 				if (Mix_PausedMusic()) { Mix_ResumeMusic(); }
 			}
 			if (reading_music == 2) {
+				reading_music = 3;
 				music_type = new_music_type;
 				Terminate_Music();
 

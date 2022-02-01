@@ -270,8 +270,8 @@ void GameLoop() {
 			PlayerInteraction();
 
 			if (!isClient) {
-				if (RAM[0x1411] != 0) { writeToRam(0x1462, uint_fast32_t(camera_total_x / int(Players.size())), 2); }
-				if (RAM[0x1412] != 0) { writeToRam(0x1464, uint_fast32_t(camera_total_y / int(Players.size())), 2); }
+				if (RAM[0x1411] != 0) { writeToRam(0x1462, uint_fast32_t(camera_total_x / max(1, int(Players.size()))), 2); }
+				if (RAM[0x1412] != 0) { writeToRam(0x1464, uint_fast32_t(camera_total_y / max(1, int(Players.size()))), 2); }
 
 				if (LAST_9D) {
 					Sprites.process_all_sprites(); //we're processing sprites. we're either the server or a player in local mode.

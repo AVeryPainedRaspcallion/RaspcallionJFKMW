@@ -380,12 +380,8 @@ public:
 			CreateSpriteCrop("Sprites/player/Skin" + to_string(my_skin) + ".png", 24, 6, 32, 32, (1 + ((ingame_frame_counter >> 3) % 3)) << 5, 64, 512, 256, 0);
 
 			//Text
-			if (OverworldPlayer->ow_level_name != "") {
-				string text = OverworldPlayer->ow_level_name;
-				int y = 31 - (int(text.length())/20) * 8;
-				for (int i = 0; i < text.length(); i++) {
-					draw8x8_tile_2bpp((11 + (i % 19)) << 3, y + (i / 19) * 8, char_to_smw(text.at(i)), 7);
-				}
+			for (int i = 0; i < 19; i++) {
+				draw8x8_tile_2bpp((11 + (i % 19)) << 3, 31, char_to_smw(OverworldPlayer->ow_level_name[i]), 7);
 			}
 
 			//Lives
@@ -641,6 +637,10 @@ public:
 				if (i == 0) {
 					CalculateSubmap(true);
 				}
+
+				//Clear name
+				memset(OverworldPlayer->ow_level_name, 0x20, 19);
+
 				//Enter level
 				int TilePosX = int(OverworldPlayer->x) >> 4;
 				int TilePosY = int(OverworldPlayer->y + 32) >> 4;
@@ -651,7 +651,11 @@ public:
 							RAM[0x1DFC] = 0x23;
 						}
 					}
-					OverworldPlayer->ow_level_name = level_strings[OverworldPlayer->ow_old_level];
+
+					//Level Name
+					for (int i = 0; i < min(19, level_strings[OverworldPlayer->ow_old_level].length()); i++) {
+						OverworldPlayer->ow_level_name[i] = level_strings[OverworldPlayer->ow_old_level].at(i);
+					}
 
 					if (((OverworldPlayer->p_pad[button_b] || OverworldPlayer->p_pad[button_a]) || OverworldPlayer->p_pad[button_y]) && !RAM[0x3F10])
 					{
@@ -687,9 +691,6 @@ public:
 							RAM[0x3F11] = 4; RAM[0x3F10] = 0;
 						}
 					}
-				}
-				else {
-					OverworldPlayer->ow_level_name = "";
 				}
 			}
 		}

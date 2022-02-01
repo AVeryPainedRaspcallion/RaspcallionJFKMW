@@ -1,6 +1,6 @@
 #pragma once
 
-string GAME_VERSION = "4.2.4b";
+string GAME_VERSION = "4.3.0b NET TEST";
 
 //General
 #define Calculate_Speed(x) double(x) / 256.0
@@ -55,7 +55,7 @@ chrono::duration<double> total_time_ticks;
 while (doing_write || doing_read) { \
 	DATA_SAFETY_WAIT \
 	CURRENT_CHECK = chrono::high_resolution_clock::now(); \
-	if(chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK).count() > 1.0 && !hung_check) { \
+	if(chrono::duration_cast<chrono::duration<double>>(CURRENT_CHECK - START_CHECK).count() > 4.0 && !hung_check) { \
 		hung_check = true; \
 		latest_error = "Loop crashed ("; latest_error += reason; latest_error += ")"; \
 		cout << red << "[Timer] RW: " << doing_read << doing_write << " - frozen on " << reason << ". game network might have crashed." << endl; break; \
@@ -154,10 +154,6 @@ uint_fast32_t ingame_frame_counter = 0;
 
 int latest_server_response;
 
-unsigned int network_update_rate = 16;
-unsigned int packet_wait_time = 16;
-unsigned int network_update_rate_c = 16;
-unsigned int packet_wait_time_c = 16;
 int mouse_x, mouse_y;
 bool mouse_down_l; bool mouse_down_r;
 bool mouse_w_up; bool mouse_w_down;
@@ -165,6 +161,7 @@ bool use_mouse = true;
 
 bool automatic_fps_cap = false;
 Uint32 automatic_fps_cap_start = 0;
+#define CAP_FPS60 if (Uint32(1000 / 60) > (SDL_GetTicks() - automatic_fps_cap_start)) { SDL_Delay((1000 / 60) - (SDL_GetTicks() - automatic_fps_cap_start)); } automatic_fps_cap_start = SDL_GetTicks();
 
 bool local_multiplayer = false;
 bool players_synced = true;

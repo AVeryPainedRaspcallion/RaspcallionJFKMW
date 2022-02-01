@@ -14,17 +14,14 @@ bool validated_connection = false;
 
 //Packets and network status
 sf::Socket::Status last_network_status;
-sf::Socket::Status receiveWithTimeout(GNetSocket& socket, sf::Packet& packet, sf::Time timeout, bool blocking) {
-	sf::SocketSelector selector;
-	selector.add(socket);
-	if (selector.wait(timeout)){
-		socket.setBlocking(blocking);
+sf::Socket::Status receiveWithTimeout(GNetSocket& socket, sf::Packet& packet, sf::Time timeout) {
+	last_network_status = sf::Socket::NotReady;
+
+	sf::SocketSelector selector; selector.add(socket);
+	if (selector.wait(timeout)) {
 		last_network_status = socket.receive(packet);
-		return last_network_status;
 	}
-	else {
-		return sf::Socket::NotReady;
-	}
+	return last_network_status;
 }
 
 //Update Player List
@@ -127,7 +124,6 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 
 	//Very simple version validation system.
 	if (for_validating) {
-		validated_connection = false;
 		if (CurrentPacket_header == Header_AttemptJoin && CurrentPacket.getDataSize() < 64) { //Why would the verification packet be bigger than 64 bytes? It's only username and checksum so.
 			cout << blue << "[Client] Receiving verification.." << endl;
 			string validation;
@@ -178,7 +174,7 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 	else
 	//CLIENT BEHAVIOUR
 	{
-		WAIT_READ_COMPLETE("packet receive 0x" + int_to_hex(CurrentPacket_header, true))
+		WAIT_READ_COMPLETE("Packet receive 0x" + int_to_hex(CurrentPacket_header, true))
 		doing_read = true;
 		if (CurrentPacket_header == Header_MusicData) {
 			ReceiveMusic(); Sync_Server_RAM(false);
@@ -219,17 +215,14 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 			CurrentPacket >> PlayerAmount; //Update Plr Amount
 			CheckForPlayers(); Sync_Server_RAM(false); ReceiveMusic();
 			if (gamemode == GAMEMODE_MAIN) { ReceiveBackgrounds(); }
-			validated_connection = true;
 			cout << blue << "[Client] Received connection data." << endl;
+			validated_connection = true;
 		}
 
 		if (CurrentPacket_header == Header_FailedToConnect) {
-			string msg;
-			CurrentPacket >> msg;
-			latest_error = msg;
+			CurrentPacket >> latest_error;
 			last_status = "Disconnected.";
-			cout << red << "[Network] Received disconnection reason from server : " << msg << endl;
-			validated_connection = false;
+			cout << red << "[Network] Received disconnection reason from server: " << latest_error << endl;
 			disconnected = true;
 		}
 		doing_read = false;
@@ -237,30 +230,23 @@ void ReceivePacket(GNetSocket &whoSentThis, bool for_validating = false) {
 }
 
 //Receive all packets with a queue.
-bool receive_all_packets(GNetSocket& socket, bool slower = false, bool for_validating = false) {
-	while (receiveWithTimeout(socket, CurrentPacket, sf::milliseconds(slower ? 2000 : packet_wait_time), !for_validating) != sf::Socket::NotReady) {
-		if (last_network_status == sf::Socket::Disconnected) {
+void ReceiveAllPackets(GNetSocket& socket, bool slower = false, bool for_validating = false) {
+	validated_connection = false;
+	while (receiveWithTimeout(socket, CurrentPacket, sf::milliseconds(slower ? 2000 : 1)) != sf::Socket::NotReady) {
+		if (last_network_status == sf::Socket::Disconnected || last_network_status == sf::Socket::Error) {
 			if (!isClient) {
 				HandleDisconnection(&socket);
-				return false;
 			}
 			else {
 				disconnected = true;
-				return false;
 			}
+			return;
 		}
 		ReceivePacket(socket, for_validating);
-		if (isClient && validated_connection) {
-			return true;
+		if (validated_connection) {
+			return;
 		}
 	}
-	if (for_validating && !validated_connection) {
-		return false;
-	}
-	if (!isClient) {
-		return !((last_network_status == sf::Socket::Error) || (last_network_status == sf::Socket::Disconnected));
-	}
-	return !disconnected;
 }
 
 //Pending connection handler.
@@ -290,11 +276,12 @@ void PendingConnection() {
 		PreparePacket(Header_Connection); CurrentPacket << NewPlayerNumber; SendPacket(client);
 		sf::sleep(sf::milliseconds(500));
 
-		validated_connection = false;
-		receive_all_packets(*client, true, true);
+		ReceiveAllPackets(*client, true, true);
 
 		//Validation might have succeeded by now
 		if (validated_connection) {
+			validated_connection = false;
+
 			// Add the new client to the clients list
 			client->username = username;
 
@@ -338,7 +325,7 @@ void Server_To_Clients() {
 			GNetSocket& client = *clients[i];
 
 			//Receive all packets from client. This halts the thread.
-			receive_all_packets(client);
+			ReceiveAllPackets(client);
 
 			//Safety
 			S_TO_CLIENT_STOP_CHECK
@@ -456,39 +443,31 @@ void NetWorkLoop() {
 		//Discord
 		discord_message("There's a JFKMW server version " + GAME_VERSION + " being hosted, the ip is **" + sf::IpAddress::getPublicAddress(sf::seconds(5.f)).toString() + "**, port is " + to_string(PORT));
 
-		// Endless loop that waits for new connections
+		//Endless loop
 		while (!quit) {
-			if (clients.size() > 0) {
-				//Just run a normal loop.
-				network_update_rate = network_update_rate_c / (unsigned int)clients.size();
-				packet_wait_time = packet_wait_time_c / (unsigned int)clients.size();
-				Server_To_Clients();
-			}
-			if (selector.wait(sf::milliseconds(network_update_rate))) {
-				//Test listener for pending connection.
-				if (selector.isReady(listener)) { PendingConnection(); }
-			}
+			//Test listener for pending connection.
+			if (selector.wait(sf::milliseconds(4)) && selector.isReady(listener)) { PendingConnection(); }
+			//Server loop
+			if (clients.size() > 0) { Server_To_Clients(); }
+			sf::sleep(sf::milliseconds(max(1, 16 - int(clients.size()))));
 		}
 	}
 	else {
-		//Client
-		while (Players.size() == 0) {
-			receive_all_packets(socketG);
-		}
+		selector.add(socketG);
 
 		//Very basic loop
 		cout << blue << "[Network] Connected to server. " << int(PlayerAmount) << " player(s) connected." << endl;
 		while (!quit && !disconnected) {
-			receive_all_packets(socketG);
+			ReceiveAllPackets(socketG);
 			PreparePacket(Header_UpdatePlayerData); pack_player_data(); SendPacket();
+			sf::sleep(sf::milliseconds(14));
 		}
-		receive_all_packets(socketG);
 	}
 }
 
 //Prepare & launch connection.
 bool ConnectClient(void) {
-	if (socketG.connect(ip, PORT) != sf::Socket::Disconnected) {
+	if (socketG.connect(ip, PORT) == sf::Socket::Done) {
 		//We send the punch packet, asking the server if we can join.
 		sf::sleep(sf::milliseconds(250));
 		PreparePacket(Header_AttemptJoin);
@@ -497,12 +476,10 @@ bool ConnectClient(void) {
 		SendPacket();
 
 		//Server might take a while to respond, so we wait a few seconds, then receive packets again.
-		sf::sleep(sf::milliseconds(1000));
-		receive_all_packets(socketG, true);
+		ReceiveAllPackets(socketG, true);
+		if (!validated_connection) { return false; }
 		validated_connection = false;
-		if (disconnected) {
-			return false;
-		}
+		if (disconnected) { return false; }
 
 		//We have joined succesfully.
 		CheckForPlayers();

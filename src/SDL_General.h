@@ -114,8 +114,7 @@ bool GameLoopDone() {
 	}
 
 	if (automatic_fps_cap) {
-		if (Uint32(1000 / 60) > (SDL_GetTicks() - automatic_fps_cap_start)) { SDL_Delay((1000 / 60) - (SDL_GetTicks() - automatic_fps_cap_start)); }
-		automatic_fps_cap_start = SDL_GetTicks();
+		CAP_FPS60
 	}
 
 	//SDL EVENTS

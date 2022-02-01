@@ -111,8 +111,8 @@ public:
 
 	//Overworld
 	bool ow_pos_inited = false;
-	string ow_level_name;
-	uint_fast8_t ow_old_level;
+	char ow_level_name[19];
+	uint_fast8_t ow_old_level = 0;
 
 	//On object creation
 	MPlayer(double newX = 0.0, double newY = 0.0) {
@@ -1609,7 +1609,7 @@ public:
 			CurrentPacket << server_position_sync_x; CurrentPacket << server_position_sync_y; CurrentPacket << server_position_sync_s;
 		}
 		if (gamemode == GAMEMODE_OVERWORLD) {
-			CurrentPacket << ow_level_name;
+			CurrentPacket.append(ow_level_name, 19);
 		}
 	}
 
@@ -1633,7 +1633,9 @@ public:
 			mouse_w_down = false;
 		}
 		if (gamemode == GAMEMODE_OVERWORLD) {
-			CurrentPacket >> ow_level_name;
+			for (int i = 0; i < 19; i++) {
+				uint_fast8_t p; CurrentPacket >> p; ow_level_name[i] = p;
+			}
 		}
 	}
 #endif

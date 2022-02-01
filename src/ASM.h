@@ -85,17 +85,19 @@ void Sync_Server_RAM(bool compressed = false)
 		need_preload_sprites = true;
 	}
 	else {
-		Uint16 entries, pointer;
-		CurrentPacket >> entries;
-		for (uint_fast16_t i = 0; i < entries; i++) {
+		Uint16 pointer;
+		while(true) {
 			CurrentPacket >> pointer;
-			CurrentPacket >> RAM[pointer];
-		}
-		CurrentPacket >> entries;
-		for (uint_fast16_t i = 0; i < entries; i++) {
-			CurrentPacket >> pointer;
-			CurrentPacket >> RAM[ram_level_low + pointer];
-			CurrentPacket >> RAM[ram_level_high + pointer];
+			if (pointer == 0x7FFF) { break; }
+			else {
+				if (pointer >= 0x8000) {
+					pointer -= 0x8000;
+					CurrentPacket >> RAM[ram_level_low + pointer]; CurrentPacket >> RAM[ram_level_high + pointer];
+				}
+				else {
+					CurrentPacket >> RAM[pointer];
+				}
+			}
 		}
 
 		//HDMA
@@ -250,30 +252,21 @@ void Push_Server_RAM(bool compress = false) {
 	}
 	else {
 		//TO-DO: Optimize
-		Uint16 entries = 0; int index = 0;
 		for (Uint16 i = 0; i < RAM_OLD_SIZE; i++) {
 			if (RAM_decay_time[i] && !((checkArea(i, 0x3000, 0x3CFF) || checkArea(i, 0, 0xFF)) || (checkArea(i, 0x5000, 0x5FFF) || checkArea(i, 0x2000, 0x2FFF)))) {
-				RAM_decay_time[i]--;
-				*((Uint16*)&RAM_compressed[index]) = i;
-				RAM_compressed[index + 2] = RAM[i];
-				entries++; index += 3;
+				CurrentPacket << i;
+				CurrentPacket << RAM[i];
 			}
 		}
-		CurrentPacket << entries;
-		CurrentPacket.append(RAM_compressed, index);
-
-		entries = 0; index = 0;
 		for (Uint16 i = 0; i < LEVEL_DECAY_SIZE; i++) {
 			if (RAM_decay_time_level[i]) {
 				RAM_decay_time_level[i]--;
-				*((Uint16*)&RAM_compressed[index]) = i;
-				RAM_compressed[index + 2] = RAM[ram_level_low + i];
-				RAM_compressed[index + 3] = RAM[ram_level_high + i];
-				entries++; index += 4;
+				CurrentPacket << Uint16(0x8000 + i);
+				CurrentPacket << RAM[ram_level_low + i];
+				CurrentPacket << RAM[ram_level_high + i];
 			}
 		}
-		CurrentPacket << entries;
-		CurrentPacket.append(RAM_compressed, index);
+		CurrentPacket << Uint16(0x7FFF);
 
 		//HDMA & DMA
 		sendHDMAnet();

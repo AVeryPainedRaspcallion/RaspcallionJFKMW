@@ -17,8 +17,6 @@ void load_configuration() {
 			if (name == "resolution_y") { resolution_y = stoi(value); }
 			if (name == "fullscreen") { fullscreen = value == "true"; }
 			if (name == "borderless_fullscreen") { borderless_fullscreen = value == "true" ? !fullscreen : false; }
-			if (name == "network_update_rate") { network_update_rate = max(16, stoi(value)); network_update_rate_c = network_update_rate; }
-			if (name == "packet_wait_time") { packet_wait_time = max(16, stoi(value)); packet_wait_time_c = packet_wait_time; }
 			if (name == "smooth_camera") { smooth_camera = value == "true"; }
 			if (name == "smooth_camera_speed") { smooth_camera_speed = double(stoi(value)); }
 			if (name == "scale") { scale = stoi(value); if (scale > 0) { forced_scale = true; }}

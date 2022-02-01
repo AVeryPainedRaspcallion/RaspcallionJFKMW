@@ -49,7 +49,6 @@ void server_code() {
 	thread_alt = new sf::Thread(&cinInput); thread_alt->launch();
 
 	while (true) {
-		Uint32 start_time = SDL_GetTicks();
 		WAIT_READ_COMPLETE("server loop wait")
 
 		//Start
@@ -180,8 +179,7 @@ void server_code() {
 
 		//Sleeping
 		doing_write = false;
-		if (Uint32(1000 / 60) > (SDL_GetTicks() - start_time)) {
-			SDL_Delay((1000 / 60) - (SDL_GetTicks() - start_time));
-		}
+
+		CAP_FPS60
 	}
 }

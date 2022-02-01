@@ -24,7 +24,7 @@ void player_code() {
 	InitializeAudio();
 	PreloadAllTextures();
 
-	if (!testing_level.length()) {
+	if (!testing_level.length() && gamemode == GAMEMODE_TITLE) {
 		InitTitlescreen();
 	}
 
