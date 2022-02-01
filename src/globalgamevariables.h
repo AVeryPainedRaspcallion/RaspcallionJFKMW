@@ -390,7 +390,7 @@ sf::Packet CurrentPacket;
 
 //Trigger major change
 void TriggerRAMSync() {
-	players_synced = false; need_preload_sprites = true; recent_big_change = true; latest_sync++;
+	need_preload_sprites = true; recent_big_change = true; latest_sync++;
 }
 #else
 void TriggerRAMSync() {
