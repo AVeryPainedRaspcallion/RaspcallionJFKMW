@@ -168,8 +168,13 @@ void server_code() {
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
 	cout << yellow << "[JFKMW] Starting up a server." << endl;
 
-	//Prepare level
+#if !defined(__linux__)
 	overworld.Initialize();
+#else
+	//Prepare level
+	LevelManager.LoadLevel(0xF);
+	gamemode = GAMEMODE_MAIN;
+#endif
 
 	//Network stuff
 	isClient = false;
