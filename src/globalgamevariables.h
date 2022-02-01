@@ -414,7 +414,7 @@ void TriggerRAMSync() {
 		msg = "[" + H + ":" + M + ":" + S + "] " + msg;
 		string cmd = "start /b cmd /c curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
 #else
-		string cmd = "curl --silent -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
+		string cmd = "curl -o nul -i -H \"Accept: application/json\" -H \"Content-Type:application/json\" -X POST --data \"{\\\"content\\\": \\\"" + msg + "\\\"}\" " + discord_webhook;
 #endif
 		system(cmd.c_str());
 		return;
