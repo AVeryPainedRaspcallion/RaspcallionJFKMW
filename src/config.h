@@ -1,5 +1,7 @@
 #pragma once
 
+#include "snes_spc/SPC_Globals.h"
+
 //TO-DO: Cleanup
 void load_configuration() {
 	ifstream cFile("game_configuration.cfg");
