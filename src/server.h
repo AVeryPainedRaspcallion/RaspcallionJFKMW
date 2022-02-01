@@ -40,7 +40,7 @@ void server_code() {
 
 	//Data and threads
 	data_size_current = 0;
-	thread = new sf::Thread(&NetWorkLoop); thread->launch();
+	thread = new sf::Thread(&NetworkLoop); thread->launch();
 	thread_alt = new sf::Thread(&cinLoop); thread_alt->launch();
 
 	//network print toggle

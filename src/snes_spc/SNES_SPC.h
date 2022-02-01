@@ -14,9 +14,6 @@ public:
 	// Must be called once before using
 	blargg_err_t init();
 	
-	// Sample pairs generated per second
-	enum { sample_rate = 44100 };
-	
 // Emulator use
 	
 	// Sets IPL ROM data. Library does not include ROM data. Most SPC music files

@@ -20,8 +20,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 SNES_SPC* spc_new( void )
 {
 	// be sure constants match
-	assert( spc_sample_rate         == (int) SNES_SPC::sample_rate );
-	assert( spc_rom_size            == (int) SNES_SPC::rom_size );
 	assert( spc_clock_rate          == (int) SNES_SPC::clock_rate );
 	assert( spc_clocks_per_sample   == (int) SNES_SPC::clocks_per_sample );
 	assert( spc_port_count          == (int) SNES_SPC::port_count );

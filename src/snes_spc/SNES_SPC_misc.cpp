@@ -339,30 +339,5 @@ blargg_err_t SNES_SPC::play( int count, sample_t* out )
 
 blargg_err_t SNES_SPC::skip( int count )
 {
-	#if SPC_LESS_ACCURATE
-	if ( count > 2 * sample_rate * 2 )
-	{
-		set_output( 0, 0 );
-		
-		// Skip a multiple of 4 samples
-		time_t end = count;
-		count = (count & 3) + 1 * sample_rate * 2;
-		end = (end - count) * (clocks_per_sample / 2);
-		
-		m.skipped_kon  = 0;
-		m.skipped_koff = 0;
-		
-		// Preserve DSP and timer synchronization
-		// TODO: verify that this really preserves it
-		int old_dsp_time = m.dsp_time + m.spc_time;
-		m.dsp_time = end - m.spc_time + skipping_time;
-		end_frame( end );
-		m.dsp_time = m.dsp_time - skipping_time + old_dsp_time;
-		
-		dsp.write( SPC_DSP::r_koff, m.skipped_koff & ~m.skipped_kon );
-		dsp.write( SPC_DSP::r_kon , m.skipped_kon );
-	}
-	#endif
-	
 	return play( count, 0 );
 }

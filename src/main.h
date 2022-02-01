@@ -90,7 +90,7 @@ void player_code() {
 #ifndef DISABLE_NETWORK
 		//Initialize Multiplayer Client
 		if (networking) {
-			thread = new sf::Thread(&NetWorkLoop); thread->launch();
+			thread = new sf::Thread(&NetworkLoop); thread->launch();
 			gamemode = GAMEMODE_MAIN;
 
 			//Player Init Wait

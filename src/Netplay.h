@@ -313,7 +313,7 @@ void PendingConnection() {
 }
 
 //Natural Loop
-#define S_TO_CLIENT_STOP_CHECK if (clients.size() < 1 || last_network_status == sf::Socket::Error || last_network_status == sf::Socket::Disconnected) { break; }
+#define S_TO_CLIENT_STOP_CHECK if (clients.size() < 1 || (last_network_status == sf::Socket::Error || last_network_status == sf::Socket::Disconnected)) { break; }
 void Server_To_Clients() {
 	bool players_synced_new = true;
 	GetAmountOfPlayers();
@@ -432,7 +432,14 @@ void Server_To_Clients() {
 }
 
 //Network thread
-void NetWorkLoop() {
+sf::Clock netPclock;
+void NetCapSpeed60() {
+	auto elapsedMillisecondsExpected = 1000 / 60; // in milliseconds
+	auto elapsedMilliseconds = netPclock.getElapsedTime().asMilliseconds();
+	if (elapsedMilliseconds < elapsedMillisecondsExpected) { sf::sleep(sf::milliseconds(elapsedMillisecondsExpected - elapsedMilliseconds)); }
+	netPclock.restart();
+}
+void NetworkLoop() {
 	if (!isClient) {
 		listener.listen(PORT); selector.add(listener);
 		cout << blue << "[Server] Server is running on port " << dec << PORT << endl;
@@ -445,10 +452,9 @@ void NetWorkLoop() {
 			//Test listener for pending connection.
 			if (selector.wait(sf::milliseconds(4)) && selector.isReady(listener)) { PendingConnection(); }
 			//Server loop
-			if (clients.size() > 0) {
-				Server_To_Clients();
-				sf::sleep(sf::milliseconds(max(1, 15 - int(clients.size()))));
-			}
+			Server_To_Clients();
+			//Wait
+			NetCapSpeed60();
 		}
 	}
 	else {
@@ -459,7 +465,7 @@ void NetWorkLoop() {
 		while (!quit && !disconnected) {
 			ReceiveAllPackets(socketG);
 			PreparePacket(Header_UpdatePlayerData); pack_player_data(); SendPacket();
-			sf::sleep(sf::milliseconds(14));
+			NetCapSpeed60();
 		}
 	}
 }
