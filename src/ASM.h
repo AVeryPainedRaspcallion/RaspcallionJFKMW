@@ -85,17 +85,14 @@ void Sync_Server_RAM(bool compressed = false)
 		need_preload_sprites = true;
 	}
 	else {
-		uint_fast16_t entries;
-		uint_fast16_t pointer;
+		Uint16 entries, pointer;
 		CurrentPacket >> entries;
 		for (uint_fast16_t i = 0; i < entries; i++) {
 			CurrentPacket >> pointer;
 			CurrentPacket >> RAM[pointer];
 		}
-
-		uint_fast16_t map16_entries_n;
-		CurrentPacket >> map16_entries_n;
-		for (uint_fast16_t i = 0; i < map16_entries_n; i++) {
+		CurrentPacket >> entries;
+		for (uint_fast16_t i = 0; i < entries; i++) {
 			CurrentPacket >> pointer;
 			CurrentPacket >> RAM[ram_level_low + pointer];
 			CurrentPacket >> RAM[ram_level_high + pointer];
@@ -235,31 +232,6 @@ void Sync_Server_RAM(bool compressed = false)
 }
 
 #define checkArea(i, x, y) (i >= x || i <= y)
-bool checkRAMarea_net(uint_fast32_t i)
-{
-	return 
-		((checkArea(i, 0x3000, 0x3CFF) || checkArea(i, 0, 0xFF)) ||
-		(checkArea(i, 0x5000, 0x5FFF) || checkArea(i, 0x2000, 0x2FFF))) ||
-		checkArea(i, 0x7000, 0xBFFF)
-		;
-}
-
-bool checkRamDecayLevel(uint_fast16_t i, bool dec) {
-	if (RAM_decay_time_level[i]) {
-		if (dec) { RAM_decay_time_level[i]--; }
-		return true;
-	}
-	return false;
-}
-
-bool checkRamDecay(uint_fast16_t i, bool dec) {
-	if (RAM_decay_time[i]) {
-		if (dec) { RAM_decay_time[i]--; }
-		return true;
-	}
-	return false;
-}
-
 void Push_Server_RAM(bool compress = false) {
 	if (!compress) {
 		CurrentPacket << latest_sync;
@@ -278,35 +250,30 @@ void Push_Server_RAM(bool compress = false) {
 	}
 	else {
 		//TO-DO: Optimize
-		uint_fast16_t entries = 0;
-		for (uint_fast16_t i = 0; i < RAM_OLD_SIZE; i++) {
-			if (!checkRAMarea_net(i) && checkRamDecay(i, false)) {
-				entries++;
+		Uint16 entries = 0; int index = 0;
+		for (Uint16 i = 0; i < RAM_OLD_SIZE; i++) {
+			if (!((checkArea(i, 0x3000, 0x3CFF) || checkArea(i, 0, 0xFF)) || (checkArea(i, 0x5000, 0x5FFF) || checkArea(i, 0x2000, 0x2FFF))) && RAM_decay_time[i]) {
+				RAM_decay_time[i]--;
+				*((Uint16*)&RAM_compressed[index]) = i;
+				RAM_compressed[index + 2] = RAM[i];
+				entries++; index += 3;
 			}
 		}
 		CurrentPacket << entries;
-		for (uint_fast16_t i = 0; i < RAM_OLD_SIZE; i++) {
-			if (!checkRAMarea_net(i) && checkRamDecay(i, true)) {
-				CurrentPacket << i;
-				CurrentPacket << RAM[i];
-			}
-		}
+		CurrentPacket.append(RAM_compressed, index);
 
-		uint_fast16_t map16_entries_n = 0;
+		entries = 0; index = 0;
 		for (uint_fast16_t i = 0; i < LEVEL_DECAY_SIZE; i++) {
-			if (checkRamDecayLevel(i, false)) {
-				map16_entries_n++;
+			if (RAM_decay_time_level[i]) {
+				RAM_decay_time_level[i]--;
+				*((Uint16*)&RAM_compressed[index]) = i;
+				RAM_compressed[index + 2] = RAM[ram_level_low + i];
+				RAM_compressed[index + 3] = RAM[ram_level_high + i];
+				entries++; index += 4;
 			}
 		}
-		CurrentPacket << map16_entries_n;
-
-		for (uint_fast16_t i = 0; i < LEVEL_DECAY_SIZE; i++) {
-			if (checkRamDecayLevel(i, true)) {
-				CurrentPacket << i;
-				CurrentPacket << RAM[ram_level_low + i];
-				CurrentPacket << RAM[ram_level_high + i];
-			}
-		}
+		CurrentPacket << entries;
+		CurrentPacket.append(RAM_compressed, index);
 
 		//HDMA & DMA
 		sendHDMAnet();
