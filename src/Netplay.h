@@ -18,7 +18,6 @@ sf::Socket::Status receiveWithTimeout(GNetSocket& socket, sf::Packet& packet, sf
 
 	sf::SocketSelector selector; selector.add(socket);
 	if (selector.wait(timeout)) {
-		socket.setBlocking(false);
 		last_network_status = socket.receive(packet);
 	}
 	return last_network_status;
@@ -269,6 +268,9 @@ void PendingConnection() {
 
 		//Wait for the player to send in verification data
 		ReceiveAllPackets(*client, true, true);
+
+		//Wait a few moments
+		sf::sleep(sf::milliseconds(500));
 
 		//Validation might have succeeded by now
 		if (validated_connection) {
