@@ -13,8 +13,8 @@ BOOL WINAPI ConsoleHandler(DWORD CEvent) {
 bool processing_cmd_queue = false;
 void cinLoop() {
 	//Commands
-	std::string new_cmd;
-	while (!quit && getline(std::cin, new_cmd)) {
+	string new_cmd;
+	while (!quit && getline(cin, new_cmd)) {
 		if (new_cmd != "") {
 			while (processing_cmd_queue) { DATA_SAFETY_WAIT }
 			server_command_queue.push_back(new_cmd);

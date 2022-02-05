@@ -6,7 +6,7 @@ void loadSpriteGroup(string path) {
 	for (int i = 0; i < 256; i++) {
 		ifstream SprCode(path + int_to_hex(i, true) + ".lua");
 		if (SprCode.is_open()) {
-			std::stringstream buffer; buffer << SprCode.rdbuf(); SPR_CODE[i] = buffer.str();
+			stringstream buffer; buffer << SprCode.rdbuf(); SPR_CODE[i] = buffer.str();
 			sprs++;
 		}
 		SprCode.close();

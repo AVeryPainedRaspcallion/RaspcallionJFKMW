@@ -7,15 +7,11 @@ void player_code() {
 	if (SDL_Init(SDL_INIT_EVENTS) != 0) {
 		cout << red << "[SDL] SDL event initialization failed. SDL Error: " << SDL_GetError() << endl; return;
 	}
-	if (controller > -1) {
-		if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0) {
-			cout << red << "[SDL] Controller init failed. SDL Error: " << SDL_GetError() << endl; return;
-		}
+	if (controller > -1 && SDL_Init(SDL_INIT_GAMECONTROLLER) != 0) {
+		cout << red << "[SDL] Controller initialization failed. SDL Error: " << SDL_GetError() << endl; return;
 	}
-	if (haptic > -1) {
-		if (SDL_Init(SDL_INIT_HAPTIC) != 0) {
-			cout << red << "[SDL] Haptic initialization failed. SDL Error: " << SDL_GetError() << endl; return;
-		}
+	if (haptic > -1 && SDL_Init(SDL_INIT_HAPTIC) != 0) {
+		cout << red << "[SDL] Haptic initialization failed. SDL Error: " << SDL_GetError() << endl; return;
 	}
 
 	//Load SDL part

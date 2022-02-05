@@ -75,8 +75,7 @@ void CreateScreen(int width, int height) {
 void PrepareRendering() {
 	if (!fullscreen) {
 		SDL_GetWindowSize(win, &resolution_x, &resolution_y);
-		w = resolution_x;
-		h = resolution_y;
+		w = resolution_x; h = resolution_y;
 	}
 	
 	//Automatically set scale of game.
@@ -140,7 +139,7 @@ bool GameLoopDone() {
 					return true; break;
 				case 3:
 					string str = "JFKMW has been a ongoing 6 year effort to create a fun experience for everyone, with lots of modability and options.\n\nThanks to all contributors, programmers, and level designers.\n\n\nJFKMW, Made by the JFKMW Team, originally programmed by a good friend covered in white feathers.\n\nVersion " + GAME_VERSION;
-					std::wstring stemp = std::wstring(str.begin(), str.end()); LPCWSTR sw = stemp.c_str();
+					wstring stemp = wstring(str.begin(), str.end()); LPCWSTR sw = stemp.c_str();
 					MessageBox(NULL, sw, L"About", MB_OK);
 					break;
 				}

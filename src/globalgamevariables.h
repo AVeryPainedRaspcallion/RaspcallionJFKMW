@@ -294,7 +294,7 @@ uint_fast8_t char_to_smw(char l) {
 	return 0xFF;
 }
 
-int safe_stoi(std::string str, int base) {
+int safe_stoi(string str, int base) {
 	try { return stoi(str, nullptr, base); }
 	catch (...) { return 0; }
 }

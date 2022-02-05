@@ -5,13 +5,11 @@
 */
 
 #ifdef _WIN32
-
 //Windows headers
 #include <Windows.h>
 #include "psapi.h"
 
 #elif defined(__linux__)
-
 //Linux headers
 #define OTHER_INPUT_METHOD
 #define VK_OEM_PERIOD 0xBE
@@ -137,27 +135,25 @@ istream& getline(istream& stream, string& str) {
 #include "transitions.h"
 #include "titlescreen.h"
 #include "game.h"
-#ifndef DISABLE_NETWORK
-#include "Netplay.h"
-#endif
 #include "renderer.h"
 #ifndef DISABLE_NETWORK
+#include "Netplay.h"
 #include "server.h"
 #endif
 #include "main.h"
 
 int main(int argc, char* argv[]) {
+	//Crash handler (needs to be improved)
 #ifdef _WIN32
-	std::set_terminate([]() { cout << red << "[JFKMW] Crashed. Unhandled exception." << endl; system("pause"); std::abort(); });
+	set_terminate([]() { cout << red << "[JFKMW] Crashed. Unhandled exception." << endl; system("pause"); abort(); });
 #endif
+
+	//Configuration
 	load_configuration();
 
+	//Start
 #ifndef DISABLE_NETWORK
-#if !defined(__linux__)
 	bool hosting = false;
-#else
-	bool hosting = true;
-#endif
 	if (argc > 1) {
 		if (strcmp(argv[1], "-h") == 0) { hosting = true; }
 		if (strcmp(argv[1], "-c") == 0) { hosting = false; }
@@ -167,22 +163,17 @@ int main(int argc, char* argv[]) {
 			LoadPack(args[1]);
 		}
 	}
-
 #ifdef _WIN32
 	string t = "RaspcallionJFKMW Console - " + string(hosting ? "Server" : "Client") + " " + GAME_VERSION + " (" + __DATE__ + " " + __TIME__ + ")";
 	SetConsoleTitle(wstring(t.begin(), t.end()).c_str());
 #endif
-
-	if (hosting) {
-		server_code();
-	}
-	else {
-		player_code();
-	}
+	if (hosting) { server_code(); }
+	else { player_code(); }
 #else
 	player_code();
 #endif
 
+	//End
 	return 1;
 }
 //35353735204E69782052442C204661796574746576696C6C65204E43 一見Watonあなたがpichulazoをつかんcagao Iキャッチと太極拳くちばし渡しIは、Web-IOバッグにvengai私にはここにいないんだリータ再culiao mantecolもWEAを残して、古き良き仲間Cornetinでocupao私を確認するあなたを残しconchetumadre'll あなたのお母さんのパーティー、太極拳avisao conchetumare
