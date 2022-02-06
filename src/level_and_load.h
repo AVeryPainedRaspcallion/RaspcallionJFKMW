@@ -305,8 +305,7 @@ public:
 		if (!midway_activated) { //if is server or midway isn't activated, load the start pos
 			writeToRam(0x3F0B, request_level_entry("start_x") * 16, 2);
 			writeToRam(0x3F0D, request_level_entry("start_y") * 16, 2);
-			start_x = RAM[0x3F0B] + RAM[0x3F0C] * 256;
-			start_y = RAM[0x3F0D] + RAM[0x3F0E] * 256;
+			start_x = RAM[0x3F0B] + RAM[0x3F0C] * 256; start_y = RAM[0x3F0D] + RAM[0x3F0E] * 256;
 		}
 		writeToRam(0xF31, request_level_entry("time_limit") * 40, 2);
 	}

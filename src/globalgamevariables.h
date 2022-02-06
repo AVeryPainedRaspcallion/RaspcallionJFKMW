@@ -656,8 +656,16 @@ vector<OAMTile> OAM_Tiles;
 
 //Gamemode init
 void GameInitialize() {
-	loadAssetRAM(Modpack + "/graphics/exanimations.bin", 8);
-	loadAssetRAM(Modpack + "/graphics/hud.bin", 11);
+	//Load Exanimation file
+	string file = Modpack + "/graphics/exanimations.bin";
+	if (!is_file_exist(file.c_str())) { file = "packs/default/graphics/exanimations.bin"; }
+	loadAssetRAM(file, 8);
+
+	//Load Hud File
+	file = Modpack + "/graphics/hud.bin";
+	if (!is_file_exist(file.c_str())) { file = "packs/default/graphics/hud.bin"; }
+	loadAssetRAM(file, 11);
+
 	memset(&RAM[VRAM_Convert(0xB800)], 0xFF, 0x800); //Clear VRAM used for statusbar
 	memset(&RAM[0x6000], 0, 0x4000); //Clear OW/Free part of RAM
 	global_frame_counter = 0; ingame_frame_counter = 0;
