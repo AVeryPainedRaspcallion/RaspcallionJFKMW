@@ -12,7 +12,7 @@
 #define BOUNCE_TIME 6
 
 //Initialize map16 from file.
-void initialize_map16(string file) {
+void LoadMap16File(string file) {
 	ifstream input(file, ios::binary);
 	if (!input.good()) {
 		return;

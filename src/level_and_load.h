@@ -262,19 +262,25 @@ public:
 
 	void LoadLevel(uint_fast16_t num) {
 		cout << green << "[Level Manager] Loading level " << int_to_hex(num) << endl;
+		writeToRam(0x010B, num, 2);
 		GameInitialize();
 		Initialize_Level();
-		writeToRam(0x010B, num, 2);
-		initialize_map16("packs/default/global.jfkmap16");
-		initialize_map16(Modpack + "/global.jfkmap16");
-		initialize_map16(Modpack + "/levels/" + int_to_hex(num) + "/level_map16.jfkmap16");
+		LoadMap16File("packs/default/global.jfkmap16");
+		LoadMap16File(Modpack + "/global.jfkmap16");
+		LoadMap16File(Modpack + "/levels/" + int_to_hex(num) + "/level_map16.jfkmap16");
 		LoadPaletteFile(Modpack + "/levels/" + int_to_hex(num) + "/level_palette.mw3");
 		LoadLevelFromFile(Modpack + "/levels/" + int_to_hex(num) + "/level_data.txt", num);
 
 		//Load GFX
 		for (int i = 0; i < 16; i++) {
-			loadAssetRAM(Modpack + "/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
-			loadAssetRAM(Modpack + "/levels/" + int_to_hex(num) + "/" + GFX_Names[i] + ".bin", GFX_Locations[i]);
+			string file = Modpack + "/levels/" + int_to_hex(num) + "/" + GFX_Names[i] + ".bin";
+			if (!is_file_exist(file.c_str())) {
+				file = Modpack + "/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin";
+				if (!is_file_exist(file.c_str())) {
+					file = "packs/default/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin";
+				}
+			}
+			loadAssetRAM(file, GFX_Locations[i]);
 		}
 
 		//Level-specific sprites
