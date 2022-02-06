@@ -142,7 +142,7 @@ public:
 						if (name == "background") {
 							RAM[0x3F05] = safe_stoi(value, 16); continue;
 						}
-						int v_n = safe_stoi(value, 10);
+						int v_n = safe_stoi(value);
 						if (name == "size_x") {
 							writeToRam(0x3F00, v_n, 2); mapWidth = v_n;
 						}
@@ -182,11 +182,11 @@ public:
 						vector<string> v = split(line.c_str(), ',');
 						if (v.size() == 5) { //Format type 1.
 							chunks++;
-							int tile = stoi(v[0], nullptr, 16);
-							int x_start = stoi(v[1]);
-							int y_start = stoi(v[2]);
-							int x_end = stoi(v[3]);
-							int y_end = stoi(v[4]);
+							int tile = safe_stoi(v[0], 16);
+							int x_start = safe_stoi(v[1]);
+							int y_start = safe_stoi(v[2]);
+							int x_end = safe_stoi(v[3]);
+							int y_end = safe_stoi(v[4]);
 							for (int x = x_start; x <= x_end; x++) {
 								for (int y = y_start; y <= y_end; y++) {
 									map16_handler.replace_map_tile(tile, x, y);
@@ -195,10 +195,7 @@ public:
 						}
 						if(v.size() == 3) { //Format type 2
 							chunks++;
-							int tile = stoi(v[0], nullptr, 16);
-							int x = stoi(v[1]);
-							int y = stoi(v[2]);
-							map16_handler.replace_map_tile(tile, x, y);
+							map16_handler.replace_map_tile(safe_stoi(v[0], 16), safe_stoi(v[1]), safe_stoi(v[2]));
 						}
 					}
 					if (status == "sprite_data") {
@@ -207,11 +204,11 @@ public:
 						int offset = v.size() == 5 ? 1 : 0;
 						LevelSprites.push_back(
 							LevelSprite{
-								uint_fast8_t(stoi(v[offset], nullptr, 16)),
-								uint_fast16_t(stoi(v[offset+1])),
-								uint_fast16_t(stoi(v[offset+2])),
+								uint_fast8_t(safe_stoi(v[offset], 16)),
+								uint_fast16_t(safe_stoi(v[offset+1])),
+								uint_fast16_t(safe_stoi(v[offset+2])),
 								1,
-								uint_fast8_t(stoi(v[offset+3]))
+								uint_fast8_t(safe_stoi(v[offset+3]))
 							}
 						);
 					}

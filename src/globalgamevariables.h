@@ -294,9 +294,9 @@ uint_fast8_t char_to_smw(char l) {
 	return 0xFF;
 }
 
-int safe_stoi(string str, int base) {
+int safe_stoi(string str, int base = 10) {
 	try { return stoi(str, nullptr, base); }
-	catch (...) { return 0; }
+	catch (...) { cout << red << "[Conversion] Failed to convert " << str << " to a base-" << base << " number" << endl; return 0; }
 }
 
 //Quit Game

@@ -15,21 +15,21 @@ void load_configuration() {
 			string value = line.substr(delimiterPos + 1);
 			cout << cyan << "[CONFIG] Loading " << name << " = " << value << endl;
 			if (name == "default_modpack") { LoadPack(value); }
-			if (name == "resolution_x") { resolution_x = stoi(value); }
-			if (name == "resolution_y") { resolution_y = stoi(value); }
+			if (name == "resolution_x") { resolution_x = safe_stoi(value); }
+			if (name == "resolution_y") { resolution_y = safe_stoi(value); }
 			if (name == "fullscreen") { fullscreen = value == "true"; }
 			if (name == "borderless_fullscreen") { borderless_fullscreen = value == "true" ? !fullscreen : false; }
 			if (name == "smooth_camera") { smooth_camera = value == "true"; }
-			if (name == "smooth_camera_speed") { smooth_camera_speed = double(stoi(value)); }
-			if (name == "scale") { scale = stoi(value); if (scale > 0) { forced_scale = true; }}
+			if (name == "smooth_camera_speed") { smooth_camera_speed = double(safe_stoi(value)); }
+			if (name == "scale") { scale = safe_stoi(value); if (scale > 0) { forced_scale = true; }}
 			if (name == "audio_multichannel") { multichannel_sounds = value == "true"; }
 			if (name == "integer_scaling") { integer_scaling = value == "true"; }
 			if (name == "automatic_fps_cap") { automatic_fps_cap = value == "true"; }
-			if (name == "spc_buffer_size") { spc_buffer_size = stoi(value); }
-			if (name == "spc_interpolation") { spc_interpolation = uint_fast8_t(stoi(value)); }
-			if (name == "sample_rate") { ogg_sample_rate = stoi(value); }
-			if (name == "sfx_volume") { sfx_volume = max(0, min(MIX_MAX_VOLUME, stoi(value))); }
-			if (name == "music_volume") { music_volume = max(0, min(MIX_MAX_VOLUME, stoi(value))); }
+			if (name == "spc_buffer_size") { spc_buffer_size = safe_stoi(value); }
+			if (name == "spc_interpolation") { spc_interpolation = uint_fast8_t(safe_stoi(value)); }
+			if (name == "sample_rate") { ogg_sample_rate = safe_stoi(value); }
+			if (name == "sfx_volume") { sfx_volume = max(0, min(MIX_MAX_VOLUME, safe_stoi(value))); }
+			if (name == "music_volume") { music_volume = max(0, min(MIX_MAX_VOLUME, safe_stoi(value))); }
 			if (name == "local_multiplayer") { local_multiplayer = value == "true"; pvp = !local_multiplayer; }
 			if (name == "gamma_ramp" && value == "false") {
 				for (int i = 0; i < 32; i++) {
@@ -37,8 +37,8 @@ void load_configuration() {
 				}
 			}
 			if (name == "username") { username = value.substr(0, player_name_size); }
-			if (name == "skin") { my_skin = uint_fast8_t(stoi(value)); }
-			if (name == "port") { PORT = stoi(value); }
+			if (name == "skin") { my_skin = uint_fast8_t(safe_stoi(value)); }
+			if (name == "port") { PORT = safe_stoi(value); }
 			if (value == "LeftShift") value = "Left Shift";
 			if (value == "RightShift") value = "Right Shift";
 			if (value == "LeftAlt") value = "Left Alt";
@@ -50,8 +50,8 @@ void load_configuration() {
 			}
 			if (name == "debug") { debugging_enabled = value == "true"; }
 			if (name == "use_mouse") { use_mouse = value == "true"; }
-			if (name == "joystick_num") { controller = stoi(value); }
-			if (name == "haptic_num") { haptic = stoi(value); }
+			if (name == "joystick_num") { controller = safe_stoi(value); }
+			if (name == "haptic_num") { haptic = safe_stoi(value); }
 			if (name == "discord_webhook") { discord_webhook = value; }
 			if (name == "midi_patchset") { midi_patchset = value; }
 			if (name == "use_retry") { useRetry = value == "true"; }

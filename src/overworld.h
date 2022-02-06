@@ -136,7 +136,7 @@ public:
 					auto delimiterPos = line.find("=");
 					string name = line.substr(0, delimiterPos);
 					string value = line.substr(delimiterPos + 1);
-					add_entry(name, stoi(value, nullptr, 16));
+					add_entry(name, safe_stoi(value, 16));
 				}
 			}
 		}
@@ -204,7 +204,7 @@ public:
 				auto delimiterPos = line.find("=");
 				auto name = line.substr(0, delimiterPos);
 				auto value = line.substr(delimiterPos + 1);
-				level_strings[stoi(name, nullptr, 16)] = value;
+				level_strings[safe_stoi(name, 16)] = value;
 			}
 		}
 		LevelNames.close();

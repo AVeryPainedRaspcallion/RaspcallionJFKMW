@@ -39,7 +39,7 @@ void player_code() {
 
 		//Testing mode!
 		if (testing_level.length()) {
-			gamemode = GAMEMODE_MAIN; LevelManager.LoadLevel(stoi(testing_level, nullptr, 16));
+			gamemode = GAMEMODE_MAIN; LevelManager.LoadLevel(safe_stoi(testing_level, 16));
 		}
 
 		//Gamemode load checks
