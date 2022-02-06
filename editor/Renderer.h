@@ -92,6 +92,9 @@ void Render() {
 		if (DestR.x >= -32 && DestR.y >= -32 && DestR.x < w && DestR.y < h) {
 			SrcR = { (i == SelectedSpriteObject ? 512 : 0) + ((spr.num & 0xF) << 5), (spr.num >> 4) << 5, 32, 32 };
 			SDL_RenderCopy(ren, SPR_TEX, &SrcR, &DestR);
+			if (i == SelectedSpriteObject) {
+				DrawTextWindow(DestR.x + 4, DestR.y + DestR.h + 4, "v, " + to_string(int(spr.dir)), false, 255, true);
+			}
 		}
 	}
 

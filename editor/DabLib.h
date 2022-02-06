@@ -81,6 +81,7 @@ bool mouse_l_p = false;
 bool mouse_r_p = false;
 bool mouse_l_d = false;
 bool mouse_r_d = false;
+bool del_press = false;
 int mouse_x = 0;
 int mouse_y = 0;
 
@@ -188,7 +189,6 @@ HWND sdl_window;
 //Namespace variables/Defines
 static HMENU hFile;
 static HMENU hEdit;
-static HMENU hHelp;
 static HMENU hMenuBar;
 
 
@@ -208,7 +208,6 @@ void ActivateMenu()
 	hMenuBar = CreateMenu();
 	hFile = CreateMenu();
 	hEdit = CreateMenu();
-	hHelp = CreateMenu();
 
 
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFile, L"File");
@@ -219,9 +218,6 @@ void ActivateMenu()
 
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, L"Edit");
 	AppendMenu(hEdit, MF_STRING, 5, L"Delete");
-
-	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hHelp, L"Help");
-	AppendMenu(hHelp, MF_STRING, 6, L"About");
 
 	SetMenu(sdl_window, hMenuBar);
 }

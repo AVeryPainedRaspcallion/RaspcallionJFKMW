@@ -70,6 +70,10 @@ void MainProcess() {
 		}
 	}
 
+	if (!del_press) {
+		del_press = keyboardState[SDL_SCANCODE_DELETE] || keyboardState[SDL_SCANCODE_BACKSPACE];
+	}
+
 	camX += (keyboardState[SDL_SCANCODE_RIGHT] - keyboardState[SDL_SCANCODE_LEFT]) * (1 + keyboardState[SDL_SCANCODE_LSHIFT]) * 3;
 	camY += (keyboardState[SDL_SCANCODE_UP] - keyboardState[SDL_SCANCODE_DOWN])* (1 + keyboardState[SDL_SCANCODE_LSHIFT]) * 3;
 
@@ -109,7 +113,7 @@ void MainProcess() {
 			else {
 				SelectedLevelPart = -1;
 				selectedMap16Tile = 0x25;
-				if (keyboardState[SDL_SCANCODE_DELETE] || keyboardState[SDL_SCANCODE_BACKSPACE]) {
+				if (del_press) {
 					levelSData.erase(levelSData.begin() + SelectedSpriteObject);
 					SelectedSpriteObject = -1;
 				}
@@ -137,6 +141,7 @@ void MainProcess() {
 								part.y >>= 4; part.y <<= 4;
 							}
 						}
+						part.dir += mouse_w_up - mouse_w_down;
 					}
 				}
 			}
@@ -158,7 +163,7 @@ void MainProcess() {
 			else {
 				selectedSpriteSpawn = 0x100;
 				//Delete
-				if (keyboardState[SDL_SCANCODE_DELETE] || keyboardState[SDL_SCANCODE_BACKSPACE]) {
+				if (del_press) {
 					levelLData.erase(levelLData.begin() + SelectedLevelPart);
 					SelectedLevelPart = -1;
 				}
@@ -267,6 +272,8 @@ void MainProcess() {
 //WProcess
 bool ProgramEnded()
 {
+	del_press = false;
+
 	uint_fast32_t m_state = SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
 	mouse_l = m_state & SDL_BUTTON(SDL_BUTTON_LEFT);
 	mouse_r = m_state & SDL_BUTTON(SDL_BUTTON_RIGHT);
@@ -294,12 +301,30 @@ bool ProgramEnded()
 			}
 			if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
 				win_focus = SDL_GetWindowID(win) == event.window.windowID;
-				//mouse_l = true;
 			}
 		}
 		if (event.type == SDL_MOUSEWHEEL) {
 			mouse_w_up = event.wheel.y > 0;
 			mouse_w_down = event.wheel.y < 0;
+		}
+		//WPARAM
+		if (event.type == SDL_SYSWMEVENT) {
+			if (event.syswm.msg->msg.win.msg == WM_COMMAND) {
+				switch (LOWORD(event.syswm.msg->msg.win.wParam)) {
+				case 1:
+					LoadFile();
+					break;
+				case 2:
+					SaveFile();
+					break;
+				case 4:
+					return true;
+				case 5:
+					del_press = true; break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 	int w_x = 0;

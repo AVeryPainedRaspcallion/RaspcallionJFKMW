@@ -41,8 +41,9 @@ void DrawFrameBox(SDL_Renderer* target, int x, int y, int sx, int sy) {
 	SDL_RenderFillRect(target, &DestR);
 }
 
-void DrawTextWindow(int renderPointX, int renderPointY, string text) {
-	SDL_Texture* T_S = CurrentWindow->RequestTextureTransfer(UI_SURF);
+void DrawTextWindow(int renderPointX, int renderPointY, string text, bool use_win = true, uint_fast8_t b = 0, bool usehudscale = false) {
+	SDL_Texture* T_S = use_win ? CurrentWindow->RequestTextureTransfer(UI_SURF) : UI_TEX;
+	SDL_SetTextureColorMod(T_S, b, b, b);
 
 	//Draw the text
 	int origx = renderPointX;
@@ -54,38 +55,25 @@ void DrawTextWindow(int renderPointX, int renderPointY, string text) {
 			if (caracter >= 0x61 && caracter <= 0x7A) { yS = 58; xS = (caracter - 0x61) * 6; }
 			if (caracter >= 0x30 && caracter <= 0x3A) { yS = 68; xS = (caracter - 0x30) * 6; }
 			if ((caracter >= 0x21 && caracter <= 0x2F) || caracter == 0x3F) { yS = 78; xS = (caracter - 0x21) * 6; }
-			if (caracter == 0x5C) { renderPointX = origx; renderPointY += 16; }
+			if (caracter == 0x5C) { renderPointX = origx; renderPointY += usehudscale ? ((16 * hudScale) / 16) : 6; }
 
 			if (yS > 0) {
 				SrcR = { xS, yS, 6, 10 };
-				DestR = { renderPointX, renderPointY, 6, 10 };
-				SDL_RenderCopy(CurrentWindow->mRenderer, T_S, &SrcR, &DestR);
+				if (usehudscale) {
+					DestR = { renderPointX, renderPointY, (6 * hudScale) / 16, (10 * hudScale) / 16 };
+				}
+				else {
+					DestR = { renderPointX, renderPointY, 6, 10 };
+				}
+
+				if (use_win) {
+					SDL_RenderCopy(CurrentWindow->mRenderer, T_S, &SrcR, &DestR);
+				}
+				else {
+					SDL_RenderCopy(ren, UI_TEX, &SrcR, &DestR);
+				}
 			}
 		}
-		renderPointX += 6;
-	}
-}
-
-//Test
-void DrawTextWindowA(int renderPointX, int renderPointY, string text) {
-	//Draw the text
-	int origx = renderPointX;
-	for (int i = 0; i < text.length(); i++) {
-		uint_fast8_t caracter = uint_fast8_t(text[i]);
-		if (caracter != 0x20) {
-			int xS = 0; int yS = 0;
-			if (caracter >= 0x41 && caracter <= 0x5A) { yS = 48; xS = (caracter - 0x41) * 6; }
-			if (caracter >= 0x61 && caracter <= 0x7A) { yS = 58; xS = (caracter - 0x61) * 6; }
-			if (caracter >= 0x30 && caracter <= 0x3A) { yS = 68; xS = (caracter - 0x30) * 6; }
-			if ((caracter >= 0x21 && caracter <= 0x2F) || caracter == 0x3F) { yS = 78; xS = (caracter - 0x21) * 6; }
-			if (caracter == 0x5C) { renderPointX = origx; renderPointY += 16; }
-
-			if (yS > 0) {
-				SrcR = { xS, yS, 6, 10 };
-				DestR = { renderPointX, renderPointY, 6, 10 };
-				SDL_RenderCopy(ren, UI_TEX, &SrcR, &DestR);
-			}
-		}
-		renderPointX += 6;
+		renderPointX += usehudscale ? ((6 * hudScale) / 16) : 6;
 	}
 }

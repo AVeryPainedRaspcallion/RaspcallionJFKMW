@@ -163,6 +163,9 @@ void InitializeOpenGLViewport() {
 }
 
 void OpenGLClear() {
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     //Start FBO
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, INTERNAL_RESOLUTION_X, INTERNAL_RESOLUTION_Y);
