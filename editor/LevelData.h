@@ -30,6 +30,7 @@ public:
 	//Assets
 	void ReloadAssets() {
 		for (int i = 0; i < 8; i++) {
+			LoadAssetIntoVRAM("packs/default/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
 			LoadAssetIntoVRAM(CurrentPack + "/graphics/GFX" + int_to_hex(request_level_entry(GFX_Names[i]), true) + ".bin", GFX_Locations[i]);
 			LoadAssetIntoVRAM(CurrentPack + "/levels/" + CurrentLevel + "/" + GFX_Names[i] + ".bin", GFX_Locations[i]);
 		}
