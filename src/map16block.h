@@ -216,10 +216,10 @@ public:
 					RAM[0x2A00 + spr] = 2; RAM[0x1DFC] = 2;
 				}
 				if (t == 0x11A) {
-					uint_fast8_t spr = spawnSpriteObj(0x79, 5, x * 16, 8 + y * 16, 1); RAM[0x1DFC] = 2;
+					uint_fast8_t spr = spawnSpriteObj(0x79, 1, x * 16, 8 + y * 16, 1); RAM[0x1DFC] = 2;
 				}
 				if (t == 0x11D) {
-					uint_fast8_t spr = spawnSpriteObj(0x3E, 5, x * 16, 8 + y * 16, 1); RAM[0x2480 + spr] = 0x20; RAM[0x1DFC] = 2;
+					uint_fast8_t spr = spawnSpriteObj(0x3E, 2, x * 16, 8 + y * 16, 1); RAM[0x2480 + spr] = 0x20; RAM[0x1DFC] = 2;
 				}
 				//Turn block handler
 				if (t >= 0x117 && t <= 0x11D) {
