@@ -1,6 +1,6 @@
 #pragma once
 
-string GAME_VERSION = "4.3.5b";
+string GAME_VERSION = "4.3.6b";
 
 //General
 #define Calculate_Speed(x) double(x) / 256.0
