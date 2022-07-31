@@ -103,7 +103,7 @@ void player_code() {
 
 			//Loop
 			doing_write = true;
-			cls();
+			ClearScreen();
 			START_CHECK = chrono::high_resolution_clock::now();
 			GameLoop(); SoundLoop(); render();
 			CURRENT_CHECK = chrono::high_resolution_clock::now();
@@ -111,7 +111,7 @@ void player_code() {
 			doing_write = false;
 
 			//Redraw
-			redraw();
+			DrawScreen();
 
 			if (disconnected) {
 				quit = true; cout << red << "[Network] Disconnected." << endl; last_status = "Disconnected from server"; break;

@@ -87,7 +87,7 @@ void PrepareRendering() {
 
 }
 
-void cls() {
+void ClearScreen() {
 	OpenGLClear();
 	uint_fast16_t c = RAM[0x3D00] + (RAM[0x3E00] << 8);
 	Ren_SetDrawColor(gammaRamp[c & 0x1F], gammaRamp[(c >> 5) & 0x1F], gammaRamp[(c >> 10) & 0x1F], 255);
@@ -101,7 +101,7 @@ void DrawMouse() {
 	}
 }
 
-void redraw() {
+void DrawScreen() {
 	DrawMouse();
 	OpenGLRedraw();
 }

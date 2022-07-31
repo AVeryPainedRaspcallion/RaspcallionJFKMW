@@ -1416,28 +1416,45 @@ public:
 		camera_state = 0;
 	}
 	void SMWCameraX() {
-		if(X_SPEED != 0) {
-			WALKING_DIR_CAMERA = X_SPEED > 0 ? 1 : -1;
-		}
-		if (WALKING_DIR_CAMERA != WALKING_DIR_OLD) {
-			WALKING_DIR_OLD = WALKING_DIR_CAMERA;
-			camera_state = 0; //Set Camera State to Wait For Move
+		double DISTANCE_FROM_CAMERA = x - X_SPEED - CAMERA_X;
+
+		//Check if direction changed
+		if (camera_state == 1) {
+			if (X_SPEED != 0) {
+				WALKING_DIR_CAMERA = X_SPEED > 0 ? 1 : -1;
+			}
+			if (WALKING_DIR_CAMERA != WALKING_DIR_OLD) {
+				WALKING_DIR_OLD = WALKING_DIR_CAMERA;
+				camera_state = 0;
+			}
 		}
 		if (abs(camera_distance_from_player) > 128) { camera_state = 1; }
+
+		//Wait For Move
 		if (camera_state == 0) {
-			double DISTANCE_FROM_CAMERA = x - CAMERA_X;
-			if (abs(DISTANCE_FROM_CAMERA) > 32) {
+			bool SNAP = false;
+			if (WALKING_DIR_CAMERA == -1 && DISTANCE_FROM_CAMERA < 0) {
+				SNAP = DISTANCE_FROM_CAMERA > -12;
+			}
+			if (WALKING_DIR_CAMERA == 1 && DISTANCE_FROM_CAMERA > 0) {
+				SNAP = DISTANCE_FROM_CAMERA < 12;
+			}
+			if (abs(DISTANCE_FROM_CAMERA) > 32 || SNAP) {
 				camera_state = 1;
 				camera_snap_dist = DISTANCE_FROM_CAMERA > 0 ? -12 : 12;
 				camera_distance_from_player = x - (CAMERA_X + camera_snap_dist);
 			}
 		}
+
+		//Move Camera
 		if (camera_state == 1) {
 			int camera_focus_speed = abs(camera_distance_from_player) > 128 ? 16 : 2;
 			if (camera_distance_from_player > 0) { camera_distance_from_player = max(0.0, camera_distance_from_player - camera_focus_speed); }
 			if (camera_distance_from_player < 0) { camera_distance_from_player = min(0.0, camera_distance_from_player + camera_focus_speed); }
 			CAMERA_X = x - camera_snap_dist - camera_distance_from_player;
 		}
+
+		//cout << DISTANCE_FROM_CAMERA << " - " << int(WALKING_DIR_CAMERA) << " - " << int(camera_state) << endl;
 	}
 	void SMWCameraY() {
 		double new_focus = y + 16;
